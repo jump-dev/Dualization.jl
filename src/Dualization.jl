@@ -28,6 +28,7 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
     obj_func_type = MOI.get(model, MOI.ObjectiveFunctionType())
     supported_objective(constr_types) # Throws an error if objective function cannot be dualized
     
+    # Crates an empty model that supports the duals of the existing constraints
     dualmodel = emptydualmodel(model)
     
     # Fill the dual model with the dual constraint
