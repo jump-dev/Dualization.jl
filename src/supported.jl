@@ -17,7 +17,7 @@ function supported_constraints(constr_types::Vector{Tuple{DataType, DataType}})
 end
 
 # General case
-supported_constraint(::DataType, ::DataType) = false
+supported_constraint(::Any, ::Any) = false
 # List of supported constraints
 supported_constraint(::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}) where T = true
 supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
@@ -29,7 +29,7 @@ supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
 Throws an error if an objective function is not supported to be dualized
 """
 function supported_objective(obj_func_type::DataType)
-    if !supported_constraint(obj_func_type)
+    if !supported_obj(obj_func_type)
         error("""
             oops!
         """)
@@ -38,7 +38,7 @@ function supported_objective(obj_func_type::DataType)
 end
 
 # Genral case
-supported_objective(::DataType) = false
+supported_obj(::Any) = false
 # List of supported objective functions
-supported_objective(::Type{SAF{T}}) where T = true
+supported_obj(::Type{SAF{T}}) where T = true
 #TODO

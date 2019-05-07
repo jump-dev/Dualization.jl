@@ -1,3 +1,12 @@
+#= 
+min -4x1 -3x2 -1
+  s.a.
+    2x1 + x2 + 1 <= 4
+    x1 + 2x2 + 1 <= 4
+    x1 >= 1
+    x2 >= 0
+=#
+
 model = Model{Float64}()
 
 X = MOI.add_variables(model, 2)
@@ -28,6 +37,4 @@ MOI.set(model,
     )
 
 MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-
-func = MOI.get(model, MOI.ObjectiveFunctionType())
 
