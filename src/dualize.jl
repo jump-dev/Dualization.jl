@@ -17,6 +17,7 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
     
     # Fill the dual model with the dual constraint
     for (F, S) in constr_types
+        println(F, ", ", S)
         # Query constraints of type (F,S)
         constrs_F_S = MOI.get(model, MOI.ListOfConstraintIndices{F, S}())
         # Add the dualized constraint to the model
@@ -32,7 +33,7 @@ end
 
 """
 """
-function emptydualmodel(model::MOI.ModelLike, ::Type{T}) where T
+function emptydualmodel(dualmodel::MOI.ModelLike)
     
     return dualmodel
 end

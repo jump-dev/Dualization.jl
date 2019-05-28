@@ -14,7 +14,5 @@ const CI = MOI.ConstraintIndex
 
 include("supported.jl")
 include("dualize.jl")
-include("SAF_GreaterThan.jl")
-include("SAF_LessThan.jl")
 
 end # module
