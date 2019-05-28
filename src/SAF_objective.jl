@@ -1,3 +1,0 @@
-function dualobjective()
-    
-end
