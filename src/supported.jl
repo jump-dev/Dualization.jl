@@ -40,5 +40,7 @@ end
 # Genral case
 supported_obj(::Any) = false
 # List of supported objective functions
+supported_obj(::Type{SVF}) = true
+supported_obj(::Type{VVF}) = true
 supported_obj(::Type{SAF{T}}) where T = true
 #TODO
