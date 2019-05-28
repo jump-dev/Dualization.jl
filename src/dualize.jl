@@ -11,6 +11,7 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
     # Query the objective function type of the model
     obj_func_type = MOI.get(model, MOI.ObjectiveFunctionType())
     supported_objective(obj_func_type) # Throws an error if objective function cannot be dualized
+    objsense = MOI.get(model, MOI.ObjectiveSense())
     
     # Crates an empty model that supports the duals of the existing constraints
     dualmodel = emptydualmodel(model)
@@ -22,7 +23,11 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
         constrs_F_S = MOI.get(model, MOI.ListOfConstraintIndices{F, S}())
         # Add the dualized constraint to the model
         for constr in constrs_F_S
-            add_dual(dualmodel, constr)
+            if objsense == MOI.MIN_SENSE 
+                add_min_dual(dualmodel, constr) 
+            else
+                add_max_dual(dualmodel, constr)
+            end
         end
     end
 
