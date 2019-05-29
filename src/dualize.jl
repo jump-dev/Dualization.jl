@@ -45,7 +45,7 @@ function create_dualmodel_variables(model::MOI.ModelLike, constr_types::Any)
 
     # Adds the dual variables to the dual model, assumining the number of constraints of the model
     # is model.nextconstraintid
-    y = MOI.add_variables(dualmodel, model.nextconstraintid) 
+    MOI.add_variables(dualmodel, model.nextconstraintid) 
     dualvar_primalcon_dict = Dict{VI, CI}()
     i = 1
     for (F, S) in constr_types
