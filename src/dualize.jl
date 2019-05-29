@@ -13,10 +13,10 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
     supported_objective(obj_func_type) # Throws an error if objective function cannot be dualized
     objsense = MOI.get(model, MOI.ObjectiveSense())
     
-    # Crates an empty model that supports the duals of the existing constraints
-    dualmodel = emptydualmodel(model)
-    
-    # Fill the dual model with the dual constraint
+    # Crates an empty dual model and a dictionary for dualvariables with primal constraints
+    dualmodel, dualvar_primalcon_dict = create_dualmodel_variables(model, constr_types)
+
+    # Fill the dual constraints structure
     for (F, S) in constr_types
         println(F, ", ", S)
         # Query constraints of type (F,S)
@@ -37,8 +37,23 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
 end
 
 """
+Build empty dual model with variables and creates dual variables => primal constraints dict
 """
-function emptydualmodel(dualmodel::MOI.ModelLike)
-    
-    return dualmodel
+function create_dualmodel_variables(model::MOI.ModelLike, constr_types::Any)
+    #Declares a dual model
+    dualmodel = Model{Float64}()
+
+    # Adds the dual variables to the dual model, assumining the number of constraints of the model
+    # is model.nextconstraintid
+    y = MOI.add_variables(dualmodel, model.nextconstraintid) 
+    dualvar_primalcon_dict = Dict{VI, CI}()
+    i = 1
+    for (F, S) in constr_types
+        num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) #number of constraints {F, S}
+        for con_id in 1:num_cons_f_s
+            push!(dualvar_primalcon_dict, VI(i) => CI{F,S}(con_id))
+            i += 1
+        end
+    end
+    return dualmodel, dualvar_primalcon_dict
 end
