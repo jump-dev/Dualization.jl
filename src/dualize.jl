@@ -12,8 +12,14 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
     obj_func_type = MOI.get(model, MOI.ObjectiveFunctionType())
     supported_objective(obj_func_type) # Throws an error if objective function cannot be dualized
     
-    # Crates an empty dual model and a dictionary for dualvariables with primal constraints
-    dualmodel, dualvar_primalcon_dict = create_dualmodel_variables(model, constr_types)
+    # Crates an empty dual model
+    dualmodel = Model{Float64}()
+
+    # Set the dual model objective sense
+    set_dualmodel_sense!(dualmodel, model)
+
+    # Add variables to the dual model and return a dictionary for dualvariables with primal constraints
+    dualvar_primalcon_dict = add_dualmodel_variables!(dualmodel, model, constr_types)
 
     # Fill the dual constraints structure
     for (F, S) in constr_types
@@ -34,10 +40,7 @@ end
 """
 Build empty dual model with variables and creates dual variables => primal constraints dict
 """
-function create_dualmodel_variables(model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
-    #Declares a dual model
-    dualmodel = Model{Float64}()
-
+function add_dualmodel_variables!(dualmodel::MOI.ModelLike, model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
     # Adds the dual variables to the dual model, assumining the number of constraints of the model
     # is model.nextconstraintid
     MOI.add_variables(dualmodel, model.nextconstraintid) 
@@ -50,5 +53,26 @@ function create_dualmodel_variables(model::MOI.ModelLike, constr_types::Vector{T
             i += 1
         end
     end
-    return dualmodel, dualvar_primalcon_dict
+    return dualvar_primalcon_dict
+end
+
+
+"""
+    set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
+
+Set the dual model objective sense
+"""
+function set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
+    # Get model sense
+    sense = MOI.get(model, MOI.ObjectiveSense())
+
+    # Set dual model sense
+    if sense == MOI.MIN_SENSE
+        MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MAX_SENSE)
+    elseif sense == MOI.MAX_SENSE
+        MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    else
+        error("$sense is not supported")
+    end
+    return nothing
 end
