@@ -47,7 +47,7 @@ function add_dualmodel_variables(dualmodel::MOI.ModelLike, model::MOI.ModelLike,
     dualvar_primalcon_dict = Dict{VI, CI}()
     i = 1
     for (F, S) in constr_types
-        num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) #number of constraints {F, S}
+        num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
         for con_id in 1:num_cons_f_s
             vi = VI(i)
             push!(dualvar_primalcon_dict, vi => CI{F, S}(con_id)) # Add dual variable to the dict

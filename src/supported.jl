@@ -1,7 +1,7 @@
 """
     supported_constraints(constr_types::Vector{Tuple{DataType, DataType}})
 
-Throws an error if a constraint is not supported to be dualized
+Throws an error if a constraint is not supported to be dualized 
 """
 function supported_constraints(constr_types::Vector{Tuple{DataType, DataType}})
     for (F, S) in constr_types
@@ -24,7 +24,7 @@ supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
 """
     supported_objective(obj_func_type::DataType)
 
-Throws an error if an objective function is not supported to be dualized
+Throws an error if an objective function is not supported to be dualized 
 """
 function supported_objective(obj_func_type::DataType)
     if !supported_obj(obj_func_type)
