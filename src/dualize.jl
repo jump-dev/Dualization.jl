@@ -16,11 +16,11 @@ function dualize(model::MOI.ModelLike)
     dualmodel = Model{Float64}()
 
     # Set the dual model objective sense
-    set_dualmodel_sense!(dualmodel, model)
+    set_dualmodel_sense(dualmodel, model)
 
     # Add variables to the dual model and dual cone constraint.
     # Return a dictionary for dualvariables with primal constraints
-    dualvar_primalcon_dict = add_dualmodel_variables!(dualmodel, model, constr_types)
+    dualvar_primalcon_dict = add_dualmodel_variables(dualmodel, model, constr_types)
 
     # Add dual equality constraint
     
@@ -34,7 +34,7 @@ end
 Add dual model with variables and dual cone constraints. 
 Creates dual variables => primal constraints dict
 """
-function add_dualmodel_variables!(dualmodel::MOI.ModelLike, model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
+function add_dualmodel_variables(dualmodel::MOI.ModelLike, model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
     # Adds the dual variables to the dual model, assumining the number of constraints of the model
     # is model.nextconstraintid
     MOI.add_variables(dualmodel, model.nextconstraintid) 
@@ -45,7 +45,7 @@ function add_dualmodel_variables!(dualmodel::MOI.ModelLike, model::MOI.ModelLike
         for con_id in 1:num_cons_f_s
             vi = VI(i)
             push!(dualvar_primalcon_dict, vi => CI{F, S}(con_id)) # Add dual variable to the dict
-            add_dualcone_cosntraint!(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
+            add_dualcone_cosntraint(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
             i += 1
         end
     end
@@ -58,7 +58,7 @@ end
 
 Set the dual model objective sense
 """
-function set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
+function set_dualmodel_sense(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
     # Get model sense
     sense = MOI.get(model, MOI.ObjectiveSense())
 
