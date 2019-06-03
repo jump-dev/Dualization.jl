@@ -9,6 +9,6 @@ function add_dualcone_cosntraint!(dualmodel::MOI.ModelLike, vi::VI,
 end
 
 function add_dualcone_cosntraint!(dualmodel::MOI.ModelLike, vi::VI,
-                                  ::Type{SAF{T}}, ::Type{MOI.Equalto{T}}) where T
+                                  ::Type{SAF{T}}, ::Type{MOI.EqualTo{T}}) where T
     return # No constraint
 end
