@@ -26,7 +26,7 @@ function dualize(model::MOI.ModelLike)
     a0, b0 = get_objective_coefficients(model)
 
     # Get constraints terms and constraints
-    a0, b0 = get_constraints_coefficients(model)
+    dict_coeffs = get_constraints_coefficients(model, constr_types)
 
     # Add dual equality constraint
     
@@ -95,7 +95,7 @@ function get_constraints_coefficients(model::MOI.ModelLike, constr_types::Vector
         bi = zeros(Float64, num_cons_f_s) # Empty bi
         # Fill Ai and bi
         for con_id = 1:num_cons_f_s
-            set_constraint_terms(Ai, bi, model, F, S, con_id)
+            fill_constraint_terms(Ai, bi, model, F, S, con_id)
         end
         push!(dict_coeffs, (F, S) => (Ai, bi))
     end

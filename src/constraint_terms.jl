@@ -1,4 +1,4 @@
-function set_constraint_terms(Ai::Matrix{T}, bi::Vector{T}, model::MOI.ModelLike,
+function fill_constraint_terms(Ai::Matrix{T}, bi::Vector{T}, model::MOI.ModelLike,
                               ::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}, con_id::Int) where T
 
     # Get constraint as per con_id
@@ -14,7 +14,7 @@ function set_constraint_terms(Ai::Matrix{T}, bi::Vector{T}, model::MOI.ModelLike
     return 
 end
 
-function set_constraint_terms(Ai::Matrix{T}, bi::Vector{T}, model::MOI.ModelLike,
+function fill_constraint_terms(Ai::Matrix{T}, bi::Vector{T}, model::MOI.ModelLike,
                               ::Type{SAF{T}}, ::Type{MOI.LessThan{T}}, con_id::Int) where T
 
     # Get constraint as per con_id
