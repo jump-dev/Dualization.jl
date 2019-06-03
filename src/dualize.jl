@@ -22,6 +22,12 @@ function dualize(model::MOI.ModelLike)
     # Return a dictionary for dualvariables with primal constraints
     dualvar_primalcon_dict = add_dualmodel_variables(dualmodel, model, constr_types)
 
+    # Get objective terms and constant
+    a0, b0 = get_objective_coefficients(model)
+
+    # Get constraints terms and constraints
+    a0, b0 = get_constraints_coefficients(model)
+
     # Add dual equality constraint
     
 
@@ -71,4 +77,47 @@ function set_dualmodel_sense(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
         error(sense, " is not supported") # Feasibility should be supported?
     end
     return nothing
+end
+
+"""
+    get_constraints_coefficients(model::MOI.ModelLike)
+
+Get the terms of the a0 vector and the constant b as per 
+http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
+"""
+function get_constraints_coefficients(model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
+    # Empty dictionary to store Ai and bi for each cone
+    dict_coeffs = Dict{Tuple{DataType, DataType}, Tuple{Array{Float64, 2}, Vector{Float64}}}()
+
+    for (F, S) in constr_types
+        num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
+        Ai = zeros(Float64, model.num_variables_created, num_cons_f_s) # Empty Ai
+        bi = zeros(Float64, num_cons_f_s) # Empty bi
+        # Fill Ai and bi
+        for con_id = 1:num_cons_f_s
+            set_constraint_terms(Ai, bi, model, F, S, con_id)
+        end
+        push!(dict_coeffs, (F, S) => (Ai, bi))
+    end
+
+    return dict_coeffs
+end
+
+"""
+    get_objective_coefficients(model::MOI.ModelLike)
+
+Get the terms of the a0 vector and the constant b as per 
+http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
+"""
+function get_objective_coefficients(model::MOI.ModelLike)
+    # Empty vector a0 with the number of variables
+    a0 = zeros(Float64, model.num_variables_created)
+
+    # Fill a0 for each term in the objective function
+    for term in model.objective.terms
+        a0[term.variable_index.value] = term.coefficient
+    end
+
+    b0 = model.objective.constant # Constant term of the objective function
+    return a0, b0
 end
