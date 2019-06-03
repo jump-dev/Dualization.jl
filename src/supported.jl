@@ -35,7 +35,7 @@ function supported_objective(obj_func_type::DataType)
     return nothing
 end
 
-# Genral case
+# General case
 supported_obj(::Any) = false
 # List of supported objective functions
 supported_obj(::Type{SVF}) = true

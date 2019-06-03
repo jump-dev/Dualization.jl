@@ -3,7 +3,7 @@
 
 Dualize the model
 """
-function dualize(model::MOI.ModelLike, ::Type{T}) where T
+function dualize(model::MOI.ModelLike)
     # Query all constraint types of the model
     constr_types = MOI.get(model, MOI.ListOfConstraints())
     supported_constraints(constr_types) # Throws an error if constraint cannot be dualized
@@ -18,27 +18,21 @@ function dualize(model::MOI.ModelLike, ::Type{T}) where T
     # Set the dual model objective sense
     set_dualmodel_sense!(dualmodel, model)
 
-    # Add variables to the dual model and return a dictionary for dualvariables with primal constraints
+    # Add variables to the dual model and dual cone constraint.
+    # Return a dictionary for dualvariables with primal constraints
     dualvar_primalcon_dict = add_dualmodel_variables!(dualmodel, model, constr_types)
 
-    # Fill the dual constraints structure
-    for (F, S) in constr_types
-        println(F, ", ", S)
-        # Query constraints of type (F,S)
-        constrs_F_S = MOI.get(model, MOI.ListOfConstraintIndices{F, S}())
-        # Add the dualized constraint to the model
-        for constr in constrs_F_S
-            add_dual(dualmodel, constr) 
-        end
-    end
+    # Add dual equality constraint
+    
 
-    # Fill the dual model with the dual objective
+    # Add dual objective function
 
     return dualmodel
 end
 
 """
-Build empty dual model with variables and creates dual variables => primal constraints dict
+Add dual model with variables and dual cone constraints. 
+Creates dual variables => primal constraints dict
 """
 function add_dualmodel_variables!(dualmodel::MOI.ModelLike, model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
     # Adds the dual variables to the dual model, assumining the number of constraints of the model
@@ -49,7 +43,9 @@ function add_dualmodel_variables!(dualmodel::MOI.ModelLike, model::MOI.ModelLike
     for (F, S) in constr_types
         num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) #number of constraints {F, S}
         for con_id in 1:num_cons_f_s
-            push!(dualvar_primalcon_dict, VI(i) => CI{F,S}(con_id))
+            vi = VI(i)
+            push!(dualvar_primalcon_dict, vi => CI{F, S}(con_id)) # Add dual variable to the dict
+            add_dualcone_cosntraint!(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
             i += 1
         end
     end
@@ -72,7 +68,7 @@ function set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
     elseif sense == MOI.MAX_SENSE
         MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     else
-        error("$sense is not supported")
+        error(sense, " is not supported") # Feasibility should be supported?
     end
     return nothing
 end

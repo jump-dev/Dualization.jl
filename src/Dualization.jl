@@ -13,6 +13,7 @@ const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
 
 include("supported.jl")
+include("dualcone_constraint.jl")
 include("dualize.jl")
 
 end # module
