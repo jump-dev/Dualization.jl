@@ -32,7 +32,7 @@ function dualize(model::MOI.ModelLike)
     add_dualmodel_equality_constraints(dualmodel, model, dict_constr_coeffs, dict_dualvar_primalcon, a0)
 
     # Add dual objective function
-    
+    add_dualmodel_objective(dualmodel, model, dict_constr_coeffs, dict_dualvar_primalcon, b0)
 
     return dualmodel
 end
@@ -138,7 +138,6 @@ function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI
             vi = VI(constr)
             term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][1][var] # Accessing Ai^T
             safs[constr] = MOI.ScalarAffineTerm(term, vi)
-            
         end
         # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
         if sense == MOI.MAX_SENSE 
@@ -147,5 +146,38 @@ function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI
             MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, -a0[var]), MOI.EqualTo(0.0))
         end
     end
+    return nothing
+end
+
+"""
+    add_dualmodel_objective(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                            dict_dualvar_primalcon::Dict, b0::T) where T
+
+Add the objective function to the dual model
+"""
+function add_dualmodel_objective(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                                 dict_dualvar_primalcon::Dict, b0::T) where T
+
+    sense = MOI.get(dualmodel, MOI.ObjectiveSense()) # Get dual model sense
+
+    term_vec = Array{T}(undef, model.nextconstraintid)
+    vi_vec   = Array{VI}(undef, dualmodel.num_variables_created)
+    for constr = 1:model.nextconstraintid # Number of constraints of the model
+        vi = VI(constr)
+        term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][2] # Accessing Ai^T
+        if sense == MOI.MAX_SENSE 
+            term_vec[constr] = term
+        else
+            term_vec[constr] = -term
+        end
+        vi_vec[constr] = vi
+    end
+
+    # Find all non zero terms of terms_vec
+    non_zero_terms = findall(x -> x != 0, term_vec)
+    # Set dual model objective function
+    MOI.set(dualmodel, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),  
+            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(term_vec[non_zero_terms], vi_vec[non_zero_terms]), b0)
+            )
     return nothing
 end
