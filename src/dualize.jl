@@ -51,7 +51,7 @@ function add_dualmodel_variables(dualmodel::MOI.ModelLike, model::MOI.ModelLike,
         for con_id in 1:num_cons_f_s
             vi = VI(i)
             push!(dualvar_primalcon_dict, vi => CI{F, S}(con_id)) # Add dual variable to the dict
-            add_dualcone_cosntraint(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
+            add_dualcone_constraint(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
             i += 1
         end
     end
