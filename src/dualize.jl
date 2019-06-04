@@ -20,18 +20,19 @@ function dualize(model::MOI.ModelLike)
 
     # Add variables to the dual model and dual cone constraint.
     # Return a dictionary for dualvariables with primal constraints
-    dualvar_primalcon_dict = add_dualmodel_variables(dualmodel, model, constr_types)
+    dict_dualvar_primalcon = add_dualmodel_variables(dualmodel, model, constr_types)
 
     # Get objective terms and constant
     a0, b0 = get_objective_coefficients(model)
 
     # Get constraints terms and constraints
-    dict_coeffs = get_constraints_coefficients(model, constr_types)
+    dict_constr_coeffs = get_constraints_coefficients(model, constr_types)
 
     # Add dual equality constraint
-    
+    add_dualmodel_equality_constraints(dualmodel, model, dict_constr_coeffs, dict_dualvar_primalcon, a0)
 
     # Add dual objective function
+    
 
     return dualmodel
 end
@@ -44,18 +45,19 @@ function add_dualmodel_variables(dualmodel::MOI.ModelLike, model::MOI.ModelLike,
     # Adds the dual variables to the dual model, assumining the number of constraints of the model
     # is model.nextconstraintid
     MOI.add_variables(dualmodel, model.nextconstraintid) 
-    dualvar_primalcon_dict = Dict{VI, CI}()
+    dict_dualvar_primalcon = Dict{VI, CI}()
     i = 1
     for (F, S) in constr_types
         num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
-        for con_id in 1:num_cons_f_s
+        for con_id = 1:num_cons_f_s
             vi = VI(i)
-            push!(dualvar_primalcon_dict, vi => CI{F, S}(con_id)) # Add dual variable to the dict
+            ci = get_ci(model, F, S, con_id)
+            push!(dict_dualvar_primalcon, vi => ci) # Add dual variable to the dict
             add_dualcone_constraint(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
             i += 1
         end
     end
-    return dualvar_primalcon_dict
+    return dict_dualvar_primalcon
 end
 
 
@@ -87,17 +89,14 @@ http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
 """
 function get_constraints_coefficients(model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
     # Empty dictionary to store Ai and bi for each cone
-    dict_coeffs = Dict{Tuple{DataType, DataType}, Tuple{Array{Float64, 2}, Vector{Float64}}}()
+    dict_coeffs = Dict{Any, Tuple{Vector{Float64}, Float64}}()
 
     for (F, S) in constr_types
         num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
-        Ai = zeros(Float64, model.num_variables_created, num_cons_f_s) # Empty Ai
-        bi = zeros(Float64, num_cons_f_s) # Empty bi
         # Fill Ai and bi
         for con_id = 1:num_cons_f_s
-            fill_constraint_terms(Ai, bi, model, F, S, con_id)
+            fill_constraint_terms(dict_coeffs, model, F, S, con_id)
         end
-        push!(dict_coeffs, (F, S) => (Ai, bi))
     end
 
     return dict_coeffs
@@ -120,4 +119,33 @@ function get_objective_coefficients(model::MOI.ModelLike)
 
     b0 = model.objective.constant # Constant term of the objective function
     return a0, b0
+end
+
+"""
+        add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                                            dict_dualvar_primalcon::Dict, a0::Array{T, 1}) where T
+
+Add the dual model equality constraints
+"""
+function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                                            dict_dualvar_primalcon::Dict, a0::Array{T, 1}) where T
+    
+    sense = MOI.get(dualmodel, MOI.ObjectiveSense()) # Get dual model sense
+
+    for var = 1:model.num_variables_created #Number of variables
+        safs = Array{MOI.ScalarAffineTerm{T}}(undef, model.nextconstraintid) 
+        for constr = 1:model.nextconstraintid # Number of constraints of the model
+            vi = VI(constr)
+            term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][1][var] # Accessing Ai^T
+            safs[constr] = MOI.ScalarAffineTerm(term, vi)
+            
+        end
+        # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
+        if sense == MOI.MAX_SENSE 
+            MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, a0[var]), MOI.EqualTo(0.0))
+        else
+            MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, -a0[var]), MOI.EqualTo(0.0))
+        end
+    end
+    return nothing
 end
