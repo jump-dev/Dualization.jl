@@ -1,3 +1,5 @@
+export dualize
+
 """
     dualize(model::MOI.ModelLike, ::Type{T}) where T
 
@@ -140,11 +142,10 @@ function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI
             safs[constr] = MOI.ScalarAffineTerm(term, vi)
         end
         # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
-        if sense == MOI.MAX_SENSE 
-            MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, a0[var]), MOI.EqualTo(0.0))
-        else
-            MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, -a0[var]), MOI.EqualTo(0.0))
-        end
+        # If max sense scalar term is -a0 and if min sense sacalar term is a0
+        scalar_term = (sense == MOI.MAX_SENSE) ? -a0[var] : a0[var]
+        # Add equality constraint
+        MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, scalar_term), MOI.EqualTo(0.0))
     end
     return nothing
 end
@@ -165,11 +166,9 @@ function add_dualmodel_objective(dualmodel::MOI.ModelLike, model::MOI.ModelLike,
     for constr = 1:model.nextconstraintid # Number of constraints of the model
         vi = VI(constr)
         term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][2] # Accessing Ai^T
-        if sense == MOI.MAX_SENSE 
-            term_vec[constr] = term
-        else
-            term_vec[constr] = -term
-        end
+        # Add positive terms bi if dual model sense is max
+        term_vec[constr] = (sense == MOI.MAX_SENSE) ? -term : term
+        # Variable index associated with term bi
         vi_vec[constr] = vi
     end
 
