@@ -15,28 +15,31 @@ function dualize(model::MOI.ModelLike)
     supported_objective(obj_func_type) # Throws an error if objective function cannot be dualized
     
     # Crates an empty dual model
-    dualmodel = Model{Float64}()
+    dual_model = Model{Float64}()
 
     # Set the dual model objective sense
-    set_dualmodel_sense(dualmodel, model)
+    set_dualmodel_sense(dual_model, model)
 
     # Add variables to the dual model and dual cone constraint.
     # Return a dictionary for dualvariables with primal constraints
-    dict_dualvar_primalcon = add_dualmodel_variables(dualmodel, model, constr_types)
+    dict_dualvar_primalcon = add_dualmodel_variables(dual_model, model, constr_types)
 
-    # Get objective terms and constant
-    a0, b0 = get_objective_coefficients(model)
+    # Get Primal Objective Coefficients
+    poc = get_POC(model)
 
     # Get constraints terms and constraints
     dict_constr_coeffs = get_constraints_coefficients(model, constr_types)
 
     # Add dual equality constraint
-    add_dualmodel_equality_constraints(dualmodel, model, dict_constr_coeffs, dict_dualvar_primalcon, a0)
+    add_dualmodel_equality_constraints(dual_model, model, dict_constr_coeffs, dict_dualvar_primalcon, poc)
 
-    # Add dual objective function
-    add_dualmodel_objective(dualmodel, model, dict_constr_coeffs, dict_dualvar_primalcon, b0)
+    # Fill Dual Objective Coefficients Struct
+    doc = get_DOC(dual_model, dict_constr_coeffs, dict_dualvar_primalcon, poc)
 
-    return dualmodel
+    # Add dual objective to the model
+    set_DOC(dual_model, doc)
+
+    return dual_model
 end
 
 """
@@ -64,22 +67,20 @@ end
 
 
 """
-    set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
+    set_dualmodel_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
 
 Set the dual model objective sense
 """
-function set_dualmodel_sense(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
+function set_dualmodel_sense(dual_model::MOI.ModelLike, model::MOI.ModelLike)
     # Get model sense
     sense = MOI.get(model, MOI.ObjectiveSense())
 
-    # Set dual model sense
-    if sense == MOI.MIN_SENSE
-        MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MAX_SENSE)
-    elseif sense == MOI.MAX_SENSE
-        MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-    else
+    if sense == MOI.FEASIBILITY_SENSE
         error(sense, " is not supported") # Feasibility should be supported?
     end
+    # Set dual model sense
+    dual_sense = (sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
+    MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
     return nothing
 end
 
@@ -105,32 +106,13 @@ function get_constraints_coefficients(model::MOI.ModelLike, constr_types::Vector
 end
 
 """
-    get_objective_coefficients(model::MOI.ModelLike)
-
-Get the terms of the a0 vector and the constant b as per 
-http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
-"""
-function get_objective_coefficients(model::MOI.ModelLike)
-    # Empty vector a0 with the number of variables
-    a0 = zeros(Float64, model.num_variables_created)
-
-    # Fill a0 for each term in the objective function
-    for term in model.objective.terms
-        a0[term.variable_index.value] = term.coefficient
-    end
-
-    b0 = model.objective.constant # Constant term of the objective function
-    return a0, b0
-end
-
-"""
         add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
                                             dict_dualvar_primalcon::Dict, a0::Array{T, 1}) where T
 
 Add the dual model equality constraints
 """
 function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                                            dict_dualvar_primalcon::Dict, a0::Array{T, 1}) where T
+                                            dict_dualvar_primalcon::Dict, poc::POC{T}) where T
     
     sense = MOI.get(dualmodel, MOI.ObjectiveSense()) # Get dual model sense
 
@@ -143,40 +125,9 @@ function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI
         end
         # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        scalar_term = (sense == MOI.MAX_SENSE) ? -a0[var] : a0[var]
+        scalar_term = (sense == MOI.MAX_SENSE) ? -poc.affine_terms[var] : poc.affine_terms[var]
         # Add equality constraint
         MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, scalar_term), MOI.EqualTo(0.0))
     end
-    return nothing
-end
-
-"""
-    add_dualmodel_objective(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                            dict_dualvar_primalcon::Dict, b0::T) where T
-
-Add the objective function to the dual model
-"""
-function add_dualmodel_objective(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                                 dict_dualvar_primalcon::Dict, b0::T) where T
-
-    sense = MOI.get(dualmodel, MOI.ObjectiveSense()) # Get dual model sense
-
-    term_vec = Array{T}(undef, model.nextconstraintid)
-    vi_vec   = Array{VI}(undef, dualmodel.num_variables_created)
-    for constr = 1:model.nextconstraintid # Number of constraints of the model
-        vi = VI(constr)
-        term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][2] # Accessing Ai^T
-        # Add positive terms bi if dual model sense is max
-        term_vec[constr] = (sense == MOI.MAX_SENSE) ? -term : term
-        # Variable index associated with term bi
-        vi_vec[constr] = vi
-    end
-
-    # Find all non zero terms of terms_vec
-    non_zero_terms = findall(x -> x != 0, term_vec)
-    # Set dual model objective function
-    MOI.set(dualmodel, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),  
-            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(term_vec[non_zero_terms], vi_vec[non_zero_terms]), b0)
-            )
     return nothing
 end
