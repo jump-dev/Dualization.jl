@@ -24,10 +24,10 @@ Get the coefficients from the primal objective function and
 return a `PrimalObjectiveCoefficients{T}`
 """
 function get_POC(model::MOI.ModelLike)
-    return _get_POC(model, model.objective)
+    return _get_POC(model.objective)
 end
 
-function _get_POC(model::MOI.ModelLike, obj_fun::MOI.ScalarAffineFunction{T}) where T
+function _get_POC(obj_fun::MOI.ScalarAffineFunction{T}) where T
     # Empty vector a0 with the number of variables
     num_terms = length(obj_fun.terms)
     a0 = Vector{T}(undef, num_terms)
