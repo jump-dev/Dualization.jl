@@ -98,6 +98,6 @@ function get_DOC(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict,
         # Variable index associated with term bi
         vi_vec[constr] = vi
     end
-    non_zero_terms = findall(x -> x != 0, term_vec)
+    non_zero_terms = findall(!iszero, term_vec)
     return DOC(term_vec[non_zero_terms], vi_vec[non_zero_terms], poc.constant)
 end
