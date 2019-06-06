@@ -94,7 +94,7 @@ function get_DOC(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict,
         vi = VI(constr)
         term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][2] # Accessing Ai^T
         # Add positive terms bi if dual model sense is max
-        term_vec[constr] = (sense == MOI.MAX_SENSE) ? -term : term
+        term_vec[constr] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
         # Variable index associated with term bi
         vi_vec[constr] = vi
     end

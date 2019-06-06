@@ -125,7 +125,7 @@ function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI
         end
         # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        scalar_term = (sense == MOI.MAX_SENSE) ? -poc.affine_terms[var] : poc.affine_terms[var]
+        scalar_term = (sense == MOI.MAX_SENSE ? -1 : 1) * poc.affine_terms[var]
         # Add equality constraint
         MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, scalar_term), MOI.EqualTo(0.0))
     end
