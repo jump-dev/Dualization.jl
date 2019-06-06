@@ -39,11 +39,11 @@ function _get_POC(model::MOI.ModelLike, obj_fun::MOI.ScalarAffineFunction{T}) wh
         vi[i] = term.variable_index # variable_index
         i += 1
     end
-    b0 = model.objective.constant # Constant term of the objective function
+    b0 = obj_fun.constant # Constant term of the objective function
     PrimalObjectiveCoefficients(a0, vi, b0)
 end
 
-# You can add other generic _fill_POC functions here
+# You can add other generic _get_POC functions here
 
 
 # Duals
