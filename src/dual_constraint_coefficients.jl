@@ -1,3 +1,37 @@
+# Equality constraints
+"""
+        add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                                            dict_dualvar_primalcon::Dict, a0::Array{T, 1}) where T
+
+Add the dual model equality constraints
+"""
+function add_dual_model_equality_constraints(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                                             dict_dualvar_primalcon::Dict, poc::POC{T}) where T
+    
+    sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
+    dict_primalvar_dualcon = Dict{VI, CI}() # Empty primal variables dual constraints Dict
+    primal_num_variables = length(poc.affine_terms)
+
+    for var = 1:primal_num_variables #Number of variables
+        safs = Array{MOI.ScalarAffineTerm{T}}(undef, dual_model.num_variables_created) 
+        for constr = 1:dual_model.num_variables_created # Number of constraints of the primal model (equalt number of variables of the dual)
+            vi = VI(constr)
+            term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][1][var] # Accessing Ai^T
+            safs[constr] = MOI.ScalarAffineTerm(term, vi)
+        end
+        # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
+        # If max sense scalar term is -a0 and if min sense sacalar term is a0
+        scalar_term = (sense == MOI.MAX_SENSE ? -1 : 1) * poc.affine_terms[var]
+        # Add primal variable to dual contraint to the link dictionary
+        push!(dict_primalvar_dualcon, VI(var) => CI{SAF{T}, MOI.EqualTo}(dual_model.nextconstraintid))
+        # Add equality constraint
+        MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(safs, scalar_term), MOI.EqualTo(0.0))
+    end
+    return dict_primalvar_dualcon
+end
+
+
+# Dual cone constraints
 """
 Add dual model with variables and dual cone constraints. 
 Creates dual variables => primal constraints dict

@@ -31,9 +31,10 @@ MOIU.@model(Model,
 
 include("utils.jl")
 include("supported.jl")
-include("constraint_coefficients.jl")
 include("objective_coefficients.jl")
-include("dualcone_constraint.jl")
+include("primal_constraint_coefficients.jl")
+include("dual_constraint_coefficients.jl")
+
 include("dualize.jl")
 
 end # module

@@ -1,3 +1,21 @@
+"""
+    set_dualmodel_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
+
+Set the dual model objective sense
+"""
+function set_dual_model_sense(dual_model::MOI.ModelLike, model::MOI.ModelLike)
+    # Get model sense
+    sense = MOI.get(model, MOI.ObjectiveSense())
+
+    if sense == MOI.FEASIBILITY_SENSE
+        error(sense, " is not supported") # Feasibility should be supported?
+    end
+    # Set dual model sense
+    dual_sense = (sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
+    MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
+    return nothing
+end
+
 # Primals
 """
         PrimalObjectiveCoefficients{T}
@@ -25,7 +43,7 @@ function get_POC(model::MOI.ModelLike)
     return _get_POC(model.objective, model.num_variables_created)
 end
 
-function _get_POC(obj_fun::MOI.ScalarAffineFunction{T}, num_variables::Int) where T
+function _get_POC(obj_fun::SAF{T}, num_variables::Int) where T
     # Empty vector a0 with the number of variables
     a0 = zeros(T, num_variables)
     # Fill a0 for each term in the objective function
@@ -33,6 +51,15 @@ function _get_POC(obj_fun::MOI.ScalarAffineFunction{T}, num_variables::Int) wher
         a0[term.variable_index.value] = term.coefficient # scalar affine coefficient
     end
     b0 = obj_fun.constant # Constant term of the objective function
+    PrimalObjectiveCoefficients(a0, b0)
+end
+
+function _get_POC(obj_fun::SVF, num_variables::Int)
+    # Empty vector a0 with the number of variables
+    a0 = zeros(Float64, num_variables)
+    # Fill a0 with one in the term of the SingleVariableFunction
+    a0[obj_fun.variable.value] = 1.0 # Equals one on the SingleVariableFunction
+    b0 = 0.0 # SVF has no b0
     PrimalObjectiveCoefficients(a0, b0)
 end
 

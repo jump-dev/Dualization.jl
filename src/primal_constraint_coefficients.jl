@@ -1,4 +1,3 @@
-# SAF
 function fillAi(Ai::Vector{T}, saf::SAF{T}) where T
     for term in saf.terms
         Ai[term.variable_index.value] = term.coefficient #Fill Ai
@@ -6,6 +5,12 @@ function fillAi(Ai::Vector{T}, saf::SAF{T}) where T
     return nothing
 end
 
+function fillAi(Ai::Vector{T}, svf::SVF) where T
+    Ai[svf.variable.value] = 1 #Fill Ai
+    return nothing
+end
+
+# SAF
 function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
                                       ::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}, con_id::Int) where T
 
@@ -68,11 +73,6 @@ end
 
 
 # SVF
-function fillAi(Ai::Vector{T}, svf::SVF) where T
-    Ai[svf.variable.value] = 1 #Fill Ai
-    return nothing
-end
-
 function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
                                       ::Type{SVF}, ::Type{MOI.GreaterThan{T}}, con_id::Int) where T
 
