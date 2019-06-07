@@ -33,54 +33,47 @@ min -4x1 -3x2 -1
     x2 >= 0
 =#
 
-model = Model{Float64}()
+primal_model = Model{Float64}()
 
-X = MOI.add_variables(model, 3)
+X = MOI.add_variables(primal_model, 2)
 
-MOI.add_constraint(model, 
+MOI.add_constraint(primal_model, 
+    MOI.ScalarAffineFunction(
+        [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
+         MOI.LessThan(4.0))
+
+MOI.add_constraint(primal_model, 
     MOI.ScalarAffineFunction(
         [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
-         MOI.GreaterThan(4.0))
+         MOI.LessThan(4.0))
 
-MOI.add_constraint(model, 
-    MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(4.0, X[1]), MOI.ScalarAffineTerm(3.0, X[3])], 1.0),
-         MOI.GreaterThan(4.0))
+MOI.add_constraint(primal_model, 
+    MOI.SingleVariable(X[1]),
+         MOI.GreaterThan(1.0))
 
-# MOI.add_constraint(model, 
-#     MOI.ScalarAffineFunction(
-#         [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
-#          MOI.EqualTo(9.0))
+MOI.add_constraint(primal_model, 
+    MOI.SingleVariable(X[1]),
+         MOI.GreaterThan(3.0))
 
-# MOI.add_constraint(model, 
-#     MOI.SingleVariable(X[1]),
-#         MOI.LessThan(0.5))
-
-# MOI.add_constraint(model, 
-#     MOI.SingleVariable(X[2]),
-#          MOI.GreaterThan(20.0))
-
-# MOI.add_constraint(model, 
-#     MOI.SingleVariable(X[3]),
-#          MOI.EqualTo(0.5))
-
-MOI.set(model, 
+MOI.set(primal_model, 
     MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-    MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0, 3.0], [X[1], X[3]]), -1.0)
+    MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0], [X[2]]), -1.0)
     )
 
-MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+MOI.set(primal_model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+
+dualprob = dualize(primal_model)
 
 using Clp
 model1 = JuMP.Model()
-MOI.copy_to(JuMP.backend(model1), model)
+MOI.copy_to(JuMP.backend(model1), primal_model)
 set_optimizer(model1, with_optimizer(Clp.Optimizer))
 optimize!(model1)
 termstatus1 = JuMP.termination_status(model1)
 obj1 = JuMP.objective_value(model1)
 
 model2 = JuMP.Model()
-MOI.copy_to(JuMP.backend(model2), dualize(model))
+MOI.copy_to(JuMP.backend(model2), dualprob.dual_model)
 set_optimizer(model2, with_optimizer(Clp.Optimizer))
 optimize!(model2)
 termstatus2 = JuMP.termination_status(model2)
@@ -88,3 +81,61 @@ obj2 = JuMP.objective_value(model2)
 
 @show termstatus1, termstatus2
 @show obj1, obj2
+
+# Separador linear
+using JuMP, GLPK, CSV
+
+#Read data from
+data_tumors = CSV.read("/home/guilhermebodin/Downloads/Teaching.jl-master/Optimization/Class1/data_tumors.csv", header = false)
+
+num_attributes = 30
+train_set_size = 400
+
+train_set_attrs = convert(Matrix{Float64}, data_tumors[1:train_set_size, 3:end])
+train_set_diagnosis = convert(Vector{String}, data_tumors[1:train_set_size, 2])
+
+test_set_attrs = convert(Matrix{Float64}, data_tumors[train_set_size + 1:end, 3:end])
+test_set_diagnosis = convert(Vector{String}, data_tumors[train_set_size + 1:end, 2])
+
+m = JuMP.Model(with_optimizer(GLPK.Optimizer))
+n = 2
+@variable(m, x[i = 1:n])
+@variable(m, c)
+@variable(m, ϵ[i = 1:train_set_size] >= 0)
+
+for i in 1:train_set_size
+    if train_set_diagnosis[i] == "M"
+        @constraint(m, sum(train_set_attrs[i, j]*x[j] for j in 1:n) + c >= -ϵ[i])
+    elseif train_set_diagnosis[i] == "B"
+        @constraint(m, sum(train_set_attrs[i, j]*x[j] for j in 1:n) + c <= ϵ[i] - 1)
+    end
+end
+
+@objective(m, Min, sum(ϵ))
+m
+optimize!(m)
+
+x = value.(x)
+c = value.(c)
+obj_val = objective_value(m)
+
+dualprob = dualize(m.moi_backend.model_cache.model)
+model2 = JuMP.Model()
+MOI.copy_to(JuMP.backend(model2), dualprob.dual_model)
+set_optimizer(model2, with_optimizer(GLPK.Optimizer))
+optimize!(model2)
+termstatus2 = JuMP.termination_status(model2)
+obj2 = JuMP.objective_value(model2)
+
+
+@show termstatus1, termstatus2
+@show obj1, obj2
+
+
+dualprob2 = dualize(dualprob.dual_model)
+model3 = JuMP.Model()
+MOI.copy_to(JuMP.backend(model3), dualprob2.dual_model)
+set_optimizer(model3, with_optimizer(GLPK.Optimizer))
+optimize!(model3)
+termstatus2 = JuMP.termination_status(model3)
+obj2 = JuMP.objective_value(model3)

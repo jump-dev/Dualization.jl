@@ -5,23 +5,29 @@
 
 Add the dual model equality constraints
 """
-function add_dual_model_equality_constraints(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                                             dict_dualvar_primalcon::Dict, poc::POC{T}) where T
+function add_dual_model_equality_constraints(dual_model::MOI.ModelLike, constr_coeffs::Dict, 
+                                             dual_var_primal_con::Dict, poc::POC{T}, num_primalvariables::Int) where T
     
-    sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
+    dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
     dict_primalvar_dualcon = Dict{VI, CI}() # Empty primal variables dual constraints Dict
-    primal_num_variables = length(poc.affine_terms)
 
-    for var = 1:primal_num_variables #Number of variables
+    scalar_term_index = 1
+    for var = 1:num_primalvariables
         safs = Array{MOI.ScalarAffineTerm{T}}(undef, dual_model.num_variables_created) 
         for constr = 1:dual_model.num_variables_created # Number of constraints of the primal model (equalt number of variables of the dual)
             vi = VI(constr)
-            term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][1][var] # Accessing Ai^T
-            safs[constr] = MOI.ScalarAffineTerm(term, vi)
+            affine_term = constr_coeffs[dual_var_primal_con[vi]][1][var] # Accessing Ai^T
+            safs[constr] = MOI.ScalarAffineTerm(affine_term, vi)
         end
         # Add constraint, the sense of a0 depends on the dualmodel ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        scalar_term = (sense == MOI.MAX_SENSE ? -1 : 1) * poc.affine_terms[var]
+        if var == poc.vi_vec[scalar_term_index].value
+            scalar_term_value = poc.affine_terms[scalar_term_index]
+            scalar_term_index += 1
+        else # In this case this variable is not on the objective function
+            scalar_term_value = zero(T)
+        end
+        scalar_term = (dual_sense == MOI.MAX_SENSE ? -1 : 1) * scalar_term_value
         # Add primal variable to dual contraint to the link dictionary
         push!(dict_primalvar_dualcon, VI(var) => CI{SAF{T}, MOI.EqualTo}(dual_model.nextconstraintid))
         # Add equality constraint

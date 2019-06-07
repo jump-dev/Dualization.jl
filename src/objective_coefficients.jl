@@ -3,15 +3,14 @@
 
 Set the dual model objective sense
 """
-function set_dual_model_sense(dual_model::MOI.ModelLike, model::MOI.ModelLike)
+function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike)
     # Get model sense
-    sense = MOI.get(model, MOI.ObjectiveSense())
-
-    if sense == MOI.FEASIBILITY_SENSE
-        error(sense, " is not supported") # Feasibility should be supported?
+    primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
+    if primal_sense == MOI.FEASIBILITY_SENSE
+        error(primal_sense, " is not supported") # Feasibility should be supported?
     end
     # Set dual model sense
-    dual_sense = (sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
+    dual_sense = (primal_sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
     return nothing
 end
@@ -23,11 +22,13 @@ end
 Primal objective coefficients defined as ``a_0^Tx + b_0`` as in
 http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
 
-`affine_terms` corresponds to ``a_0`` `` 
+`affine_terms` corresponds to ``a_0``
+`vi_vec` corresponds to ``x``
 `constant` corresponds to ``b_0`` 
 """
 struct PrimalObjectiveCoefficients{T}
     affine_terms::Vector{T}
+    vi_vec::Vector{VI}
     constant::T
 end
 
@@ -39,28 +40,31 @@ const POC{T} = PrimalObjectiveCoefficients{T}
 Get the coefficients from the primal objective function and
 return a `PrimalObjectiveCoefficients{T}`
 """
-function get_POC(model::MOI.ModelLike)
-    return _get_POC(model.objective, model.num_variables_created)
+function get_POC(primal_sense::MOI.ModelLike)
+    return _get_POC(primal_sense.objective)
 end
 
-function _get_POC(obj_fun::SAF{T}, num_variables::Int) where T
+function _get_POC(obj_fun::SAF{T}) where T
     # Empty vector a0 with the number of variables
-    a0 = zeros(T, num_variables)
+    num_terms = length(obj_fun.terms)
+    a0 = Vector{T}(undef, num_terms)
+    vi = Vector{VI}(undef, num_terms)
     # Fill a0 for each term in the objective function
+    i = 1::Int
     for term in obj_fun.terms
-        a0[term.variable_index.value] = term.coefficient # scalar affine coefficient
+        a0[i] = term.coefficient # scalar affine coefficient
+        vi[i] = term.variable_index # variable_index
+        i += 1
     end
     b0 = obj_fun.constant # Constant term of the objective function
-    PrimalObjectiveCoefficients(a0, b0)
+    PrimalObjectiveCoefficients(a0, vi, b0)
 end
 
-function _get_POC(obj_fun::SVF, num_variables::Int)
-    # Empty vector a0 with the number of variables
-    a0 = zeros(Float64, num_variables)
-    # Fill a0 with one in the term of the SingleVariableFunction
-    a0[obj_fun.variable.value] = 1.0 # Equals one on the SingleVariableFunction
+function _get_POC(obj_fun::SVF)
+    a0 = [1.0] # Equals one on the SingleVariableFunction
+    vi = [obj_fun.variable]
     b0 = 0.0 # SVF has no b0
-    PrimalObjectiveCoefficients(a0, b0)
+    PrimalObjectiveCoefficients(a0, vi, b0)
 end
 
 # You can add other generic _get_POC functions here
@@ -103,8 +107,8 @@ end
 
 Get dual model objective function coefficients
 """
-function get_DOC(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                 dict_dualvar_primalcon::Dict, poc::POC{T}) where T
+function get_DOC(dual_model::MOI.ModelLike, constr_coeffs::Dict, 
+                 dual_var_primal_con::Dict, poc::POC{T}) where T
 
     sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
 
@@ -112,7 +116,7 @@ function get_DOC(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict,
     vi_vec   = Vector{VI}(undef, dual_model.num_variables_created)
     for constr = 1:dual_model.num_variables_created # Number of constraints of the primal model
         vi = VI(constr)
-        term = dict_constr_coeffs[dict_dualvar_primalcon[vi]][2] # Accessing Ai^T
+        term = constr_coeffs[dual_var_primal_con[vi]][2] # Accessing bi
         # Add positive terms bi if dual model sense is max
         term_vec[constr] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
         # Variable index associated with term bi

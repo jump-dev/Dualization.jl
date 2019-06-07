@@ -32,7 +32,8 @@ Throws an error if an objective function is not supported to be dualized in this
 as ObjectiveFunctions can only be `AbstractScalarFunction` it only supports 
 `SingleVariableFunction` and `ScalarAffineFunction`
 """
-function supported_objective(obj_func_type::DataType)
+function supported_objective(primal_model::MOI.ModelLike)
+    obj_func_type = MOI.get(primal_model, MOI.ObjectiveFunctionType())
     if !supported_obj(obj_func_type)
         error("Objective functions of type ", obj_func_type," are not implemented")
     end
