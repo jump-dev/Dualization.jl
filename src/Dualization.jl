@@ -28,9 +28,10 @@ MOIU.@model(Model,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
+
 include("utils.jl")
 include("supported.jl")
-include("constraint_terms.jl")
+include("constraint_coefficients.jl")
 include("objective_coefficients.jl")
 include("dualcone_constraint.jl")
 include("dualize.jl")

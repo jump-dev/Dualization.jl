@@ -19,6 +19,7 @@ supported_constraint(::Any, ::Any) = false
 # List of supported constraints
 supported_constraint(::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}) where T = true
 supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
+supported_constraint(::Type{SAF{T}}, ::Type{MOI.EqualTo{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.GreaterThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.LessThan{T}}) where T = true
 #TODO

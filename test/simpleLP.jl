@@ -45,17 +45,15 @@ MOI.add_constraint(model,
 MOI.add_constraint(model, 
     MOI.ScalarAffineFunction(
         [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
-         MOI.LessThan(4.0))
+         MOI.EqualTo(4.0))
 
-MOI.add_constraint(model, 
-    MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1])], 0.0),
-         MOI.GreaterThan(0.5))
+# MOI.add_constraint(model, 
+#     MOI.SingleVariable(X[1]),
+#         MOI.LessThan(0.5))
 
-MOI.add_constraint(model, 
-    MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
-         MOI.GreaterThan(0.0))
+# MOI.add_constraint(model, 
+#     MOI.SingleVariable(X[2]),
+#          MOI.GreaterThan(0.0))
 
 MOI.set(model, 
     MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 

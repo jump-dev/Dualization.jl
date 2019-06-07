@@ -22,10 +22,8 @@ function dualize(model::MOI.ModelLike)
 
     # Add variables to the dual model and dual cone constraint.
     # Return a dictionary for dualvariables with primal constraints
-    dict_dualvar_primalcon = add_dual_model_variables(dual_model, model, constr_types)
-
-    # Get constraints terms and constraints
-    dict_constr_coeffs = get_constraints_coefficients(model, constr_types)
+    # Fill a dictionary with Primal constraint coefficients
+    dict_dualvar_primalcon, dict_constr_coeffs = add_dual_model_variables(dual_model, model, constr_types)
 
     # Get Primal Objective Coefficients
     poc = get_POC(model)
@@ -58,27 +56,6 @@ function set_dualmodel_sense(dual_model::MOI.ModelLike, model::MOI.ModelLike)
     dual_sense = (sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
     return nothing
-end
-
-"""
-    get_constraints_coefficients(model::MOI.ModelLike)
-
-Get the terms of the a0 vector and the constant b as per 
-http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
-"""
-function get_constraints_coefficients(model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
-    # Empty dictionary to store Ai and bi for each cone
-    dict_coeffs = Dict{Any, Tuple{Vector{Float64}, Float64}}()
-
-    for (F, S) in constr_types
-        num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
-        # Fill Ai and bi
-        for con_id = 1:num_cons_f_s
-            fill_constraint_terms(dict_coeffs, model, F, S, con_id)
-        end
-    end
-
-    return dict_coeffs
 end
 
 """
