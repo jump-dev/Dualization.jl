@@ -64,10 +64,10 @@ end
 
 Add the dual model equality constraints
 """
-function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+function add_dualmodel_equality_constraints(dual_model::MOI.ModelLike, model::MOI.ModelLike, dict_constr_coeffs::Dict, 
                                             dict_dualvar_primalcon::Dict, poc::POC{T}) where T
     
-    sense = MOI.get(dualmodel, MOI.ObjectiveSense()) # Get dual model sense
+    sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
 
     for var = 1:model.num_variables_created #Number of variables
         safs = Array{MOI.ScalarAffineTerm{T}}(undef, model.nextconstraintid) 
@@ -80,7 +80,7 @@ function add_dualmodel_equality_constraints(dualmodel::MOI.ModelLike, model::MOI
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
         scalar_term = (sense == MOI.MAX_SENSE ? -1 : 1) * poc.affine_terms[var]
         # Add equality constraint
-        MOI.add_constraint(dualmodel, MOI.ScalarAffineFunction(safs, scalar_term), MOI.EqualTo(0.0))
+        MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(safs, scalar_term), MOI.EqualTo(0.0))
     end
     return nothing
 end

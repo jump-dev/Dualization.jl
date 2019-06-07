@@ -5,13 +5,11 @@
 Primal objective coefficients defined as ``a_0^Tx + b_0`` as in
 http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
 
-`affine_terms` corresponds to ``a_0`` 
-`vi_vec` corresponds to ``x`` 
+`affine_terms` corresponds to ``a_0`` `` 
 `constant` corresponds to ``b_0`` 
 """
 struct PrimalObjectiveCoefficients{T}
     affine_terms::Vector{T}
-    vi_vec::Vector{VI}
     constant::T
 end
 
@@ -24,23 +22,18 @@ Get the coefficients from the primal objective function and
 return a `PrimalObjectiveCoefficients{T}`
 """
 function get_POC(model::MOI.ModelLike)
-    return _get_POC(model.objective)
+    return _get_POC(model.objective, model.num_variables_created)
 end
 
-function _get_POC(obj_fun::MOI.ScalarAffineFunction{T}) where T
+function _get_POC(obj_fun::MOI.ScalarAffineFunction{T}, num_variables::Int) where T
     # Empty vector a0 with the number of variables
-    num_terms = length(obj_fun.terms)
-    a0 = Vector{T}(undef, num_terms)
-    vi = Vector{VI}(undef, num_terms)
+    a0 = zeros(T, num_variables)
     # Fill a0 for each term in the objective function
-    i = 1
     for term in obj_fun.terms
-        a0[i] = term.coefficient # scalar affine coefficient
-        vi[i] = term.variable_index # variable_index
-        i += 1
+        a0[term.variable_index.value] = term.coefficient # scalar affine coefficient
     end
     b0 = obj_fun.constant # Constant term of the objective function
-    PrimalObjectiveCoefficients(a0, vi, b0)
+    PrimalObjectiveCoefficients(a0, b0)
 end
 
 # You can add other generic _get_POC functions here

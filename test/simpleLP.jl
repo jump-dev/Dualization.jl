@@ -35,17 +35,22 @@ min -4x1 -3x2 -1
 
 model = Model{Float64}()
 
-X = MOI.add_variables(model, 2)
+X = MOI.add_variables(model, 3)
 
 MOI.add_constraint(model, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
-         MOI.LessThan(4.0))
+        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
+         MOI.GreaterThan(4.0))
 
 MOI.add_constraint(model, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
-         MOI.EqualTo(4.0))
+        [MOI.ScalarAffineTerm(4.0, X[1]), MOI.ScalarAffineTerm(3.0, X[3])], 1.0),
+         MOI.GreaterThan(4.0))
+
+# MOI.add_constraint(model, 
+#     MOI.ScalarAffineFunction(
+#         [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
+#          MOI.EqualTo(9.0))
 
 # MOI.add_constraint(model, 
 #     MOI.SingleVariable(X[1]),
@@ -53,27 +58,33 @@ MOI.add_constraint(model,
 
 # MOI.add_constraint(model, 
 #     MOI.SingleVariable(X[2]),
-#          MOI.GreaterThan(0.0))
+#          MOI.GreaterThan(20.0))
+
+# MOI.add_constraint(model, 
+#     MOI.SingleVariable(X[3]),
+#          MOI.EqualTo(0.5))
 
 MOI.set(model, 
     MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-    MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0)
+    MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0, 3.0], [X[1], X[3]]), -1.0)
     )
 
 MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
-using GLPK
+using Clp
 model1 = JuMP.Model()
 MOI.copy_to(JuMP.backend(model1), model)
-set_optimizer(model1, with_optimizer(GLPK.Optimizer))
+set_optimizer(model1, with_optimizer(Clp.Optimizer))
 optimize!(model1)
+termstatus1 = JuMP.termination_status(model1)
 obj1 = JuMP.objective_value(model1)
 
 model2 = JuMP.Model()
 MOI.copy_to(JuMP.backend(model2), dualize(model))
-set_optimizer(model2, with_optimizer(GLPK.Optimizer))
+set_optimizer(model2, with_optimizer(Clp.Optimizer))
 optimize!(model2)
+termstatus2 = JuMP.termination_status(model2)
 obj2 = JuMP.objective_value(model2)
 
-
+@show termstatus1, termstatus2
 @show obj1, obj2
