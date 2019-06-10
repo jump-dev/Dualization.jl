@@ -5,11 +5,9 @@ struct PrimalDualLink
     dual_var_primal_con::Dict{VI, CI}
 end
 
-const PDLink = PrimalDualLink
-
 struct DualProblem
     dual_model::MOI.ModelLike 
-    pd_link::PDLink
+    primal_dual_link::PrimalDualLink
 end
 
 """
@@ -40,9 +38,8 @@ function dualize(primal_model::MOI.ModelLike)
     primal_obj_coeffs = get_primal_obj_coeffs(primal_model)
 
     # Add dual equality constraint and get the link dictionary
-    num_primal_variables = primal_model.num_variables_created
     primal_var_dual_con = add_dual_model_equality_constraints(dual_model, con_coeffs, dual_var_primal_con, 
-                                                              primal_obj_coeffs, num_primal_variables)
+                                                              primal_obj_coeffs, primal_model.num_variables_created)
 
     # Fill Dual Objective Coefficients Struct
     dual_obj_coeffs = get_dual_obj_coeffs(dual_model, con_coeffs, dual_var_primal_con, primal_obj_coeffs)
@@ -50,5 +47,5 @@ function dualize(primal_model::MOI.ModelLike)
     # Add dual objective to the model
     set_dual_obj_coeffs(dual_model, dual_obj_coeffs)
 
-    return DualProblem(dual_model, PDLink(primal_var_dual_con, dual_var_primal_con))
+    return DualProblem(dual_model, PrimalDualLink(primal_var_dual_con, dual_var_primal_con))
 end

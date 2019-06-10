@@ -58,14 +58,14 @@ function _get_primal_obj_coeffs(obj_fun::SAF{T}) where T
     PrimalObjectiveCoefficients(a0, vi, b0)
 end
 
-function _get_POC(obj_fun::SVF)
+function _get_primal_obj_coeffs(obj_fun::SVF)
     a0 = [1.0] # Equals one on the SingleVariableFunction
     vi = [obj_fun.variable]
     b0 = 0.0 # SVF has no b0
     PrimalObjectiveCoefficients(a0, vi, b0)
 end
 
-# You can add other generic _get_POC functions here
+# You can add other generic _get_primal_obj_coeffs functions here
 
 
 # Duals

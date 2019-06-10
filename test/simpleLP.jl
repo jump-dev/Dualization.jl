@@ -32,37 +32,40 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 >= 0
 =#
+function create_primal()
+    primal_model = Model{Float64}()
 
-primal_model = Model{Float64}()
+    X = MOI.add_variables(primal_model, 2)
 
-X = MOI.add_variables(primal_model, 2)
+    MOI.add_constraint(primal_model, 
+        MOI.ScalarAffineFunction(
+            [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
+            MOI.LessThan(4.0))
 
-MOI.add_constraint(primal_model, 
-    MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
-         MOI.LessThan(4.0))
+    MOI.add_constraint(primal_model, 
+        MOI.ScalarAffineFunction(
+            [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
+            MOI.LessThan(4.0))
 
-MOI.add_constraint(primal_model, 
-    MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
-         MOI.LessThan(4.0))
+    MOI.add_constraint(primal_model, 
+        MOI.SingleVariable(X[1]),
+            MOI.GreaterThan(1.0))
 
-MOI.add_constraint(primal_model, 
-    MOI.SingleVariable(X[1]),
-         MOI.GreaterThan(1.0))
+    MOI.add_constraint(primal_model, 
+        MOI.SingleVariable(X[1]),
+            MOI.GreaterThan(3.0))
 
-MOI.add_constraint(primal_model, 
-    MOI.SingleVariable(X[1]),
-         MOI.GreaterThan(3.0))
+    MOI.set(primal_model, 
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0], [X[2]]), -1.0)
+        )
 
-MOI.set(primal_model, 
-    MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-    MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0], [X[2]]), -1.0)
-    )
+    MOI.set(primal_model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    return primal_model
+end
 
-MOI.set(primal_model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-
-dualprob = dualize(primal_model)
+@benchmark primal_model = create_primal()
+@benchmark dualmodel = dualize(primal_model)
 
 using Clp
 model1 = JuMP.Model()

@@ -28,7 +28,7 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
     # Considering ax + b >= l should be interpreted as ax + b - l in R_+
     # the term bi should be b - l
     bi = saf.constant - greaterthan.lower # Fill bi
-    return push!(dict_coeffs, ci => (Ai, bi)) # return ConstraintIndex
+    return push!(dict_coeffs, ci => (Ai, bi)) 
 end
 
 function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
@@ -48,7 +48,7 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
     # Considering ax + b <= u should be interpreted as ax + b - u in R_-
     # the term bi should be b - u
     bi = saf.constant - lessthan.upper # Fill bi
-    return push!(dict_coeffs, ci => (Ai, bi)) # return ConstraintIndex
+    return push!(dict_coeffs, ci => (Ai, bi)) 
 end
 
 function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
@@ -68,7 +68,7 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
     # Considering ax + b == v should be interpreted as ax + b - v in Zeros
     # the term bi should be b - v
     bi = saf.constant - equalto.value # Fill bi
-    return push!(dict_coeffs, ci => (Ai, bi)) # return ConstraintIndex
+    return push!(dict_coeffs, ci => (Ai, bi)) 
 end
 
 
@@ -90,11 +90,11 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
     # Considering x >= l should be interpreted as x - c in R_+
     # the term bi should be - l
     bi =  - greaterthan.lower # Fill bi
-    return push!(dict_coeffs, ci => (Ai, bi)) # return ConstraintIndex
+    return push!(dict_coeffs, ci => (Ai, bi)) 
 end
 
 function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
-    ::Type{SVF}, ::Type{MOI.LessThan{T}}, con_id::Int) where T
+                                      ::Type{SVF}, ::Type{MOI.LessThan{T}}, con_id::Int) where T
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
@@ -110,7 +110,7 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
     # Considering x <= u should be interpreted as x - u in R_-
     # the term bi should be - u
     bi =  - lessthan.upper # Fill bi
-    return push!(dict_coeffs, ci => (Ai, bi)) # return ConstraintIndex
+    return push!(dict_coeffs, ci => (Ai, bi)) 
 end
 
 function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
@@ -130,5 +130,5 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
     # Considering x == v should be interpreted as x - v in Zeros
     # the term bi should be - v
     bi =  - equalto.value # Fill bi
-    return push!(dict_coeffs, ci => (Ai, bi)) # return ConstraintIndex
+    return push!(dict_coeffs, ci => (Ai, bi)) 
 end
