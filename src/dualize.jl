@@ -22,8 +22,8 @@ function dualize(primal_model::MOI.ModelLike)
     supported_objective(primal_model) 
 
     # Query all constraint types of the model
-    constr_types = MOI.get(primal_model, MOI.ListOfConstraints())
-    supported_constraints(constr_types) # Throws an error if constraint cannot be dualized
+    con_types = MOI.get(primal_model, MOI.ListOfConstraints())
+    supported_constraints(con_types) # Throws an error if constraint cannot be dualized
     
     # Crates an empty dual model
     dual_model = Model{Float64}()
@@ -34,20 +34,21 @@ function dualize(primal_model::MOI.ModelLike)
     # Add variables to the dual model and dual cone constraint.
     # Return a dictionary for dualvariables with primal constraints
     # Return a dictionary with primal constraint coefficients
-    dual_var_primal_con, constr_coeffs = add_dual_model_variables(dual_model, primal_model, constr_types)
+    dual_var_primal_con, con_coeffs = add_dual_model_variables(dual_model, primal_model, con_types)
 
     # Get Primal Objective Coefficients
-    poc = get_POC(primal_model)
+    primal_obj_coeffs = get_primal_obj_coeffs(primal_model)
 
     # Add dual equality constraint and get the link dictionary
     num_primal_variables = primal_model.num_variables_created
-    primal_var_dual_con = add_dual_model_equality_constraints(dual_model, constr_coeffs, dual_var_primal_con, poc, num_primal_variables)
+    primal_var_dual_con = add_dual_model_equality_constraints(dual_model, con_coeffs, dual_var_primal_con, 
+                                                              primal_obj_coeffs, num_primal_variables)
 
     # Fill Dual Objective Coefficients Struct
-    doc = get_DOC(dual_model, constr_coeffs, dual_var_primal_con, poc)
+    dual_obj_coeffs = get_dual_obj_coeffs(dual_model, con_coeffs, dual_var_primal_con, primal_obj_coeffs)
 
     # Add dual objective to the model
-    set_DOC(dual_model, doc)
+    set_dual_obj_coeffs(dual_model, dual_obj_coeffs)
 
     return DualProblem(dual_model, PDLink(primal_var_dual_con, dual_var_primal_con))
 end

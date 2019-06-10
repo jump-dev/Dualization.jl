@@ -1,10 +1,10 @@
 """
-    supported_constraints(constr_types::Vector{Tuple{DataType, DataType}})
+    supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
 
 Throws an error if a constraint is not supported to be dualized 
 """
-function supported_constraints(constr_types::Vector{Tuple{DataType, DataType}})
-    for (F, S) in constr_types
+function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
+    for (F, S) in con_types
         if !supported_constraint(F, S)
             error("Constraints of funtion ", F, " in the Set ", S," are not implemented")
         end

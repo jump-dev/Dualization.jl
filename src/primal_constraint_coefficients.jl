@@ -16,12 +16,12 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
-    constr = model.moi_scalaraffinefunction.moi_greaterthan[con_id] # Get constraint informations
+    con = model.moi_scalaraffinefunction.moi_greaterthan[con_id] # Get constraint informations
 
     # Access constraint information
-    ci          = constr[1]
-    saf         = constr[2] # Access the SAF
-    greaterthan = constr[3] # Access the GreatherThan set
+    ci          = con[1]
+    saf         = con[2] # Access the SAF
+    greaterthan = con[3] # Access the GreatherThan set
 
     # Fill Ai
     fillAi(Ai, saf)
@@ -36,12 +36,12 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
-    constr = model.moi_scalaraffinefunction.moi_lessthan[con_id] # Get constraint informations
+    con = model.moi_scalaraffinefunction.moi_lessthan[con_id] # Get constraint informations
 
     # Access constraint information
-    ci       = constr[1]
-    saf      = constr[2] # Access the SAF
-    lessthan = constr[3] # Access the LessThan set
+    ci       = con[1]
+    saf      = con[2] # Access the SAF
+    lessthan = con[3] # Access the LessThan set
 
     # Fill Ai
     fillAi(Ai, saf)
@@ -56,12 +56,12 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
-    constr = model.moi_scalaraffinefunction.moi_equalto[con_id] # Get constraint informations
+    con = model.moi_scalaraffinefunction.moi_equalto[con_id] # Get constraint informations
 
     # Access constraint information
-    ci      = constr[1]
-    saf     = constr[2] # Access the SAF
-    equalto = constr[3] # Access the EqualTo set
+    ci      = con[1]
+    saf     = con[2] # Access the SAF
+    equalto = con[3] # Access the EqualTo set
 
     # Fill Ai
     fillAi(Ai, saf)
@@ -78,12 +78,12 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
-    constr = model.moi_singlevariable.moi_greaterthan[con_id] # Get constraint informations
+    con = model.moi_singlevariable.moi_greaterthan[con_id] # Get constraint informations
 
     # Access constraint information
-    ci          = constr[1]
-    svf         = constr[2] # Access the SVF
-    greaterthan = constr[3] # Access the GreatherThan set
+    ci          = con[1]
+    svf         = con[2] # Access the SVF
+    greaterthan = con[3] # Access the GreatherThan set
 
     # Fill Ai
     fillAi(Ai, svf)
@@ -98,12 +98,12 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
-    constr = model.moi_singlevariable.moi_lessthan[con_id] # Get constraint informations
+    con = model.moi_singlevariable.moi_lessthan[con_id] # Get constraint informations
 
     # Access constraint information
-    ci       = constr[1]
-    svf      = constr[2] # Access the SVF
-    lessthan = constr[3] # Access the LessThan set
+    ci       = con[1]
+    svf      = con[2] # Access the SVF
+    lessthan = con[3] # Access the LessThan set
 
     # Fill Ai
     fillAi(Ai, svf)
@@ -118,12 +118,12 @@ function fill_constraint_coefficients(dict_coeffs::Dict, model::MOI.ModelLike,
 
     # Create zeros vector for Ai terms
     Ai = zeros(Float64, model.num_variables_created)
-    constr = model.moi_singlevariable.moi_equalto[con_id] # Get constraint informations
+    con = model.moi_singlevariable.moi_equalto[con_id] # Get constraint informations
 
     # Access constraint information
-    ci      = constr[1]
-    svf     = constr[2] # Access the SVF
-    equalto = constr[3] # Access the EqualTo set
+    ci      = con[1]
+    svf     = con[2] # Access the SVF
+    equalto = con[3] # Access the EqualTo set
 
     # Fill Ai
     fillAi(Ai, svf)

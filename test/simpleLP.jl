@@ -127,9 +127,7 @@ optimize!(model2)
 termstatus2 = JuMP.termination_status(model2)
 obj2 = JuMP.objective_value(model2)
 
-
-@show termstatus1, termstatus2
-@show obj1, obj2
+@show obj_val, obj2
 
 
 dualprob2 = dualize(dualprob.dual_model)

@@ -32,19 +32,17 @@ struct PrimalObjectiveCoefficients{T}
     constant::T
 end
 
-const POC{T} = PrimalObjectiveCoefficients{T}
-
 """
-        get_POC(model::MOI.ModelLike)
+    get_primal_obj_coeffs(model::MOI.ModelLike)
 
 Get the coefficients from the primal objective function and
 return a `PrimalObjectiveCoefficients{T}`
 """
-function get_POC(primal_sense::MOI.ModelLike)
-    return _get_POC(primal_sense.objective)
+function get_primal_obj_coeffs(primal_sense::MOI.ModelLike)
+    return _get_primal_obj_coeffs(primal_sense.objective)
 end
 
-function _get_POC(obj_fun::SAF{T}) where T
+function _get_primal_obj_coeffs(obj_fun::SAF{T}) where T
     # Empty vector a0 with the number of variables
     num_terms = length(obj_fun.terms)
     a0 = Vector{T}(undef, num_terms)
@@ -87,41 +85,39 @@ struct DualObjectiveCoefficients{T}
     constant::T
 end
 
-const DOC{T} = DualObjectiveCoefficients{T}
-
 """
-        set_DOC(dualmodel::MOI.ModelLike, doc::DOC{T}) where T
+        set_DOC(dual_model::MOI.ModelLike, doc::DualObjectiveCoefficients{T}) where T
 
 Add the objective function to the dual model
 """
-function set_DOC(dual_model::MOI.ModelLike, doc::DOC{T}) where T
+function set_dual_obj_coeffs(dual_model::MOI.ModelLike, dual_obj_coeffs::DualObjectiveCoefficients{T}) where T
     # Set dual model objective function
     MOI.set(dual_model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),  
-            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(doc.affine_terms, doc.vi_vec), doc.constant))
+            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(dual_obj_coeffs.affine_terms, dual_obj_coeffs.vi_vec), dual_obj_coeffs.constant))
     return nothing
 end
 
 """
-        get_DOC(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                dict_dualvar_primalcon::Dict, poc::POC{T}) where T
+        get_dual_obj_coeffs(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
+                            dict_dualvar_primalcon::Dict, poc::POC{T}) where T
 
 Get dual model objective function coefficients
 """
-function get_DOC(dual_model::MOI.ModelLike, constr_coeffs::Dict, 
-                 dual_var_primal_con::Dict, poc::POC{T}) where T
+function get_dual_obj_coeffs(dual_model::MOI.ModelLike, con_coeffs::Dict, 
+                 dual_var_primal_con::Dict, primal_obj_coeffs::PrimalObjectiveCoefficients{T}) where T
 
     sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
 
     term_vec = Vector{T}(undef, dual_model.num_variables_created)
     vi_vec   = Vector{VI}(undef, dual_model.num_variables_created)
-    for constr = 1:dual_model.num_variables_created # Number of constraints of the primal model
-        vi = VI(constr)
-        term = constr_coeffs[dual_var_primal_con[vi]][2] # Accessing bi
+    for con = 1:dual_model.num_variables_created # Number of constraints of the primal model
+        vi = VI(con)
+        term = con_coeffs[dual_var_primal_con[vi]][2] # Accessing bi
         # Add positive terms bi if dual model sense is max
-        term_vec[constr] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
+        term_vec[con] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
         # Variable index associated with term bi
-        vi_vec[constr] = vi
+        vi_vec[con] = vi
     end
     non_zero_terms = findall(!iszero, term_vec)
-    return DOC(term_vec[non_zero_terms], vi_vec[non_zero_terms], poc.constant)
+    return DualObjectiveCoefficients{T}(term_vec[non_zero_terms], vi_vec[non_zero_terms], primal_obj_coeffs.constant)
 end
