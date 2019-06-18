@@ -6,7 +6,7 @@
 Add the dual model equality constraints
 """
 function add_dual_model_equality_constraints(dual_model::MOI.ModelLike, con_coeffs::Dict, 
-                                             dual_var_primal_con::Dict, primal_obj_coeffs::PrimalObjectiveCoefficients{T}, 
+                                             dual_var_primal_con::Dict, primal_obj_coeffs::PrimalObjective{T}, 
                                              num_primal_var::Int) where T
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense

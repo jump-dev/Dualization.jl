@@ -1,13 +1,13 @@
 export dualize
 
-struct PrimalDualLink
+struct PrimalDualMap
     primal_var_dual_con::Dict{VI, CI}
     dual_var_primal_con::Dict{VI, CI}
 end
 
 struct DualProblem
     dual_model::MOI.ModelLike 
-    primal_dual_link::PrimalDualLink
+    primal_dual_map::PrimalDualMap
 end
 
 """
@@ -47,5 +47,5 @@ function dualize(primal_model::MOI.ModelLike)
     # Add dual objective to the model
     set_dual_obj_coeffs(dual_model, dual_obj_coeffs)
 
-    return DualProblem(dual_model, PrimalDualLink(primal_var_dual_con, dual_var_primal_con))
+    return DualProblem(dual_model, PrimalDualMap(primal_var_dual_con, dual_var_primal_con))
 end
