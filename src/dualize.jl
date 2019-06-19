@@ -29,10 +29,10 @@ function dualize(primal_model::MOI.ModelLike)
     # Set the dual model objective sense
     set_dual_model_sense(dual_model, primal_model)
 
+    # Add variables to the dual model and their dual cone constraint.
+    # Return a dictionary for dual variables with primal constraints
     dual_var_primal_con = add_dual_model_vars_in_dual_cones(dual_model, primal_model, con_types)
 
-    # Add variables to the dual model and dual cone constraint.
-    # Return a dictionary for dualvariables with primal constraints
     # Return a dictionary with primal constraint coefficients
     con_coeffs = add_dual_model_variables(dual_model, primal_model, con_types)
 
