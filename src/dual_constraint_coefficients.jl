@@ -6,7 +6,7 @@
 Add the dual model equality constraints
 """
 function add_dual_model_equality_constraints(dual_model::MOI.ModelLike, con_coeffs::Dict, 
-                                             dual_var_primal_con::Dict, primal_obj_coeffs::PrimalObjective{T}, 
+                                             dual_var_primal_con::Dict, primal_objective::PrimalObjective{T}, 
                                              num_primal_var::Int) where T
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
@@ -22,8 +22,8 @@ function add_dual_model_equality_constraints(dual_model::MOI.ModelLike, con_coef
         end
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        if var == primal_obj_coeffs.vi_vec[scalar_term_index].value
-            scalar_term_value = primal_obj_coeffs.affine_terms[scalar_term_index]
+        if var == primal_objective.saf.terms[scalar_term_index].variable_index.value
+            scalar_term_value = primal_objective.saf.terms[scalar_term_index].coefficient
             scalar_term_index += 1
         else # In this case this variable is not on the objective function
             scalar_term_value = zero(T)
@@ -43,19 +43,19 @@ end
 Add dual model with variables and dual cone constraints. 
 Creates dual variables => primal constraints dict
 """
-function add_dual_model_variables(dual_model::MOI.ModelLike, model::MOI.ModelLike, con_types::Vector{Tuple{DataType, DataType}})
+function add_dual_model_variables(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, con_types::Vector{Tuple{DataType, DataType}})
     # Adds the dual variables to the dual model, assumining the number of constraints of the model
     # is model.nextconstraintid
-    MOI.add_variables(dual_model, model.nextconstraintid) 
+    MOI.add_variables(dual_model, primal_model.nextconstraintid) 
     dual_var_primal_con = Dict{VI, CI}()
     con_coeffs = Dict{CI, Tuple{Vector{Float64}, Float64}}()
     i = 1::Int
     for (F, S) in con_types
-        num_con_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
+        num_con_f_s = MOI.get(primal_model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
         for con_id = 1:num_con_f_s
             vi = VI(i)
-            ci = get_ci(model, F, S, con_id)
-            fill_constraint_coefficients(con_coeffs, model, F, S, con_id)
+            ci = get_ci(primal_model, F, S, con_id)
+            fill_constraint_coefficients(con_coeffs, primal_model, F, S, con_id)
             push!(dual_var_primal_con, vi => ci) # Fill the dual variables primal constraints dictionary
             add_dualcone_constraint(dual_model, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
             i += 1

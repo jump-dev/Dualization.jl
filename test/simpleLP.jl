@@ -32,40 +32,40 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 >= 0
 =#
-function create_primal()
-    primal_model = Model{Float64}()
 
-    X = MOI.add_variables(primal_model, 2)
+primal_model = Model{Float64}()
 
-    MOI.add_constraint(primal_model, 
-        MOI.ScalarAffineFunction(
-            [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
-            MOI.LessThan(4.0))
+X = MOI.add_variables(primal_model, 2)
 
-    MOI.add_constraint(primal_model, 
-        MOI.ScalarAffineFunction(
-            [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
-            MOI.LessThan(4.0))
+g = MOI.VectorAffineFunction(MOI.VectorAffineTerm.([3, 3],
+                                                    MOI.ScalarAffineTerm.([5.0, 2.0], X)),
+                                                    [3.0, 1.0, 4.0])
 
-    MOI.add_constraint(primal_model, 
-        MOI.SingleVariable(X[1]),
-            MOI.GreaterThan(1.0))
+MOI.add_constraint(primal_model, g, MOI.Zeros(0))
 
-    MOI.add_constraint(primal_model, 
-        MOI.SingleVariable(X[1]),
-            MOI.GreaterThan(3.0))
+MOI.add_constraint(primal_model, 
+    MOI.ScalarAffineFunction(
+        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
+        MOI.LessThan(4.0))
 
-    MOI.set(primal_model, 
-        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0], [X[2]]), -1.0)
-        )
+MOI.add_constraint(primal_model, 
+    MOI.SingleVariable(X[1]),
+        MOI.GreaterThan(1.0))
 
-    MOI.set(primal_model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-    return primal_model
-end
+MOI.add_constraint(primal_model, 
+    MOI.SingleVariable(X[1]),
+        MOI.GreaterThan(3.0))
 
-@benchmark primal_model = create_primal()
-@benchmark dualmodel = dualize(primal_model)
+MOI.set(primal_model, 
+    MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
+    MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0], [X[2]]), -1.0)
+    )
+
+MOI.set(primal_model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+
+
+primal_model
+dualmodel = dualize(primal_model)
 
 using Clp
 model1 = JuMP.Model()
@@ -76,7 +76,7 @@ termstatus1 = JuMP.termination_status(model1)
 obj1 = JuMP.objective_value(model1)
 
 model2 = JuMP.Model()
-MOI.copy_to(JuMP.backend(model2), dualprob.dual_model)
+MOI.copy_to(JuMP.backend(model2), dualmodel.dual_model)
 set_optimizer(model2, with_optimizer(Clp.Optimizer))
 optimize!(model2)
 termstatus2 = JuMP.termination_status(model2)

@@ -23,7 +23,8 @@ supported_constraint(::Type{SAF{T}}, ::Type{MOI.EqualTo{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.GreaterThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.LessThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.EqualTo{T}}) where T = true
-#TODO
+#VAF
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
 
 """
     supported_objective(obj_func_type::DataType)

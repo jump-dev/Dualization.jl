@@ -36,20 +36,20 @@ end
 Get the coefficients from the primal objective function and
 return a `PrimalObjectiveCoefficients{T}`
 """
-function get_primal_obj_coeffs(primal_model::MOI.ModelLike)
-    return _get_primal_obj_coeffs(primal_model.objective)
+function get_primal_objective(primal_model::MOI.ModelLike)
+    return _get_primal_objective(primal_model.objective)
 end
 
-function _get_primal_obj_coeffs(obj_fun::SAF{T}) where T
+function _get_primal_objective(obj_fun::SAF{T}) where T
     return PrimalObjective(obj_fun)
 end
 
-function _get_primal_obj_coeffs(obj_fun::SVF)
+function _get_primal_objective(obj_fun::SVF)
     a0 = [1.0] # Equals one on the SingleVariableFunction
     vi = [obj_fun.variable]
     b0 = 0.0 # SVF has no b0
     saf = MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(a0, vi), b0)
-    PrimalObjective(saf)
+    return PrimalObjective(saf)
 end
 
 # You can add other generic _get_primal_obj_coeffs functions here
@@ -67,9 +67,7 @@ http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
 `constant` corresponds to ``b_0`` 
 """
 struct DualObjective{T}
-    affine_terms::Vector{T}
-    vi_vec::Vector{VI}
-    constant::T
+    saf::SAF{T}
 end
 
 """
@@ -77,10 +75,10 @@ end
 
 Add the objective function to the dual model
 """
-function set_dual_objective(dual_model::MOI.ModelLike, dual_obj::DualObjective{T}) where T
+function set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T}) where T
     # Set dual model objective function
     MOI.set(dual_model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),  
-            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(dual_obj.affine_terms, dual_obj_coeffs.vi_vec), dual_obj.constant))
+            dual_objective.saf)
     return nothing
 end
 
@@ -90,8 +88,8 @@ end
 
 Get dual model objective function coefficients
 """
-function get_dual_obj_coeffs(dual_model::MOI.ModelLike, con_coeffs::Dict, 
-                 dual_var_primal_con::Dict, primal_obj::PrimalObjective{T}) where T
+function get_dual_objective(dual_model::MOI.ModelLike, con_coeffs::Dict, 
+                 dual_var_primal_con::Dict, primal_objective::PrimalObjective{T}) where T
 
     sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
 
@@ -106,5 +104,9 @@ function get_dual_obj_coeffs(dual_model::MOI.ModelLike, con_coeffs::Dict,
         vi_vec[con] = vi
     end
     non_zero_terms = findall(!iszero, term_vec)
-    return DualObjective{T}(term_vec[non_zero_terms], vi_vec[non_zero_terms], primal_obj.constant)
+    saf_dual_objective = MOI.ScalarAffineFunction(
+                         MOI.ScalarAffineTerm.(term_vec[non_zero_terms], 
+                                               vi_vec[non_zero_terms]), 
+                                               primal_objective.saf.constant)
+    return DualObjective{T}(saf_dual_objective)
 end
