@@ -28,7 +28,7 @@ MOIU.@model(Model,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-
+cd("src")
 include("utils.jl")
 include("supported.jl")
 include("objective_coefficients.jl")

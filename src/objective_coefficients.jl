@@ -21,10 +21,6 @@ end
 
 Primal objective coefficients defined as ``a_0^Tx + b_0`` as in
 http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
-
-`affine_terms` corresponds to ``a_0``
-`vi_vec` corresponds to ``x``
-`constant` corresponds to ``b_0`` 
 """
 struct PrimalObjective{T}
     saf::SAF{T}
@@ -61,10 +57,6 @@ end
 
 Dual objective coefficients defined as ``b_i^Ty + b_0`` or ``-b_i^Ty + b_0`` as in
 http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
-
-`affine_terms` corresponds to ``b_i`` 
-`vi_vec` corresponds to ``y`` 
-`constant` corresponds to ``b_0`` 
 """
 struct DualObjective{T}
     saf::SAF{T}
