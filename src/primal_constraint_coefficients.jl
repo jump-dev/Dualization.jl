@@ -1,3 +1,62 @@
+# """
+# Add dual model with variables and dual cone constraints. 
+# Creates dual variables => primal constraints dict
+# """
+# function get_primal_constraint_coeffs(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, con_types::Vector{Tuple{DataType, DataType}})
+#     con_coeffs = Dict{CI, Tuple{Vector{Float64}, Float64}}()
+#     (F, S) = con_types[1]
+#     for (F, S) in con_types
+#         num_con_f_s = MOI.get(primal_model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
+#         for con_id = 1:num_con_f_s
+#             fill_constraint_coefficients(con_coeffs, primal_model, F, S, con_id)
+#             push!(dual_var_primal_con, vi => ci) # Fill the dual variables primal constraints dictionary
+#             add_dualcone_constraint(dual_model, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
+#             i += 1
+#         end
+#     end
+#     return dual_var_primal_con, con_coeffs
+# end
+
+# Get scalar term of a constraint
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SAF{T}}, S::Type{MOI.GreaterThan{T}}) where T
+    return get_function(model, F, S, con_id).constant - get_set(model, F, S, con_id).lower
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SAF{T}}, S::Type{MOI.LessThan{T}}) where T
+    return get_function(model, F, S, con_id).constant - get_set(model, F, S, con_id).upper
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SAF{T}}, S::Type{MOI.EqualTo{T}}) where T
+    return get_function(model, F, S, con_id).constant - get_set(model, F, S, con_id).value
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SVF}, S::Type{MOI.GreaterThan{T}}) where T
+    return - get_set(model, F, S, con_id).lower
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SVF}, S::Type{MOI.LessThan{T}}) where T
+    return - get_set(model, F, S, con_id).upper
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SVF}, S::Type{MOI.EqualTo{T}}) where T
+    return - get_set(model, F, S, con_id).value
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{VAF{T}}, S::Union{Type{MOI.Nonnegatives},
+                                                   Type{MOI.Nonpositives},
+                                                   Type{MOI.Zeros}}) where T
+    return get_function(model, F, S, con_id).constants
+end
+
+
+
 function fillAi(Ai::Vector{T}, saf::SAF{T}) where T
     for term in saf.terms
         Ai[term.variable_index.value] = term.coefficient #Fill Ai
