@@ -80,25 +80,26 @@ end
 
 Get dual model objective function coefficients
 """
-function get_dual_objective(dual_model::MOI.ModelLike, con_scalar_coeffs::Dict, 
-                            dual_var_primal_con::Dict, primal_objective::PrimalObjective{T}) where T
+function get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Dict,
+                            primal_objective::PrimalObjective{T}) where T
 
     sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
 
-    term_vec = Vector{T}(undef, dual_model.num_variables_created)
-    vi_vec   = Vector{VI}(undef, dual_model.num_variables_created)
-    for var = 1:dual_model.num_variables_created # Number of constraints of the primal model
-        vi = VI(var)
-        terms = con_scalar_coeffs[dual_var_primal_con[vi]] # Accessing bi
+    num_objective_terms = length(dual_obj_affine_terms)
+    term_vec = Vector{T}(undef, num_objective_terms)
+    vi_vec   = Vector{VI}(undef, num_objective_terms)
+    i::Int = 1
+    for var in keys(dual_obj_affine_terms) # Number of constraints of the primal model
+        term = dual_obj_affine_terms[var]
         # Add positive terms bi if dual model sense is max
-        term_vec[con] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
+        term_vec[i] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
         # Variable index associated with term bi
-        vi_vec[con] = vi
+        vi_vec[i] = var
+        i += 1
     end
-    non_zero_terms = findall(!iszero, term_vec)
     saf_dual_objective = MOI.ScalarAffineFunction(
-                         MOI.ScalarAffineTerm.(term_vec[non_zero_terms], 
-                                               vi_vec[non_zero_terms]), 
+                         MOI.ScalarAffineTerm.(term_vec, 
+                                               vi_vec), 
                                                primal_objective.saf.constant)
     return DualObjective{T}(saf_dual_objective)
 end

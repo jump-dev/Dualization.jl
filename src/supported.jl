@@ -24,6 +24,8 @@ supported_constraint(::Type{SVF}, ::Type{MOI.GreaterThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.LessThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.EqualTo{T}}) where T = true
 #VAF
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonpositives}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonnegatives}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
 
 """

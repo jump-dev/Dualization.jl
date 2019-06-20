@@ -129,3 +129,43 @@ end
 function get_ci_row_dimension(model::MOI.ModelLike, F::Type{VAF{T}}, S::Type{MOI.Zeros}, con_id::Int) where T
     return MOI.output_dimension(get_function(model, F, S, con_id))
 end
+
+
+
+# Functions to get scalar terms of a Function - in- Set
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SAF{T}}, S::Type{MOI.GreaterThan{T}}) where T
+    return get_function(model, F, S, con_id).constant - get_set(model, F, S, con_id).lower
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SAF{T}}, S::Type{MOI.LessThan{T}}) where T
+    return get_function(model, F, S, con_id).constant - get_set(model, F, S, con_id).upper
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SAF{T}}, S::Type{MOI.EqualTo{T}}) where T
+    return get_function(model, F, S, con_id).constant - get_set(model, F, S, con_id).value
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SVF}, S::Type{MOI.GreaterThan{T}}) where T
+    return - get_set(model, F, S, con_id).lower
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SVF}, S::Type{MOI.LessThan{T}}) where T
+    return - get_set(model, F, S, con_id).upper
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{SVF}, S::Type{MOI.EqualTo{T}}) where T
+    return - get_set(model, F, S, con_id).value
+end
+
+function get_scalar_term(model::MOI.ModelLike, con_id::Int,
+                         F::Type{VAF{T}}, S::Union{Type{MOI.Nonnegatives},
+                                                   Type{MOI.Nonpositives},
+                                                   Type{MOI.Zeros}}) where T
+    return get_function(model, F, S, con_id).constants
+end

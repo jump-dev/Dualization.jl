@@ -37,15 +37,10 @@ function dualize(primal_model::MOI.ModelLike)
     dual_var_primal_con, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, con_types)
     
     # Fill Dual Objective Coefficients Struct
-    dual_obj_coeffs = get_dual_objective(dual_model, con_scalar_coeffs, dual_var_primal_con, primal_objective)
+    dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)
 
     # Add dual objective to the model
-    set_dual_objective(dual_model, dual_obj_coeffs)
-
-
-
-    # Return a dictionary with primal constraint coefficients
-    con_coeffs = add_dual_model_variables(dual_model, primal_model, con_types)
+    set_dual_objective(dual_model, dual_objective)
 
     # Add dual equality constraint and get the link dictionary
     primal_var_dual_con = add_dual_model_equality_constraints(dual_model, con_coeffs, dual_var_primal_con, 
