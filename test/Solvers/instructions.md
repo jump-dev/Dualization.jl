@@ -1,0 +1,1 @@
+This tests only matter to know if primal optimal == dual optimal and other kinds of properties

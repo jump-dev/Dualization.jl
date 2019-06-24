@@ -24,7 +24,7 @@ function dualize(primal_model::MOIU.AbstractModel{T}) where T
     supported_constraints(con_types) # Throws an error if constraint cannot be dualized
     
     # Crates an empty dual model
-    dual_model = DualModel{T}()
+    dual_model = DualizableModel{T}()
     
     # Set the dual model objective sense
     set_dual_model_sense(dual_model, primal_model)

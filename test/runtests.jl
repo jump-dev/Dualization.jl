@@ -1,13 +1,13 @@
-using Dualization, Test
+push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+using Pkg
+Pkg.activate(".") # Just to make sure to use JuMP 0.19.1
+using MathOptInterface, Dualization, Test
 
-using MathOptInterface
 const MOI  = MathOptInterface
 const MOIT = MathOptInterface.Test
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 
-# Needed by test spread over several files, defining it here make it easier to comment out tests
-# Model supporting every MOI functions and sets
 MOIU.@model(Model,
             (MOI.ZeroOne, MOI.Integer),
             (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,
@@ -24,5 +24,19 @@ MOIU.@model(Model,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-include("simpleLP.jl")
+cd("test")
+# Run tests to travis ci
+include("Tests/test_utils.jl")
 
+# Full version of tests, this hsould be all comented to pass travis ci because of dependencies
+using JuMP
+include("optimize_abstract_models.jl")
+
+# Test Solvers
+include("Solvers/linear_problems.jl")
+include("Solvers/clp_test.jl")
+include("Solvers/glpk_test.jl")
+
+
+# Test Bigger Problems
+include("Problems/LinearPrograms/linear_classifier.jl")

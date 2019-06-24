@@ -14,21 +14,20 @@ const CI = MOI.ConstraintIndex
 
 const AbstractModel{T} = MOIU.AbstractModel{T}
 
-MOIU.@model(DualModel,
-            (MOI.ZeroOne, MOI.Integer),
-            (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,
-             MOI.Semicontinuous, MOI.Semiinteger),
+MOIU.@model(DualizableModel,
+            (),
+            (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,),
             (MOI.Reals, MOI.Zeros, MOI.Nonnegatives, MOI.Nonpositives,
              MOI.SecondOrderCone, MOI.RotatedSecondOrderCone,
              MOI.GeometricMeanCone, MOI.ExponentialCone, MOI.DualExponentialCone,
              MOI.PositiveSemidefiniteConeTriangle, MOI.PositiveSemidefiniteConeSquare,
              MOI.RootDetConeTriangle, MOI.RootDetConeSquare, MOI.LogDetConeTriangle,
              MOI.LogDetConeSquare),
-            (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2),
+            (MOI.PowerCone, MOI.DualPowerCone),
             (MOI.SingleVariable,),
-            (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction),
+            (MOI.ScalarAffineFunction,),
             (MOI.VectorOfVariables,),
-            (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
+            (MOI.VectorAffineFunction,))
 
 include("utils.jl")
 include("supported.jl")
