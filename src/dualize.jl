@@ -2,7 +2,7 @@ export dualize
 
 struct PrimalDualMap
     primal_var_dual_con::Dict{VI, CI}
-    dual_var_primal_con::Dict{VI, CI}
+    primal_con_dual_var::Dict{CI, Vector{VI}}
 end
 
 struct DualProblem
@@ -34,7 +34,7 @@ function dualize(primal_model::MOI.ModelLike)
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary for dual variables with primal constraints
-    dual_var_primal_con, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, con_types)
+    primal_con_dual_var, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, con_types)
     
     # Fill Dual Objective Coefficients Struct
     dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)
@@ -43,10 +43,11 @@ function dualize(primal_model::MOI.ModelLike)
     set_dual_objective(dual_model, dual_objective)
 
     # Add dual equality constraint and get the link dictionary
-    primal_var_dual_con = add_dual_model_equality_constraints(dual_model, con_coeffs, dual_var_primal_con, 
-                                                              primal_objective, primal_model.num_variables_created)
+    primal_var_dual_con = add_dual_equality_constraints(dual_model, primal_model,
+                                                        primal_con_dual_var, primal_objective, 
+                                                        con_types)
 
     
 
-    return DualProblem(dual_model, PrimalDualMap(primal_var_dual_con, dual_var_primal_con))
+    return DualProblem(dual_model, PrimalDualMap(primal_var_dual_con, primal_con_dual_var))
 end

@@ -28,12 +28,12 @@ MOIU.@model(Model,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-cd("src")
 include("utils.jl")
 include("supported.jl")
 include("objective_coefficients.jl")
 include("primal_constraint_coefficients.jl")
 include("dual_model_variables.jl")
+include("dual_equality_constraints.jl")
 
 include("dualize.jl")
 
