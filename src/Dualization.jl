@@ -12,7 +12,9 @@ const VAF{T} = MOI.VectorAffineFunction{T}
 const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
 
-MOIU.@model(Model,
+const AbstractModel{T} = MOIU.AbstractModel{T}
+
+MOIU.@model(DualModel,
             (MOI.ZeroOne, MOI.Integer),
             (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,
              MOI.Semicontinuous, MOI.Semiinteger),
@@ -31,10 +33,8 @@ MOIU.@model(Model,
 include("utils.jl")
 include("supported.jl")
 include("objective_coefficients.jl")
-include("primal_constraint_coefficients.jl")
 include("dual_model_variables.jl")
 include("dual_equality_constraints.jl")
-
 include("dualize.jl")
 
 end # module

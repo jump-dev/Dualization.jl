@@ -1,4 +1,4 @@
-function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_equality_constraints(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                                        primal_con_dual_var::Dict, primal_objective::PrimalObjective{T},
                                        con_types::Vector{Tuple{DataType, DataType}}) where T
     
@@ -10,7 +10,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         primal_vi = VI(var)
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_con_dual_var, 
-                                                      primal_vi, T, con_types)
+                                                      primal_vi, con_types)
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
         if var == primal_objective.saf.terms[scalar_term_index].variable_index.value
@@ -28,9 +28,9 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
     return primal_var_dual_con
 end
 
-function get_scalar_affine_terms(primal_model::MOI.ModelLike,
-                                 primal_con_dual_var::Dict{CI, Vector{VI}}, primal_vi::VI, T::DataType,
-                                 con_types::Vector{Tuple{DataType, DataType}})
+function get_scalar_affine_terms(primal_model::AbstractModel{T},
+                                 primal_con_dual_var::Dict{CI, Vector{VI}}, primal_vi::VI,
+                                 con_types::Vector{Tuple{DataType, DataType}}) where T
     scalar_affine_terms = Vector{MOI.ScalarAffineTerm{T}}(undef, 0) 
     for (F, S) in con_types
         num_con_f_s = MOI.get(primal_model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
@@ -56,7 +56,7 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, con_id::Int, primal_vi::VI, 
+                                   primal_model::AbstractModel{T}, con_id::Int, primal_vi::VI, 
                                    F::Type{SAF{T}}, 
                                    S::Union{Type{MOI.GreaterThan{T}},
                                             Type{MOI.LessThan{T}},
@@ -75,7 +75,7 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, con_id::Int, primal_vi::VI, 
+                                   primal_model::AbstractModel{T}, con_id::Int, primal_vi::VI, 
                                    F::Type{SVF}, 
                                    S::Union{Type{MOI.GreaterThan{T}},
                                             Type{MOI.LessThan{T}},
@@ -85,14 +85,14 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
     if moi_function.variable == primal_vi
         ci = get_ci(primal_model, F, S, con_id)
         dual_vi = primal_con_dual_var[ci][1] # In this case we only have one vi
-        push_to_scalar_affine_terms!(scalar_affine_terms, 1.0, dual_vi)
+        push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
     end
     return 
 end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, con_id::Int, primal_vi::VI, 
+                                   primal_model::AbstractModel{T}, con_id::Int, primal_vi::VI, 
                                    F::Type{VAF{T}}, 
                                    S::Union{Type{MOI.Nonpositives},
                                             Type{MOI.Nonnegatives},

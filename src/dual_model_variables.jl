@@ -1,10 +1,13 @@
-function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, 
-                                     con_types::Vector{Tuple{DataType, DataType}})
+function add_dual_vars_in_dual_cones(dual_model::AbstractModel{T}, primal_model::AbstractModel{T}, 
+                                     con_types::Vector{Tuple{DataType, DataType}}) where T
     primal_con_dual_var = Dict{CI, Vector{VI}}()
     dual_obj_affine_terms = Dict{VI, Float64}()
     for (F, S) in con_types
         num_con_f_s = MOI.get(primal_model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
         for con_id = 1:num_con_f_s
+            # Add dual variable to dual cone
+            # Fill a dual objective dictionary
+            # Fill the primal_con_dual_var dictionary
             add_dual_variable(dual_model, primal_model, primal_con_dual_var, dual_obj_affine_terms, con_id, F, S)
         end
     end
@@ -16,7 +19,7 @@ function push_to_dual_obj_aff_terms!(dual_obj_affine_terms::Dict{VI, T}, vi::VI,
     return iszero(value) ? nothing : push!(dual_obj_affine_terms, vi => value)
 end
 
-function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function _add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                             primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                             con_id::Int, 
                             F::Union{Type{SAF{T}}, Type{SVF}}, 
@@ -31,7 +34,7 @@ function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLi
     return vi
 end
 
-function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function _add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                             primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                             con_id::Int, 
                             F::Type{VAF{T}}, 
@@ -54,25 +57,25 @@ end
 
 
 # SAFs
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{SAF{T}}, S::Type{MOI.GreaterThan{T}}) where T
                                  
     vi = _add_dual_variable(dual_model, primal_model, primal_con_dual_var, 
                             dual_obj_affine_terms, con_id, F, S)
-    return MOI.add_constraint(dual_model, SVF(vi), MOI.GreaterThan(0.0)) # Add variable to the dual cone of the constraint
+    return MOI.add_constraint(dual_model, SVF(vi), MOI.GreaterThan(zero(T))) # Add variable to the dual cone of the constraint
 end
 
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{SAF{T}}, S::Type{MOI.LessThan{T}}) where T
                                  
     vi = _add_dual_variable(dual_model, primal_model, primal_con_dual_var, 
                             dual_obj_affine_terms, con_id, F, S)
-    return MOI.add_constraint(dual_model, SVF(vi), MOI.LessThan(0.0)) # Add variable to the dual cone of the constraint
+    return MOI.add_constraint(dual_model, SVF(vi), MOI.LessThan(zero(T))) # Add variable to the dual cone of the constraint
 end
 
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{SAF{T}}, S::Type{MOI.EqualTo{T}}) where T
                             
@@ -84,25 +87,25 @@ end
 
 
 #SVF
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{SVF}, S::Type{MOI.GreaterThan{T}}) where T
 
     vi = _add_dual_variable(dual_model, primal_model, primal_con_dual_var, 
                             dual_obj_affine_terms, con_id, F, S)
-    return MOI.add_constraint(dual_model, SVF(vi), MOI.GreaterThan(0.0)) # Add variable to the dual cone of the constraint
+    return MOI.add_constraint(dual_model, SVF(vi), MOI.GreaterThan(zero(T))) # Add variable to the dual cone of the constraint
 end
 
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T}, 
                            con_id::Int, F::Type{SVF}, S::Type{MOI.LessThan{T}}) where T
 
     vi = _add_dual_variable(dual_model, primal_model, primal_con_dual_var, 
                             dual_obj_affine_terms, con_id, F, S)
-    return MOI.add_constraint(dual_model, SVF(vi), MOI.LessThan(0.0)) # Add variable to the dual cone of the constraint
+    return MOI.add_constraint(dual_model, SVF(vi), MOI.LessThan(zero(T))) # Add variable to the dual cone of the constraint
 end
 
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{SVF}, S::Type{MOI.EqualTo{T}}) where T
 
@@ -114,7 +117,7 @@ end
 
 
 #VAF
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{VAF{T}}, S::Type{MOI.Nonpositives}) where T
 
@@ -123,7 +126,7 @@ function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLik
     return MOI.add_constraint(dual_model, VVF(vis), MOI.Nonpositives(length(vis))) # Add variable to the dual cone of the constraint
 end
 
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{VAF{T}}, S::Type{MOI.Nonnegatives}) where T
 
@@ -132,7 +135,7 @@ function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLik
     return MOI.add_constraint(dual_model, VVF(vis), MOI.Nonnegatives(length(vis))) # Add variable to the dual cone of the constraint
 end
 
-function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+function add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
                            primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},
                            con_id::Int, F::Type{VAF{T}}, S::Type{MOI.Zeros}) where T
 

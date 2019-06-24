@@ -89,7 +89,7 @@ obj2 = JuMP.objective_value(model2)
 using JuMP, GLPK, CSV
 
 #Read data from
-data_tumors = CSV.read("/Users/guilhermebodin/Documents/Teaching.jl/Optimization/Class1/data_tumors.csv", header = false)
+data_tumors = CSV.read("/home/guilhermebodin/Downloads/Teaching.jl-master/Optimization/Class1/data_tumors.csv", header = false)
 
 num_attributes = 30
 train_set_size = 400
