@@ -9,11 +9,11 @@ function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
             error("Constraints of funtion ", F, " in the Set ", S," are not implemented")
         end
     end
-    return nothing
+    return 
 end
 
 # General case
-supported_constraint(::Any, ::Any) = false
+supported_constraint(::DataType, ::DataType) = false
 # List of supported constraints
 # SAF
 supported_constraint(::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}) where T = true
@@ -40,11 +40,11 @@ function supported_objective(primal_model::AbstractModel{T}) where T
     if !supported_obj(obj_func_type)
         error("Objective functions of type ", obj_func_type," are not implemented")
     end
-    return nothing
+    return 
 end
 
 # General case
-supported_obj(::Any) = false
+supported_obj(::DataType) = false
 # List of supported objective functions
 supported_obj(::Type{SVF}) = true
 supported_obj(::Type{SAF{T}}) where T = true

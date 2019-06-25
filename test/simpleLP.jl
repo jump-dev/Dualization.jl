@@ -36,11 +36,11 @@ primal_model = Model{Float64}()
 
 X = MOI.add_variables(primal_model, 2)
 
-# g = MOI.VectorAffineFunction(MOI.VectorAffineTerm.([3, 3],
-#                                                     MOI.ScalarAffineTerm.([5.0, 2.0], X)),
-#                                                     [3.0, 1.0, 4.0])
+g = MOI.VectorAffineFunction(MOI.VectorAffineTerm.([3, 3],
+                                                    MOI.ScalarAffineTerm.([5.0, 2.0], X)),
+                                                    [3.0, 1.0, 4.0])
 
-# MOI.add_constraint(primal_model, g, MOI.Zeros(0))
+MOI.add_constraint(primal_model, g, MOI.Zeros(0))
 
 MOI.add_constraint(primal_model, 
     MOI.ScalarAffineFunction(

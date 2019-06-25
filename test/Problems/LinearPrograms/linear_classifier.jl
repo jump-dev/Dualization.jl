@@ -13,7 +13,7 @@ function linear_classifier(path::String, optimizer)
     test_set_diagnosis = convert(Vector{String}, data_tumors[train_set_size + 1:end, 2])
     
     model = JuMP.Model(with_optimizer(optimizer))
-    n = 30
+    n = 2 # for n = 2 the objective is not 0
     @variable(model, x[i = 1:n])
     @variable(model, c)
     @variable(model, ϵ[i = 1:train_set_size] >= 0)

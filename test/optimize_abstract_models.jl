@@ -27,8 +27,9 @@ function test_strong_duality(primal_model::MOIU.AbstractModel{T},
         return true
     elseif (primal_term_status == MOI.DUAL_INFEASIBLE) && (dual_term_status == MOI.INFEASIBLE)
         return true
-    elseif (primal_term_status == MOI.INFEASIBLE_OR_UNBOUNDED) && (dual_term_status == MOI.INFEASIBLE_OR_UNBOUNDED)
-        @warn("Both infeasible or unbounded, review this case")
+    elseif (primal_term_status == MOI.DUAL_INFEASIBLE) && (dual_term_status == MOI.INFEASIBLE_OR_UNBOUNDED)
+        return true
+    elseif (primal_term_status == MOI.INFEASIBLE_OR_UNBOUNDED) && (dual_term_status == MOI.DUAL_INFEASIBLE)
         return true
     end
     return false # In case strong duality doesn't hold

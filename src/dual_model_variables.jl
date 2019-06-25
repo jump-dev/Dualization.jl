@@ -1,7 +1,7 @@
 function add_dual_vars_in_dual_cones(dual_model::AbstractModel{T}, primal_model::AbstractModel{T}, 
                                      con_types::Vector{Tuple{DataType, DataType}}) where T
     primal_con_dual_var = Dict{CI, Vector{VI}}()
-    dual_obj_affine_terms = Dict{VI, Float64}()
+    dual_obj_affine_terms = Dict{VI, T}()
     for (F, S) in con_types
         num_con_f_s = MOI.get(primal_model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
         for con_id = 1:num_con_f_s

@@ -12,7 +12,7 @@ function set_dual_model_sense(dual_model::AbstractModel{T}, primal_model::Abstra
     # Set dual model sense
     dual_sense = (primal_sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
-    return nothing
+    return 
 end
 
 # Primals
@@ -71,7 +71,7 @@ function set_dual_objective(dual_model::AbstractModel{T}, dual_objective::DualOb
     # Set dual model objective function
     MOI.set(dual_model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),  
             dual_objective.saf)
-    return nothing
+    return 
 end
 
 """
