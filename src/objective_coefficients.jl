@@ -69,7 +69,7 @@ Add the objective function to the dual model
 """
 function set_dual_objective(dual_model::AbstractModel{T}, dual_objective::DualObjective{T}) where T
     # Set dual model objective function
-    MOI.set(dual_model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),  
+    MOI.set(dual_model, MOI.ObjectiveFunction{SAF{T}}(),  
             dual_objective.saf)
     return 
 end

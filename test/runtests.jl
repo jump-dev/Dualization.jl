@@ -25,15 +25,19 @@ MOIU.@model(TestModel,
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
 cd("test")
+
+# Problems database
+include("Problems/Linear/linear_problems.jl")
+include("Problems/Quadratic/quadratic_problems.jl")
+
 # Run tests to travis ci
-include("Tests/test_utils.jl")
+include("Tests/test_supported.jl")
+include("Tests/test_objective_coefficients.jl")
+
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
 using JuMP
-include("optimize_abstract_models.jl")
-# Test Solvers
 include("Problems/Linear/linear_classifier.jl")
-include("Problems/Linear/linear_problems.jl")
-
+include("optimize_abstract_models.jl")
 include("Solvers/clp_test.jl")
 include("Solvers/glpk_test.jl")

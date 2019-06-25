@@ -1,6 +1,6 @@
 using CSV
 
-function linear_classifier(path::String, optimizer)    
+function linear_classifier(path::String)    
     data_tumors = CSV.read(path, header = false)
     
     num_attributes = 30
@@ -12,7 +12,7 @@ function linear_classifier(path::String, optimizer)
     test_set_attrs = convert(Matrix{Float64}, data_tumors[train_set_size + 1:end, 3:end])
     test_set_diagnosis = convert(Vector{String}, data_tumors[train_set_size + 1:end, 2])
     
-    model = JuMP.Model(with_optimizer(optimizer))
+    model = JuMP.Model()
     n = 2 # for n = 2 the objective is not 0
     @variable(model, x[i = 1:n])
     @variable(model, c)

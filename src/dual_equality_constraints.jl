@@ -23,7 +23,7 @@ function add_dual_equality_constraints(dual_model::AbstractModel{T}, primal_mode
         # Add primal variable to dual contraint to the link dictionary
         push!(primal_var_dual_con, primal_vi => CI{SAF{T}, MOI.EqualTo}(dual_model.nextconstraintid))
         # Add equality constraint
-        MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
+        MOIU.add_scalar_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
     end
     return primal_var_dual_con
 end
