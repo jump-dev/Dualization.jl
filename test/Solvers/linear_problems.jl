@@ -8,7 +8,7 @@ x_1 + 2x_2 <= 3
 x_1 >= 1
 x_1 >= 3
 =#
-primal_model_lp1 = Model{Float64}()
+primal_model_lp1 = TestModel{Float64}()
 
 X = MOI.add_variables(primal_model_lp1, 2)
 
@@ -49,7 +49,7 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 >= 0
 =#
-primal_model_lp2 = Model{Float64}()
+primal_model_lp2 = TestModel{Float64}()
 
 X = MOI.add_variables(primal_model_lp2, 2)
 
@@ -97,7 +97,7 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 >= 0
 =#
-primal_model_lp3 = Model{Float64}()
+primal_model_lp3 = TestModel{Float64}()
 
 X = MOI.add_variables(primal_model_lp3, 2)
 
@@ -141,7 +141,7 @@ max 4x1 3x2
     x1 >= 1
     x2 >= 0
 =#
-primal_model_lp4 = Model{Float64}()
+primal_model_lp4 = TestModel{Float64}()
 
 X = MOI.add_variables(primal_model_lp4, 2)
 
@@ -177,7 +177,7 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 == 0
 =#
-primal_model_lp5= Model{Float64}()
+primal_model_lp5= TestModel{Float64}()
 
 X = MOI.add_variables(primal_model_lp5, 2)
 
@@ -223,7 +223,7 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 >= 0
 =#
-primal_model_lp6= Model{Float64}()
+primal_model_lp6= TestModel{Float64}()
 
 X = MOI.add_variables(primal_model_lp6, 2)
 
@@ -266,7 +266,7 @@ min -4x1 -3x2 -1
     x1 >= 1
     x2 >= 0
 =#
-primal_model_lp7= Model{Int64}()
+primal_model_lp7= TestModel{Int64}()
 
 X = MOI.add_variables(primal_model_lp7, 2)
 

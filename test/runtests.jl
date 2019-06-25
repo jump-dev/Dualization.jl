@@ -8,7 +8,7 @@ const MOIT = MathOptInterface.Test
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 
-MOIU.@model(Model,
+MOIU.@model(TestModel,
             (MOI.ZeroOne, MOI.Integer),
             (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,
              MOI.Semicontinuous, MOI.Semiinteger),
