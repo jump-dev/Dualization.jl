@@ -14,7 +14,7 @@ X = MOI.add_variables(primal_model_lp1, 2)
 
 MOI.add_constraint(primal_model_lp1, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 0.0),
+        MOI.ScalarAffineTerm.([1.0, 2.0], X), 0.0),
         MOI.LessThan(3.0))
 
 MOI.add_constraint(primal_model_lp1, 
@@ -55,12 +55,12 @@ X = MOI.add_variables(primal_model_lp2, 2)
 
 MOI.add_constraint(primal_model_lp2, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
+        MOI.ScalarAffineTerm.([2.0, 1.0], X), 1.0),
          MOI.LessThan(4.0))
 
 MOI.add_constraint(primal_model_lp2, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
+        MOI.ScalarAffineTerm.([1.0, 2.0], X), 1.0),
          MOI.LessThan(4.0))
 
 MOI.add_constraint(primal_model_lp2, 
@@ -103,12 +103,12 @@ X = MOI.add_variables(primal_model_lp3, 2)
 
 MOI.add_constraint(primal_model_lp3, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
+        MOI.ScalarAffineTerm.([2.0, 1.0], X), 1.0),
          MOI.LessThan(4.0))
 
 MOI.add_constraint(primal_model_lp3, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
+        MOI.ScalarAffineTerm.([1.0, 2.0], X), 1.0),
          MOI.LessThan(4.0))
 
 MOI.add_constraint(primal_model_lp3, 
@@ -183,12 +183,12 @@ X = MOI.add_variables(primal_model_lp5, 2)
 
 MOI.add_constraint(primal_model_lp5, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(2.0, X[1]), MOI.ScalarAffineTerm(1.0, X[2])], 1.0),
+        MOI.ScalarAffineTerm.([2.0, 1.0], X), 1.0),
          MOI.EqualTo(4.0))
 
 MOI.add_constraint(primal_model_lp5, 
     MOI.ScalarAffineFunction(
-        [MOI.ScalarAffineTerm(1.0, X[1]), MOI.ScalarAffineTerm(2.0, X[2])], 1.0),
+        MOI.ScalarAffineTerm.([1.0, 2.0], X), 1.0),
          MOI.EqualTo(4.0))
 
 MOI.add_constraint(primal_model_lp5, 
