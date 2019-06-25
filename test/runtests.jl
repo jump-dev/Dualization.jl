@@ -31,12 +31,9 @@ include("Tests/test_utils.jl")
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
 using JuMP
 include("optimize_abstract_models.jl")
-
 # Test Solvers
-include("Solvers/linear_problems.jl")
+include("Problems/Linear/linear_classifier.jl")
+include("Problems/Linear/linear_problems.jl")
+
 include("Solvers/clp_test.jl")
 include("Solvers/glpk_test.jl")
-
-
-# Test Bigger Problems
-include("Problems/LinearPrograms/linear_classifier.jl")

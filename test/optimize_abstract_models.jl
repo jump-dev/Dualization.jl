@@ -2,7 +2,7 @@
 Attach an AbstractModel{T} to an optimizer, 
 solve it and retrieve the termination status and objective value
 """
-function solve_abstract_model(model::MOIU.AbstractModel{T}, factory) where T
+function solve_abstract_model(model::MOIU.AbstractModel{T}, factory::OptimizerFactory) where T
     JuMP_model = JuMP.Model()
     MOI.copy_to(JuMP.backend(JuMP_model), model)
     set_optimizer(JuMP_model, factory)
@@ -13,10 +13,10 @@ function solve_abstract_model(model::MOIU.AbstractModel{T}, factory) where T
 end
 
 """
-Test if strong duality holds for a primal dual pair
+Test if strong duality holds for a problem
 """
 function test_strong_duality(primal_model::MOIU.AbstractModel{T}, 
-                             dual_model::MOIU.AbstractModel{T}, factory) where T
+                             dual_model::MOIU.AbstractModel{T}, factory::OptimizerFactory) where T
 
     primal_term_status, primal_obj_val = solve_abstract_model(primal_model, factory)
     dual_term_status, dual_obj_val = solve_abstract_model(dual_model, factory)
@@ -33,4 +33,11 @@ function test_strong_duality(primal_model::MOIU.AbstractModel{T},
         return true
     end
     return false # In case strong duality doesn't hold
+end
+
+function test_strong_duality(primal_problems::Array{Function}, factory::OptimizerFactory)
+    for primal_problem in primal_problems
+        dual_problem = dualize(primal_problem()).dual_model
+        @test test_strong_duality(primal_problem(), dual_problem, factory)
+    end
 end
