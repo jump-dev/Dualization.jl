@@ -3,11 +3,11 @@
     Dualization.supported_objective(lp10_test()) # SingleVariable Objective
     @test_throws ErrorException Dualization.supported_objective(qp1_test()) # SingleVariable Objective
 
-    # All supprted SAFs
+    # All supported SAFs
     con_types = MOI.get(lp1_test(), MOI.ListOfConstraints())
     Dualization.supported_constraints(con_types) 
 
-    # Intervals is not supportes
+    # Intervals Set is not supported
     con_types = MOI.get(lp9_test(), MOI.ListOfConstraints())
     @test_throws ErrorException Dualization.supported_constraints(con_types) # Throws an error if constraint cannot be dualized
 end

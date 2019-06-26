@@ -16,7 +16,10 @@ end
 
 # Utils for add_dual_variable functions
 function push_to_dual_obj_aff_terms!(dual_obj_affine_terms::Dict{VI, T}, vi::VI, value::T) where T
-    return iszero(value) ? nothing : push!(dual_obj_affine_terms, vi => value)
+    if !iszero(value) # If value is different than 0 add to the dictionary
+        push!(dual_obj_affine_terms, vi => value)
+    end
+    return 
 end
 
 function _add_dual_variable(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},

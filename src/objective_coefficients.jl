@@ -17,7 +17,7 @@ end
 
 # Primals
 """
-        PrimalObjectiveCoefficients{T}
+    PrimalObjectiveCoefficients{T}
 
 Primal objective coefficients defined as ``a_0^Tx + b_0`` as in
 http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
@@ -53,7 +53,7 @@ end
 
 # Duals
 """
-        DualObjectiveCoefficients{T}
+    DualObjectiveCoefficients{T}
 
 Dual objective coefficients defined as ``b_i^Ty + b_0`` or ``-b_i^Ty + b_0`` as in
 http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
@@ -63,7 +63,7 @@ struct DualObjective{T}
 end
 
 """
-        set_DOC(dual_model::AbstractModel{T}, doc::DualObjectiveCoefficients{T}) where T
+    set_DOC(dual_model::AbstractModel{T}, doc::DualObjectiveCoefficients{T}) where T
 
 Add the objective function to the dual model
 """
@@ -75,7 +75,7 @@ function set_dual_objective(dual_model::AbstractModel{T}, dual_objective::DualOb
 end
 
 """
-        get_dual_obj_coeffs(dual_model::AbstractModel{T}, dict_constr_coeffs::Dict, 
+    get_dual_obj_coeffs(dual_model::AbstractModel{T}, dict_constr_coeffs::Dict, 
                             dict_dualvar_primalcon::Dict, poc::POC{T}) where T
 
 Get dual model objective function coefficients

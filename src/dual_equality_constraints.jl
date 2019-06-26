@@ -44,7 +44,11 @@ end
 
 function push_to_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                       affine_term::T, vi::VI) where T
-    return iszero(affine_term) ? nothing : push!(scalar_affine_terms, MOI.ScalarAffineTerm(affine_term, vi))
+
+    if !iszero(affine_term) # if term is different than 0 add to the scalar affine terms vector
+        push!(scalar_affine_terms, MOI.ScalarAffineTerm(affine_term, vi))
+    end
+    return 
 end
 
 function push_to_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
