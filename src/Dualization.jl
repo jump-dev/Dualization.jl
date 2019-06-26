@@ -12,7 +12,6 @@ const VAF{T} = MOI.VectorAffineFunction{T}
 const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
 
-const AbstractModel{T} = MOIU.AbstractModel{T}
 
 MOIU.@model(DualizableModel,
             (),

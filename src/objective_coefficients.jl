@@ -1,9 +1,9 @@
 """
-    set_dualmodel_sense!(dual_model::AbstractModel{T}, model::AbstractModel{T})
+    set_dualmodel_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
 
 Set the dual model objective sense
 """
-function set_dual_model_sense(dual_model::AbstractModel{T}, primal_model::AbstractModel{T}) where T
+function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike) where T
     # Get model sense
     primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
     if primal_sense == MOI.FEASIBILITY_SENSE
@@ -27,12 +27,12 @@ struct PrimalObjective{T}
 end
 
 """
-    get_primal_obj_coeffs(model::AbstractModel{T})
+    get_primal_obj_coeffs(model::MOI.ModelLike)
 
 Get the coefficients from the primal objective function and
 return a `PrimalObjectiveCoefficients{T}`
 """
-function get_primal_objective(primal_model::AbstractModel{T}) where T
+function get_primal_objective(primal_model::MOI.ModelLike) where T
     return _get_primal_objective(primal_model.objective)
 end
 
@@ -63,11 +63,11 @@ struct DualObjective{T}
 end
 
 """
-    set_DOC(dual_model::AbstractModel{T}, doc::DualObjectiveCoefficients{T}) where T
+    set_DOC(dual_model::MOI.ModelLike, doc::DualObjectiveCoefficients{T}) where T
 
 Add the objective function to the dual model
 """
-function set_dual_objective(dual_model::AbstractModel{T}, dual_objective::DualObjective{T}) where T
+function set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T}) where T
     # Set dual model objective function
     MOI.set(dual_model, MOI.ObjectiveFunction{SAF{T}}(),  
             dual_objective.saf)
@@ -75,12 +75,12 @@ function set_dual_objective(dual_model::AbstractModel{T}, dual_objective::DualOb
 end
 
 """
-    get_dual_obj_coeffs(dual_model::AbstractModel{T}, dict_constr_coeffs::Dict, 
+    get_dual_obj_coeffs(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
                             dict_dualvar_primalcon::Dict, poc::POC{T}) where T
 
 Get dual model objective function coefficients
 """
-function get_dual_objective(dual_model::AbstractModel{T}, dual_obj_affine_terms::Dict,
+function get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Dict,
                             primal_objective::PrimalObjective{T}) where T
 
     sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense

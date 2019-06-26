@@ -5,17 +5,17 @@ struct PrimalDualMap
     primal_con_dual_var::Dict{CI, Vector{VI}}
 end
 
-struct DualProblem{T}
-    dual_model::AbstractModel{T} 
+struct DualProblem
+    dual_model::MOI.ModelLike 
     primal_dual_map::PrimalDualMap
 end
 
 """
-    dualize(model::AbstractModel{T}, ::Type{T}) where T
+    dualize(model::MOI.ModelLike)
 
 Dualize the model
 """
-function dualize(primal_model::MOIU.AbstractModel{T}) where T
+function dualize(primal_model::MOI.ModelLike)
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model) 
 
@@ -24,6 +24,7 @@ function dualize(primal_model::MOIU.AbstractModel{T}) where T
     supported_constraints(con_types) # Throws an error if constraint cannot be dualized
     
     # Crates an empty dual model
+    T = Float64
     dual_model = DualizableModel{T}()
     
     # Set the dual model objective sense
@@ -34,7 +35,8 @@ function dualize(primal_model::MOIU.AbstractModel{T}) where T
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary for dual variables with primal constraints
-    primal_con_dual_var, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, con_types)
+    primal_con_dual_var, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model,
+                                                                             con_types, T)
     
     # Fill Dual Objective Coefficients Struct
     dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)

@@ -383,3 +383,38 @@ function lp11_test()
     
     return model
 end
+
+function lp12_test()
+    #=
+        min 4x_3 + 5
+    s.t.
+        x_1 + 2x_2 + x_3 <= 20
+        x_1 >= 1
+        x_2 >= 3
+    =#
+
+    model = TestModel{Float64}()
+    
+    X = MOI.add_variables(model, 3)
+    
+    MOI.add_constraint(model, 
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([1.0, 2.0, 1.0], X), 0.0),
+            MOI.LessThan(20.0))
+    
+    MOI.add_constraint(model, 
+        MOI.SingleVariable(X[1]),
+            MOI.LessThan(1.0))
+    
+    MOI.add_constraint(model, 
+        MOI.SingleVariable(X[2]),
+            MOI.LessThan(3.0))
+    
+    MOI.set(model, 
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0], [X[3]]), 5.0))
+    
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    
+    return model
+end

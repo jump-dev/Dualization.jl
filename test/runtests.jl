@@ -8,6 +8,14 @@ const MOIT = MathOptInterface.Test
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 
+const SVF = MOI.SingleVariable
+const VVF = MOI.VectorOfVariables
+const SAF{T} = MOI.ScalarAffineFunction{T}
+const VAF{T} = MOI.VectorAffineFunction{T}
+
+const VI = MOI.VariableIndex
+const CI = MOI.ConstraintIndex
+
 MOIU.@model(TestModel,
             (MOI.ZeroOne, MOI.Integer),
             (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,
@@ -33,6 +41,8 @@ include("Problems/Quadratic/quadratic_problems.jl")
 # Run tests to travis ci
 include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")
+include("Tests/test_dual_model_variables.jl")
+include("Tests/test_dualize.jl")
 
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies

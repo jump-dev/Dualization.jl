@@ -1,21 +1,25 @@
-function add_dual_equality_constraints(dual_model::AbstractModel{T}, primal_model::AbstractModel{T},
+function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                                        primal_con_dual_var::Dict, primal_objective::PrimalObjective{T},
                                        con_types::Vector{Tuple{DataType, DataType}}) where T
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
     primal_var_dual_con = Dict{VI, CI}() # Empty primal variables dual constraints Dict
+    num_objective_terms = length(primal_objective.saf.terms) # This is used to update the scalar_term_index
+    list_of_primal_vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
 
     scalar_term_index = 1::Int
-    for var = 1:primal_model.num_variables_created
-        primal_vi = VI(var)
+    for primal_vi in list_of_primal_vis
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_con_dual_var, 
-                                                      primal_vi, con_types)
+                                                      primal_vi, con_types, T)
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        if var == primal_objective.saf.terms[scalar_term_index].variable_index.value
+        if primal_vi == primal_objective.saf.terms[scalar_term_index].variable_index
             scalar_term_value = primal_objective.saf.terms[scalar_term_index].coefficient
-            scalar_term_index += 1
+            # This ternary is important for the last scalar_term_index
+            # If the last term of the objective is not the last primal variable we don't update 
+            # the scalar_term_index
+            scalar_term_index == num_objective_terms ? scalar_term_index : scalar_term_index += 1
         else # In this case this variable is not on the objective function
             scalar_term_value = zero(T)
         end
@@ -28,9 +32,10 @@ function add_dual_equality_constraints(dual_model::AbstractModel{T}, primal_mode
     return primal_var_dual_con
 end
 
-function get_scalar_affine_terms(primal_model::AbstractModel{T},
+function get_scalar_affine_terms(primal_model::MOI.ModelLike,
                                  primal_con_dual_var::Dict{CI, Vector{VI}}, primal_vi::VI,
-                                 con_types::Vector{Tuple{DataType, DataType}}) where T
+                                 con_types::Vector{Tuple{DataType, DataType}}, T::DataType)
+                                 
     scalar_affine_terms = Vector{MOI.ScalarAffineTerm{T}}(undef, 0) 
     for (F, S) in con_types
         num_con_f_s = MOI.get(primal_model, MOI.NumberOfConstraints{F, S}()) # Number of constraints {F, S}
@@ -60,7 +65,7 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::AbstractModel{T}, con_id::Int, primal_vi::VI, 
+                                   primal_model::MOI.ModelLike, con_id::Int, primal_vi::VI, 
                                    F::Type{SAF{T}}, 
                                    S::Union{Type{MOI.GreaterThan{T}},
                                             Type{MOI.LessThan{T}},
@@ -79,7 +84,7 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::AbstractModel{T}, con_id::Int, primal_vi::VI, 
+                                   primal_model::MOI.ModelLike, con_id::Int, primal_vi::VI, 
                                    F::Type{SVF}, 
                                    S::Union{Type{MOI.GreaterThan{T}},
                                             Type{MOI.LessThan{T}},
@@ -96,7 +101,7 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::AbstractModel{T}, con_id::Int, primal_vi::VI, 
+                                   primal_model::MOI.ModelLike, con_id::Int, primal_vi::VI, 
                                    F::Type{VAF{T}}, 
                                    S::Union{Type{MOI.Nonpositives},
                                             Type{MOI.Nonnegatives},
