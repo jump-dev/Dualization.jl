@@ -4,7 +4,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
     primal_var_dual_con = Dict{VI, CI}() # Empty primal variables dual constraints Dict
-    num_objective_terms = length(primal_objective.saf.terms) # This is used to update the scalar_term_index
+    num_objective_terms = MOIU.number_of_affine_terms(T, primal_objective.saf) # This is used to update the scalar_term_index
     list_of_primal_vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
 
     scalar_term_index = 1::Int
