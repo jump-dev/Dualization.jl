@@ -15,7 +15,9 @@ end
 
 Dualize the model
 """
-function dualize(primal_model::MOI.ModelLike)
+dualize(primal_model::MOI.ModelLike) = dualize(primal_model::MOI.ModelLike
+
+function dualize(primal_model::MOI.ModelLike, T::DataType)
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model) 
 
@@ -24,8 +26,7 @@ function dualize(primal_model::MOI.ModelLike)
     supported_constraints(con_types) # Throws an error if constraint cannot be dualized
     
     # Crates an empty dual model
-    T = Float64
-    dual_model = DualizableModel{T}()
+        dual_model = DualizableModel{T}()
     
     # Set the dual model objective sense
     set_dual_model_sense(dual_model, primal_model)
