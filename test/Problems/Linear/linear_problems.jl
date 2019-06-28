@@ -222,7 +222,7 @@ end
 function lp7_test()
     #=
         min -4x1 -3x2 -1
-    s.a.
+    s.t.
         2x1 + x2 - 3 <= 0
         x1 + 2x2 - 3 <= 0
         x1 >= 1
@@ -259,7 +259,7 @@ end
 function lp8_test()
     #=
         min -4x1 -3x2 -1
-    s.a.
+    s.t.
         2x1 + x2 - 3 <= 0
         x1 + 2x2 - 3 <= 0
         x1 >= 1
@@ -416,5 +416,44 @@ function lp12_test()
     
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     
+    return model
+end
+
+function lp13_test()
+    #=
+        min -4x1 -3x2 -1
+    s.t.
+        2x1 + x2 - 3 <= 0
+        x1 + 2x2 - 3 <= 0
+        x1 >= 0
+        x2 >= 0
+    =#
+    model= TestModel{Float64}()
+
+    X = MOI.add_variables(model, 2)
+
+    c1 = MOI.VectorAffineFunction(
+            MOI.VectorAffineTerm.([1, 1, 2, 2], MOI.ScalarAffineTerm.([2.0, 1.0, 1.0, 2.0], [X; X])), 
+            [-3.0, -3.0])
+
+    MOI.add_constraint(model, c1, MOI.Nonpositives(2))
+
+
+    MOI.add_constraint(model, MOI.VectorOfVariables(X), MOI.Nonpositives(2))
+            
+    MOI.add_constraint(model, 
+        MOI.SingleVariable(X[1]),
+            MOI.GreaterThan(1.0))
+
+    MOI.add_constraint(model, 
+        MOI.SingleVariable(X[2]),
+            MOI.GreaterThan(0.0))
+
+    MOI.set(model, 
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+
     return model
 end

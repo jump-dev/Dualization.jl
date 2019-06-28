@@ -1,16 +1,24 @@
 # This should be putted in MOIU and used for Dualization later
-function dual_function_in_set(F::MOI.AbstractFunction, S::MOI.AbstractSet)
-    return _dual_set(F, S)
-end
-
-function _dual_set(F::SAF{T}, S::MOI.GreaterThan) where T
+function dual_set(s::MOI.GreaterThan{T}) where T
     return MOI.GreaterThan(zero(T))
 end
 
-function _dual_set(F::SAF{T}, S::MOI.LessThan{T}) where T
+function dual_set(s::MOI.LessThan{T}) where T
     return MOI.LessThan(zero(T))
 end
 
-function _dual_set(F::SAF{T}, S::MOI.EqualTo) where T
-    return # Reals ?
+function dual_set(s::MOI.EqualTo{T}) where T
+    return # Maybe return Reals in the future
+end
+
+function dual_set(s::MOI.Nonpositives)
+    return MOI.Nonpositives(MOI.dimension(s))
+end
+
+function dual_set(s::MOI.Nonnegatives)
+    return MOI.Nonnegatives(MOI.dimension(s))
+end
+
+function dual_set(s::MOI.Zeros)
+    return # Maybe return Reals in the future
 end

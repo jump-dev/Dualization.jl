@@ -27,6 +27,10 @@ supported_constraint(::Type{SVF}, ::Type{MOI.EqualTo{T}}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonpositives}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonnegatives}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
+#VVF
+supported_constraint(::Type{VVF}, ::Type{MOI.Nonpositives}) where T = true
+supported_constraint(::Type{VVF}, ::Type{MOI.Nonnegatives}) where T = true
+supported_constraint(::Type{VVF}, ::Type{MOI.Zeros}) where T = true
 
 """
     supported_objective(obj_func_type::DataType)

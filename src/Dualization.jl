@@ -29,8 +29,10 @@ MOIU.@model(DualizableModel,
             (MOI.VectorAffineFunction,))
 
 include("utils.jl")
+include("dual_sets.jl")
 include("supported.jl")
 include("objective_coefficients.jl")
+include("add_dual_cone_constraint.jl")
 include("dual_model_variables.jl")
 include("dual_equality_constraints.jl")
 include("dualize.jl")
