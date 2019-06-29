@@ -1,3 +1,8 @@
+"""
+Docs here
+"""
+function dual_set end
+
 # This should be putted in MOIU and used for Dualization later
 function dual_set(s::MOI.GreaterThan{T}) where T
     return MOI.GreaterThan(zero(T))

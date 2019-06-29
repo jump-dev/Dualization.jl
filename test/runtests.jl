@@ -1,4 +1,4 @@
-push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
 using Pkg
 Pkg.activate(".") # Just to make sure to use JuMP 0.19.1
 using MathOptInterface, Dualization, Test
@@ -42,6 +42,7 @@ include("Problems/Quadratic/quadratic_problems.jl")
 include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")
 include("Tests/test_dual_model_variables.jl")
+include("Tests/test_dual_sets.jl")
 include("Tests/test_dualize.jl")
 
 

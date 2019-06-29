@@ -19,15 +19,16 @@
         model = lp1_test()
         primal_objective = Dualization.get_primal_objective(model)
         
-        @test primal_objective.saf.terms[1] == MathOptInterface.ScalarAffineTerm{Float64}(-4.0, MathOptInterface.VariableIndex(2))
-        @test primal_objective.saf.constant == -1.0
+        @test primal_objective.saf.terms[1] == MOI.ScalarAffineTerm{Float64}(-4.0, MOI.VariableIndex(2))
+        @test MOI._constant(Dualization.get_saf(primal_objective)) == -1.0
 
         model = lp10_test()
-        @test model.objective == MathOptInterface.SingleVariable(MathOptInterface.VariableIndex(1))
+        
+        @test model.objective == MOI.SingleVariable(MOI.VariableIndex(1))
         primal_objective = Dualization.get_primal_objective(model)
         
-        @test primal_objective.saf.terms[1] == MathOptInterface.ScalarAffineTerm{Float64}(1.0, MathOptInterface.VariableIndex(1))
-        @test primal_objective.saf.constant == 0.0
+        @test primal_objective.saf.terms[1] == MOI.ScalarAffineTerm{Float64}(1.0, MOI.VariableIndex(1))
+        @test MOI._constant(Dualization.get_saf(primal_objective)) == 0.0
     end
     
 end
