@@ -68,7 +68,7 @@ function lp2_test()
     
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], X), -1.0))
     
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
@@ -108,7 +108,7 @@ function lp3_test()
     
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], X), -1.0))
     
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     
@@ -136,7 +136,7 @@ function lp4_test()
     
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0, 3.0], [X[1], X[2]]), 0.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0, 3.0], X), 0.0))
     
     MOI.set(model, MOI.ObjectiveSense(), MOI.MAX_SENSE)
     
@@ -176,7 +176,7 @@ function lp5_test()
 
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], X), -1.0))
 
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     
@@ -212,7 +212,7 @@ function lp6_test()
 
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], X), -1.0))
 
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
@@ -249,7 +249,7 @@ function lp7_test()
 
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], X), -1.0))
 
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
@@ -379,7 +379,7 @@ function lp11_test()
     
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0, 3.0], [X[1], X[2]]), 0.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([4.0, 3.0], X), 0.0))
     
     return model
 end
@@ -389,8 +389,8 @@ function lp12_test()
         min 4x_3 + 5
     s.t.
         x_1 + 2x_2 + x_3 <= 20
-        x_1 >= 1
-        x_2 >= 3
+        x_1 <= 1
+        x_2 <= 3
     =#
 
     model = TestModel{Float64}()
@@ -438,20 +438,11 @@ function lp13_test()
 
     MOI.add_constraint(model, c1, MOI.Nonpositives(2))
 
-
-    MOI.add_constraint(model, MOI.VectorOfVariables(X), MOI.Nonpositives(2))
-            
-    MOI.add_constraint(model, 
-        MOI.SingleVariable(X[1]),
-            MOI.GreaterThan(1.0))
-
-    MOI.add_constraint(model, 
-        MOI.SingleVariable(X[2]),
-            MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, MOI.VectorOfVariables(X), MOI.Nonnegatives(2))
 
     MOI.set(model, 
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], [X[1], X[2]]), -1.0))
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([-4.0, -3.0], X), -1.0))
 
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 

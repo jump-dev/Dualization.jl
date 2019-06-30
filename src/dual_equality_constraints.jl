@@ -15,7 +15,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
         if primal_vi == primal_objective.saf.terms[scalar_term_index].variable_index
-            scalar_term_value = primal_objective.saf.terms[scalar_term_index].coefficient
+            scalar_term_value = MOI.coefficient(primal_objective.saf.terms[scalar_term_index])
             # This ternary is important for the last scalar_term_index
             # If the last term of the objective is not the last primal variable we don't update 
             # the scalar_term_index
@@ -24,10 +24,10 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
             scalar_term_value = zero(T)
         end
         scalar_term = (dual_sense == MOI.MAX_SENSE ? 1 : -1) * scalar_term_value
-        # Add primal variable to dual contraint to the link dictionary
-        push!(primal_var_dual_con, primal_vi => CI{SAF{T}, MOI.EqualTo}(dual_model.nextconstraintid))
         # Add equality constraint
         MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
+        # Add primal variable to dual contraint to the link dictionary
+        push!(primal_var_dual_con, primal_vi => CI{SAF{T}, MOI.EqualTo{T}}(dual_model.nextconstraintid))
     end
     return primal_var_dual_con
 end

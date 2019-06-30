@@ -15,6 +15,7 @@ const GLPKOPT = with_optimizer(GLPK.Optimizer)
         lp10_test,
         # lp11_test, Feasibility not supported
         lp12_test,
+        lp13_test
     ]
     test_strong_duality(list_of_linear_problems, GLPKOPT)
 end
