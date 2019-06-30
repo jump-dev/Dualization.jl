@@ -1,6 +1,3 @@
-push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
-using Pkg
-Pkg.activate(".") # Just to make sure to use JuMP 0.19.1
 using MathOptInterface, Dualization, Test
 
 const MOI  = MathOptInterface
@@ -32,8 +29,6 @@ MOIU.@model(TestModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-cd("test")
-
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
@@ -48,7 +43,8 @@ include("Tests/test_dualize.jl")
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
 using JuMP
-# include("Problems/Linear/linear_classifier.jl")
 include("optimize_abstract_models.jl")
-include("Solvers/clp_test.jl")
+
+# Test strong duality in linear problems
+# include("Solvers/clp_test.jl") 
 include("Solvers/glpk_test.jl")

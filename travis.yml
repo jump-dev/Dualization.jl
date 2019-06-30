@@ -1,0 +1,23 @@
+language: julia
+os:
+    - linux
+julia:
+    - 1.0
+matrix:
+    allow_failures:
+        - julia: nightly
+notifications:
+    email: false
+sudo: false
+addons:
+    apt_packages:
+        - gfortran
+        - liblapack-dev
+        - libgmp-dev
+        - libglpk-dev
+after_success:
+    - echo $TRAVIS_JULIA_VERSION
+    - julia -e 'import Pkg; Pkg.add("Documenter")'
+    - julia -e 'import Pkg; cd(Pkg.dir("Dualization")); include(joinpath("docs", "make.jl"))'
+    # push coverage results to Codecov
+    - julia --inline=no -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
