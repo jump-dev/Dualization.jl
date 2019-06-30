@@ -1,74 +1,56 @@
+export dualize
+
+struct PrimalDualMap
+    primal_var_dual_con::Dict{VI, CI}
+    primal_con_dual_var::Dict{CI, Vector{VI}}
+end
+
+struct DualProblem
+    dual_model::MOI.ModelLike 
+    primal_dual_map::PrimalDualMap
+end
+
 """
-    dualize(model::MOI.ModelLike, ::Type{T}) where T
+    dualize(model::MOI.ModelLike)
 
 Dualize the model
 """
-function dualize(model::MOI.ModelLike)
+dualize(primal_model::MOI.ModelLike) = dualize(primal_model, Float64)
+
+function dualize(primal_model::MOI.ModelLike, T::DataType)
+    # Throws an error if objective function cannot be dualized
+    supported_objective(primal_model) 
+
     # Query all constraint types of the model
-    constr_types = MOI.get(model, MOI.ListOfConstraints())
-    supported_constraints(constr_types) # Throws an error if constraint cannot be dualized
-    
-    # Query the objective function type of the model
-    obj_func_type = MOI.get(model, MOI.ObjectiveFunctionType())
-    supported_objective(obj_func_type) # Throws an error if objective function cannot be dualized
+    con_types = MOI.get(primal_model, MOI.ListOfConstraints())
+    supported_constraints(con_types) # Throws an error if constraint cannot be dualized
     
     # Crates an empty dual model
-    dualmodel = Model{Float64}()
-
+    dual_model = DualizableModel{T}()
+    
     # Set the dual model objective sense
-    set_dualmodel_sense!(dualmodel, model)
+    set_dual_model_sense(dual_model, primal_model)
 
-    # Add variables to the dual model and dual cone constraint.
-    # Return a dictionary for dualvariables with primal constraints
-    dualvar_primalcon_dict = add_dualmodel_variables!(dualmodel, model, constr_types)
+    # Get Primal Objective Coefficients
+    primal_objective = get_primal_objective(primal_model)
 
-    # Add dual equality constraint
+    # Add variables to the dual model and their dual cone constraint.
+    # Return a dictionary for dual variables with primal constraints
+    primal_con_dual_var, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model,
+                                                                             con_types, T)
+    
+    # Fill Dual Objective Coefficients Struct
+    dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)
+
+    # Add dual objective to the model
+    set_dual_objective(dual_model, dual_objective)
+
+    # Add dual equality constraint and get the link dictionary
+    primal_var_dual_con = add_dual_equality_constraints(dual_model, primal_model,
+                                                        primal_con_dual_var, primal_objective, 
+                                                        con_types)
+
     
 
-    # Add dual objective function
-
-    return dualmodel
-end
-
-"""
-Add dual model with variables and dual cone constraints. 
-Creates dual variables => primal constraints dict
-"""
-function add_dualmodel_variables!(dualmodel::MOI.ModelLike, model::MOI.ModelLike, constr_types::Vector{Tuple{DataType, DataType}})
-    # Adds the dual variables to the dual model, assumining the number of constraints of the model
-    # is model.nextconstraintid
-    MOI.add_variables(dualmodel, model.nextconstraintid) 
-    dualvar_primalcon_dict = Dict{VI, CI}()
-    i = 1
-    for (F, S) in constr_types
-        num_cons_f_s = MOI.get(model, MOI.NumberOfConstraints{F, S}()) #number of constraints {F, S}
-        for con_id in 1:num_cons_f_s
-            vi = VI(i)
-            push!(dualvar_primalcon_dict, vi => CI{F, S}(con_id)) # Add dual variable to the dict
-            add_dualcone_cosntraint!(dualmodel, vi, F, S) # Add dual variable in dual cone constraint y \in C^*
-            i += 1
-        end
-    end
-    return dualvar_primalcon_dict
-end
-
-
-"""
-    set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
-
-Set the dual model objective sense
-"""
-function set_dualmodel_sense!(dualmodel::MOI.ModelLike, model::MOI.ModelLike)
-    # Get model sense
-    sense = MOI.get(model, MOI.ObjectiveSense())
-
-    # Set dual model sense
-    if sense == MOI.MIN_SENSE
-        MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MAX_SENSE)
-    elseif sense == MOI.MAX_SENSE
-        MOI.set(dualmodel, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-    else
-        error(sense, " is not supported") # Feasibility should be supported?
-    end
-    return nothing
+    return DualProblem(dual_model, PrimalDualMap(primal_var_dual_con, primal_con_dual_var))
 end
