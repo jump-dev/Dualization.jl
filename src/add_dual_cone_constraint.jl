@@ -13,7 +13,7 @@ function _add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.
 end
 
 function _add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, vi::VI,
-                                  ci::CI{F, S}) where {F <: MOI.AbstractScalarFunction, S <: MOI.EqualTo}
+                                  ci::CI{F, MOI.EqualTo{T}}) where {T, F <: MOI.AbstractScalarFunction}
     return 
 end
 
@@ -23,6 +23,6 @@ function _add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.
 end
 
 function _add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, vis::Vector{VI},
-                                  ci::CI{F, S}) where {F <: MOI.AbstractVectorFunction, S <: MOI.Zeros}
+                                  ci::CI{F, MOI.Zeros}) where {F <: MOI.AbstractVectorFunction}
     return 
 end

@@ -1,3 +1,6 @@
+push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+import Pkg
+Pkg.activate(".")
 using MathOptInterface, Dualization, Test
 
 const MOI  = MathOptInterface
@@ -29,9 +32,11 @@ MOIU.@model(TestModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
+cd("test")
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
+include("Problems/SOC/soc_problems.jl")
 
 # Run tests to travis ci
 include("Tests/test_supported.jl")
@@ -48,3 +53,4 @@ include("optimize_abstract_models.jl")
 # Test strong duality in linear problems
 # include("Solvers/clp_test.jl") 
 include("Solvers/glpk_test.jl")
+include("Solvers/scs_test.jl")
