@@ -1,7 +1,7 @@
 function soc1_test()
     #=
         max 0x + 1y + 1z
-      s.t.
+    s.t.
         x == 1
         x >= ||(y,z)||
     =#
@@ -53,41 +53,79 @@ function soc2_test()
 end
 
 function soc3_test()
-    
-    # min  x
-    # s.t. y ≥ 1/√2
-    #      x² + y² ≤ 1
-    # in conic form:
-    # min  x
-    # s.t.  -1/√2 + y ∈ R₊
-    #        1 - t ∈ {0}
-    #      (t,x,y) ∈ SOC₃
+    #=
+        min  x
+    s.t.
+        y ≥ 1/√2
+        x² + y² ≤ 1
+
+    in conic form:
+        min  x
+    s.t.
+        -1/√2 + y ∈ R₊
+        1 - t ∈ {0}
+        (t,x,y) ∈ SOC₃
+    =#
+    model = TestModel{Float64}()
+
     x,y,t = MOI.add_variables(model, 3)
 
     MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, x)], 0.0))
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
-    if nonneg
-        cnon = MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(1.0, y))], [-1/√2]), MOI.Nonnegatives(1))
-    else
-        cnon = MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(-1.0, y))], [1/√2]), MOI.Nonpositives(1))
-    end
+    cnon = MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(1.0, y))], [-1/√2]), MOI.Nonnegatives(1))
     ceq = MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(-1.0, t))], [1.0]), MOI.Zeros(1))
     csoc = MOI.add_constraint(model, MOI.VectorAffineFunction(MOI.VectorAffineTerm.([1,2,3], MOI.ScalarAffineTerm.(1.0, [t,x,y])), zeros(3)), MOI.SecondOrderCone(3))
 
+    return model
 end
 
 function soc4_test()
-    # Problem SOC3 - Infeasible
-    # min 0
-    # s.t. y ≥ 2
-    #      x ≤ 1
-    #      |y| ≤ x
-    # in conic form:
-    # min 0
-    # s.t. -2 + y ∈ R₊
-    #      -1 + x ∈ R₋
-    #       (x,y) ∈ SOC₂
+    #=
+        min  x
+    s.t. 
+        y ≥ 1/√2
+        x² + y² ≤ 1
+
+    in conic form:
+        min  x
+    s.t.
+        1/√2 - y ∈ R₋
+        1 - t ∈ {0}
+        (t,x,y) ∈ SOC₃
+    =#
+    model = TestModel{Float64}()
+
+    x,y,t = MOI.add_variables(model, 3)
+
+    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, x)], 0.0))
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+
+    cnon = MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(-1.0, y))], [1/√2]), MOI.Nonpositives(1))
+
+    ceq = MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(-1.0, t))], [1.0]), MOI.Zeros(1))
+    csoc = MOI.add_constraint(model, MOI.VectorAffineFunction(MOI.VectorAffineTerm.([1,2,3], MOI.ScalarAffineTerm.(1.0, [t,x,y])), zeros(3)), MOI.SecondOrderCone(3))
+
+    return model
+end
+
+function soc5_test()
+    #= 
+        min x
+    s.t.
+        y ≥ 2
+        x ≤ 1
+        |y| ≤ x
+
+    in conic form:
+        min x
+    s.t.
+        -2 + y ∈ R₊
+        -1 + x ∈ R₋
+        (x,y) ∈ SOC₂
+    =#
+
+    model = TestModel{Float64}()
 
     x,y = MOI.add_variables(model, 2)
 
@@ -95,22 +133,28 @@ function soc4_test()
     MOI.add_constraint(model, MOI.VectorAffineFunction([MOI.VectorAffineTerm(1, MOI.ScalarAffineTerm(1.0, x))], [-1.0]), MOI.Nonpositives(1))
     MOI.add_constraint(model, MOI.VectorAffineFunction(MOI.VectorAffineTerm.([1,2], MOI.ScalarAffineTerm.(1.0, [x,y])), zeros(2)), MOI.SecondOrderCone(2))
 
+    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, x)], 0.0))
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+
 end
 
-function soc5_test()
-    # Problem SOC4
-    # min 0x[1] - 2x[2] - 1x[3]
-    #  st  x[1]                                == 1 (c1a)
-    #              x[2]         - x[4]         == 0 (c1b)
-    #                      x[3]         - x[5] == 0 (c1c)
-    #      x[1] >= ||(x[4],x[5])||                  (c2)
-    # in conic form:
-    # min  c^Tx
-    # s.t. Ax + b ∈ {0}₃
-    #      (x[1],x[4],x[5]) ∈ SOC₃
-    # Like SOCINT1 but with copies of variables and integrality relaxed
-    # Tests out-of-order indices in cones
+function soc6_test()
+    #= 
+        min 0x[1] - 2x[2] - 1x[3]
+    s.t.
+        x[1]                    == 1 
+            x[2]   - x[4]       == 0 
+               x[3]      - x[5] == 0 
+        x[1] >= ||(x[4],x[5])||                  
 
+    in conic form:
+        min  c^Tx
+    s.t.
+        Ax + b ∈ {0}₃
+        (x[1],x[4],x[5]) ∈ SOC₃
+    =#
+
+    model = TestModel{Float64}()
 
     x = MOI.add_variables(model, 5)
 
