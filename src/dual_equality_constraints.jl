@@ -149,7 +149,7 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
                                                          S <: MOI.SecondOrderCone}
 
     moi_function = get_function(primal_model, ci)
-    i = 1
+    i::Int = 1
     for variable in moi_function.variables
         if variable == primal_vi
             dual_vi = primal_con_dual_var[ci][i]

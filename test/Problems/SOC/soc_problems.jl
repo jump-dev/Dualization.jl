@@ -136,6 +136,7 @@ function soc5_test()
     MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, x)], 0.0))
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
+    return model
 end
 
 function soc6_test()
