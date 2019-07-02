@@ -1,4 +1,4 @@
-push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
 import Pkg
 Pkg.activate(".")
 using MathOptInterface, Dualization, Test

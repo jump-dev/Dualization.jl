@@ -140,3 +140,41 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
     end
     return 
 end
+
+function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
+                                   primal_con_dual_var::Dict{CI, Vector{VI}},
+                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
+                                   primal_vi::VI) where {T, 
+                                                         F <: VVF, 
+                                                         S <: MOI.SecondOrderCone}
+
+    moi_function = get_function(primal_model, ci)
+    i = 1
+    for variable in moi_function.variables
+        if variable == primal_vi
+            dual_vi = primal_con_dual_var[ci][i]
+            push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
+        end
+        i += 1
+    end
+    return 
+end
+
+function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
+                                   primal_con_dual_var::Dict{CI, Vector{VI}},
+                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
+                                   primal_vi::VI) where {T, 
+                                                         F <: VAF{T}, 
+                                                         S <: MOI.SecondOrderCone}
+
+    moi_function = get_function(primal_model, ci)
+    for term in moi_function.terms
+        if term.scalar_term.variable_index == primal_vi
+            dual_vi = primal_con_dual_var[ci][term.output_index] # term.output_index is the row of the VAF,
+                                                                # it corresponds to the dual variable associated with
+                                                                # this constraint
+            push_to_scalar_affine_terms!(scalar_affine_terms, MOI.coefficient(term), dual_vi)
+        end
+    end
+    return
+end
