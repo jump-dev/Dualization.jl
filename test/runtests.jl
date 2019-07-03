@@ -28,7 +28,7 @@ MOIU.@model(TestModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-
+            
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
@@ -46,7 +46,7 @@ include("Tests/test_dualize.jl")
 using JuMP
 include("optimize_abstract_models.jl")
 
-# Test strong duality in linear problems
+# Test strong duality in linear/conic problems
 # include("Solvers/clp_test.jl") 
 include("Solvers/glpk_test.jl")
 include("Solvers/scs_test.jl")

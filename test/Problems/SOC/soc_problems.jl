@@ -5,7 +5,6 @@ function soc1_test()
         x == 1
         x >= ||(y,z)||
     =#
-
     model = TestModel{Float64}()
 
     x,y,z = MOI.add_variables(model, 3)
@@ -32,7 +31,6 @@ function soc2_test()
         x == 1
         x >= ||(y,z)||
     =#
-
     model = TestModel{Float64}()
 
     x,y,z = MOI.add_variables(model, 3)
@@ -124,7 +122,6 @@ function soc5_test()
         -1 + x ∈ R₋
         (x,y) ∈ SOC₂
     =#
-
     model = TestModel{Float64}()
 
     x,y = MOI.add_variables(model, 2)
@@ -154,7 +151,6 @@ function soc6_test()
         Ax + b ∈ {0}₃
         (x[1],x[4],x[5]) ∈ SOC₃
     =#
-
     model = TestModel{Float64}()
 
     x = MOI.add_variables(model, 5)
