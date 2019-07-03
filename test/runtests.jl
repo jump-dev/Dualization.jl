@@ -1,10 +1,6 @@
-push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
-import Pkg
-Pkg.activate(".")
 using MathOptInterface, Dualization, Test
 
 const MOI  = MathOptInterface
-const MOIT = MathOptInterface.Test
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 
@@ -32,7 +28,7 @@ MOIU.@model(TestModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-cd("test")
+
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
