@@ -49,4 +49,5 @@ include("optimize_abstract_models.jl")
 # Test strong duality in linear/conic problems
 # include("Solvers/clp_test.jl") 
 include("Solvers/glpk_test.jl")
-include("Solvers/scs_test.jl")
+# include("Solvers/scs_test.jl")
+include("Solvers/ecos_test.jl")
