@@ -143,10 +143,8 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
-                                   primal_vi::VI) where {T, 
-                                                         F <: VVF, 
-                                                         S <: MOI.SecondOrderCone}
+                                   primal_model::MOI.ModelLike, ci::CI{VVF, MOI.SecondOrderCone}, 
+                                   primal_vi::VI) where T
 
     moi_function = get_function(primal_model, ci)
     i::Int = 1
@@ -162,10 +160,8 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
-                                   primal_vi::VI) where {T, 
-                                                         F <: VAF{T}, 
-                                                         S <: MOI.SecondOrderCone}
+                                   primal_model::MOI.ModelLike, ci::CI{VAF{T}, MOI.SecondOrderCone}, 
+                                   primal_vi::VI) where T
 
     moi_function = get_function(primal_model, ci)
     for term in moi_function.terms

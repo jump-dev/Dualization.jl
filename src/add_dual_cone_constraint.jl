@@ -1,7 +1,7 @@
 function add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, vis::Vector{VI},
                                   ci::CI{F, S}) where {F <: MOI.AbstractFunction, S <: MOI.AbstractSet}
 
-        _add_dual_cone_constraint(dual_model, primal_model, vis, ci)
+    return _add_dual_cone_constraint(dual_model, primal_model, vis, ci)
 end
 
 function _add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, vi::Vector{VI},
