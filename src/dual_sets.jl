@@ -31,3 +31,7 @@ end
 function dual_set(s::MOI.SecondOrderCone)
     return MOI.SecondOrderCone(MOI.dimension(s))
 end
+
+function dual_set(s::MOI.RotatedSecondOrderCone)
+    return MOI.RotatedSecondOrderCone(MOI.dimension(s))
+end
