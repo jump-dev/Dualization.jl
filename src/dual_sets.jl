@@ -27,3 +27,7 @@ end
 function dual_set(s::MOI.Zeros)
     return # Maybe return Reals in the future
 end
+
+function dual_set(s::MOI.SecondOrderCone)
+    return MOI.SecondOrderCone(MOI.dimension(s))
+end

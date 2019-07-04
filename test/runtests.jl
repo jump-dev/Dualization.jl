@@ -1,7 +1,6 @@
 using MathOptInterface, Dualization, Test
 
 const MOI  = MathOptInterface
-const MOIT = MathOptInterface.Test
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 
@@ -29,9 +28,11 @@ MOIU.@model(TestModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
+            
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
+include("Problems/SOC/soc_problems.jl")
 
 # Run tests to travis ci
 include("Tests/test_supported.jl")
@@ -45,6 +46,8 @@ include("Tests/test_dualize.jl")
 using JuMP
 include("optimize_abstract_models.jl")
 
-# Test strong duality in linear problems
+# Test strong duality in linear/conic problems
 # include("Solvers/clp_test.jl") 
 include("Solvers/glpk_test.jl")
+# include("Solvers/scs_test.jl")
+include("Solvers/ecos_test.jl")

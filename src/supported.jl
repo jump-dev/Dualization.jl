@@ -15,22 +15,26 @@ end
 # General case
 supported_constraint(::DataType, ::DataType) = false
 # List of supported constraints
-# SAF
-supported_constraint(::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}) where T = true
-supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
-supported_constraint(::Type{SAF{T}}, ::Type{MOI.EqualTo{T}}) where T = true
-# SVF
+# SVF - Linear
 supported_constraint(::Type{SVF}, ::Type{MOI.GreaterThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.LessThan{T}}) where T = true
 supported_constraint(::Type{SVF}, ::Type{MOI.EqualTo{T}}) where T = true
-#VAF
-supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonpositives}) where T = true
-supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonnegatives}) where T = true
-supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
-#VVF
+# SAF - Linear
+supported_constraint(::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}) where T = true
+supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
+supported_constraint(::Type{SAF{T}}, ::Type{MOI.EqualTo{T}}) where T = true
+# VVF - Linear
 supported_constraint(::Type{VVF}, ::Type{MOI.Nonpositives}) where T = true
 supported_constraint(::Type{VVF}, ::Type{MOI.Nonnegatives}) where T = true
 supported_constraint(::Type{VVF}, ::Type{MOI.Zeros}) where T = true
+# VAF - Linear
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonpositives}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonnegatives}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
+#VVF - SOC
+supported_constraint(::Type{VVF}, ::Type{MOI.SecondOrderCone}) where T = true
+#VAF - SOC 
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.SecondOrderCone}) where T = true
 
 """
     supported_objective(obj_func_type::DataType)

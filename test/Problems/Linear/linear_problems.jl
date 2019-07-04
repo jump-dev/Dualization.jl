@@ -6,7 +6,6 @@ function lp1_test()
         x_1 >= 1
         x_1 >= 3
     =#
-
     model = TestModel{Float64}()
     
     X = MOI.add_variables(model, 2)
@@ -297,7 +296,6 @@ function lp9_test()
         -1 <= x + y <= 10
         x,  y >= 0
     =#
-
     model = TestModel{Float64}()
 
     x = MOI.add_variable(model)
@@ -392,7 +390,6 @@ function lp12_test()
         x_1 <= 1
         x_2 <= 3
     =#
-
     model = TestModel{Float64}()
     
     X = MOI.add_variables(model, 3)

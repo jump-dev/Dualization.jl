@@ -92,14 +92,12 @@ function get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Di
     num_objective_terms = length(dual_obj_affine_terms)
     term_vec = Vector{T}(undef, num_objective_terms)
     vi_vec   = Vector{VI}(undef, num_objective_terms)
-    i::Int = 1
-    for var in keys(dual_obj_affine_terms) # Number of constraints of the primal model
+    for (i, var) in enumerate(keys(dual_obj_affine_terms)) # Number of constraints of the primal model
         term = dual_obj_affine_terms[var]
         # Add positive terms bi if dual model sense is max
         term_vec[i] = (sense == MOI.MAX_SENSE ? -1 : 1) * term
         # Variable index associated with term bi
         vi_vec[i] = var
-        i += 1
     end
     saf_dual_objective = MOI.ScalarAffineFunction(
                          MOI.ScalarAffineTerm.(term_vec, 

@@ -31,10 +31,8 @@ function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLi
     vis = MOI.add_variables(dual_model, row_dimension) # Add as many variables as the dimension of the constraint
     push!(primal_con_dual_var, ci => vis) # Add the map of the added dual variable to the relationated constraint
     # Add each vi to the dictionary
-    i::Int = 1
-    for vi in vis
+    for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(dual_obj_affine_terms, vi, get_scalar_term(primal_model, ci, T)[i])
-        i += 1
     end
     return vis
 end
