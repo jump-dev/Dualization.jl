@@ -1,36 +1,34 @@
 @testset "rsoc problems" begin
     @testset "rsoc1_test" begin
     #=
-   primal
-       max 0x + 1y + 1z
-   s.t.
-       x == 1          :w_4
-       x >= ||(y,z)||  :w_1, w_2, w_3
+    primal
+        min 0a + 0b - 1x - 1y
+    s.t.
+        a    == 1/2
+        b    == 1
+        2a*b >= x^2+y^2
    
    dual
-       min -w_4
-   s.t.
-       w_2 == -1
-       w_3 == -1
-       w_1 + w_4 == 0
-       w_1 >= ||(w_2, w_3)||
+
+       
    =#
        primal_model = rsoc1_test()
        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
 
-       @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
+       @test MOI.get(dual_model, MOI.NumberOfVariables()) == 6
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
        @test list_of_cons == [
            (SAF{Float64}, MOI.EqualTo{Float64})              
-           (VVF, MOI.SecondOrderCone)
+           (VVF, MOI.RotatedSecondOrderCone)
        ]
-       @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.SecondOrderCone}()) == 1   
-       @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 3
+       @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1   
+       @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 4
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
        @test obj_type == SAF{Float64}
        obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
+       @test MOI.get(dual_model, MOI.ObjectiveSense())
        @test MOI._constant(obj) == 0.0
-       @test MOI.coefficient.(obj.terms) == [-1.0]
+       @test MOI.coefficient.(obj.terms) == [-1.0; -0.5]
        
        eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
@@ -63,19 +61,15 @@
 
    @testset "soc2_test" begin
     #=
-   primal
-       max 0x + 1y + 1z
-   s.t.
-       x == 1          :w_4
-       x >= ||(y,z)||  :w_1, w_2, w_3
+    primal
+        min 0a + 0b - 1x - 1y
+    s.t.
+        a    == 1/2
+        b    == 1
+        2a*b >= x^2+y^2
    
-   dual
-       min -w_4
-   s.t.
-       w_2 == -1
-       w_3 == -1
-       w_1 + w_4 == 0
-       w_1 >= ||(w_2, w_3)||
+    dual
+        
    =#
        primal_model = soc2_test()
        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
