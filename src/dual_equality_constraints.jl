@@ -130,13 +130,11 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
                                                                     MOI.Zeros}}
 
     moi_function = get_function(primal_model, ci)
-    i::Int = 1
-    for variable in moi_function.variables
+    for (i, variable) in enumerate(moi_function.variables)
         if variable == primal_vi
             dual_vi = primal_con_dual_var[ci][i]
             push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
         end
-        i += 1
     end
     return 
 end
@@ -147,13 +145,11 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
                                    primal_vi::VI) where T
 
     moi_function = get_function(primal_model, ci)
-    i::Int = 1
-    for variable in moi_function.variables
+    for (i, variable) in enumerate(moi_function.variables)
         if variable == primal_vi
             dual_vi = primal_con_dual_var[ci][i]
             push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
         end
-        i += 1
     end
     return 
 end
