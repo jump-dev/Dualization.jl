@@ -19,8 +19,8 @@ function rsoc1_test()
     rsoc = MOI.add_constraint(model, MOI.VectorOfVariables([a; b; x]), MOI.RotatedSecondOrderCone(4))
 
     MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(1.0, x), 0.0))
-    MOI.set(model, MOI.ObjectiveSense(), MOI.MAX_SENSE)
+            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(-1.0, x), 0.0))
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     
     return model
 end
@@ -42,8 +42,8 @@ function rsoc2_test()
             MOI.ScalarAffineTerm.([1., 1.], x)), [a, b, 0., 0.]), MOI.RotatedSecondOrderCone(4))
 
     MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), 
-            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(1.0, x), 0.0))
-    MOI.set(model, MOI.ObjectiveSense(), MOI.MAX_SENSE)
+            MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(-1.0, x), 0.0))
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     
     return model
 end
