@@ -44,6 +44,7 @@ include("Tests/test_dual_model_variables.jl")
 include("Tests/test_dual_sets.jl")
 include("Tests/test_dualize_linear.jl")
 include("Tests/test_dualize_soc.jl")
+include("Tests/test_dualize_rsoc.jl")
 
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
