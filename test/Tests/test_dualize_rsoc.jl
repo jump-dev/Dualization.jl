@@ -18,7 +18,7 @@
         (w_3, w_4, w_5, w_6) \in RotatedSecondOrderCone
    =#
        primal_model = rsoc1_test()
-       dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+       dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 6
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
@@ -90,7 +90,7 @@
         (w_3, w_4, w_5, w_6) \in RotatedSecondOrderCone
    =#
        primal_model = rsoc2_test()
-       dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+       dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())

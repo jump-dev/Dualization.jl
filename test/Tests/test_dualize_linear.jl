@@ -18,7 +18,7 @@
         2y_3 == -4              :x_2
     =#
         primal_model = lp1_test()
-        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+        dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
@@ -78,7 +78,7 @@
         y_4 <= 0
     =#
         primal_model = lp7_test()
-        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+        dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
@@ -135,7 +135,7 @@
         y_2 >= 0
     =#
         primal_model = lp10_test()
-        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+        dual_model, primal_dual_map = dual_model_and_map(primal_model)
         
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
@@ -193,7 +193,7 @@
         y_3 <= 0
     =#
         primal_model = lp12_test()
-        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+        dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
@@ -257,7 +257,7 @@
         y_4 <= 0
     =#
         primal_model = lp13_test()
-        dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+        dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())

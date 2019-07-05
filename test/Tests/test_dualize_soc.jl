@@ -16,7 +16,7 @@
        w_1 >= ||(w_2, w_3)||
    =#
        primal_model = soc1_test()
-       dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+       dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
@@ -78,7 +78,7 @@
        w_1 >= ||(w_2, w_3)||
    =#
        primal_model = soc2_test()
-       dual_model, primal_dual_map = get_dual_model_and_map(primal_model)
+       dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
