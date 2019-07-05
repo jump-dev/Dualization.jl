@@ -56,13 +56,6 @@ function push_to_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffi
     return 
 end
 
-function push_to_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
-                                      affine_terms::Vector{T}, vis::Vector{VI}) where T
-    for i in eachindex(affine_terms)
-        push_to_scalar_affine_terms!(scalar_affine_terms, affine_terms[i], vis[i])
-    end
-end
-
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
                                    primal_model::MOI.ModelLike, ci::CI{F, S}, 
