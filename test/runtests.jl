@@ -1,5 +1,8 @@
+push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+import Pkg
+Pkg.activate(".")
 using MathOptInterface, Dualization, Test
-
+cd("test")
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
@@ -33,6 +36,7 @@ include("utils.jl")
 
 # Problems database
 include("Problems/Linear/linear_problems.jl")
+include("Problems/Linear/conic_linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
 include("Problems/SOC/soc_problems.jl")
 include("Problems/RSOC/rsoc_problems.jl")
