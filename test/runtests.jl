@@ -1,8 +1,5 @@
-push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
-import Pkg
-Pkg.activate(".")
 using MathOptInterface, Dualization, Test
-cd("test")
+
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
@@ -46,6 +43,7 @@ include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")
 include("Tests/test_dual_model_variables.jl")
 include("Tests/test_dual_sets.jl")
+include("Tests/test_dualize_conic_linear.jl")
 include("Tests/test_dualize_linear.jl")
 include("Tests/test_dualize_soc.jl")
 include("Tests/test_dualize_rsoc.jl")
