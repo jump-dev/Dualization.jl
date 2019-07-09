@@ -48,7 +48,6 @@ function rsoc2_test()
     return model
 end
 
-
 function rsoc3_test()
     #=
         min 0
@@ -144,4 +143,3 @@ function rsoc5_test()
 
     return model
 end
-

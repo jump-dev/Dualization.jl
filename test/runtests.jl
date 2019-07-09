@@ -35,7 +35,7 @@ include("utils.jl")
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
 include("Problems/SOC/soc_problems.jl")
-include("Problems/RotatedSOC/rsoc_problems.jl")
+include("Problems/RSOC/rsoc_problems.jl")
 
 # Run tests to travis ci
 include("Tests/test_supported.jl")

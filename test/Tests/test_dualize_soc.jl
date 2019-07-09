@@ -6,7 +6,7 @@
    s.t.
        x == 1          :w_4
        x >= ||(y,z)||  :w_1, w_2, w_3
-   
+
    dual
        min -w_4
    s.t.
@@ -14,7 +14,7 @@
        w_3 == -1
        w_1 + w_4 == 0
        w_1 >= ||(w_2, w_3)||
-   =#
+       =#
        primal_model = soc1_test()
        dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
