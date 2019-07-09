@@ -28,18 +28,23 @@ MOIU.@model(TestModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
 
-            
+# Functions that are used inside tests
+include("utils.jl")
+
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
 include("Problems/SOC/soc_problems.jl")
+include("Problems/RSOC/rsoc_problems.jl")
 
 # Run tests to travis ci
 include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")
 include("Tests/test_dual_model_variables.jl")
 include("Tests/test_dual_sets.jl")
-include("Tests/test_dualize.jl")
+include("Tests/test_dualize_linear.jl")
+include("Tests/test_dualize_soc.jl")
+include("Tests/test_dualize_rsoc.jl")
 
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies

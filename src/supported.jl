@@ -35,6 +35,10 @@ supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
 supported_constraint(::Type{VVF}, ::Type{MOI.SecondOrderCone}) where T = true
 #VAF - SOC 
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.SecondOrderCone}) where T = true
+#VVF - RotatedSOC
+supported_constraint(::Type{VVF}, ::Type{MOI.RotatedSecondOrderCone}) where T = true
+#VAF - RotatedSOC 
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.RotatedSecondOrderCone}) where T = true
 
 """
     supported_objective(obj_func_type::DataType)

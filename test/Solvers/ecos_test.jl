@@ -13,4 +13,13 @@ const ECOSOPT = with_optimizer(ECOS.Optimizer, verbose = 0)
         ]
         test_strong_duality(list_of_soc_problems, ECOSOPT)
     end
+    @testset "ECOS RotatedSOC problems" begin
+        list_of_rsoc_problems = [     
+            rsoc1_test,
+            rsoc2_test,
+            rsoc3_test,
+            rsoc4_test
+        ]
+        test_strong_duality(list_of_rsoc_problems, ECOSOPT)
+    end
 end
