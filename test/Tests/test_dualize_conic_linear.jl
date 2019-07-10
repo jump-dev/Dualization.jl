@@ -68,14 +68,20 @@
         x           -  s == -4    :w_4
             y            == -3    :w_5
         x      +  z      == 12    :w_6
-        y <= 0
-        z >= 0
-        s zero
+        y <= 0 :w_3
+        z >= 0 :w_2
+        s zero :w_1
 
     dual
         max -4w_4 - 3w_5 + 12w_6
     s.t
-        
+        w_4 + w_6 == 3
+        w_3 + w_5 == 2
+        w_2 + w_6 == -4
+        w_1 - w_4 == 0
+        w_2 >= 0
+        w_3 <= 0
+        w_1 in Reals
     =#
         primal_model = conic_linear3_test()
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
