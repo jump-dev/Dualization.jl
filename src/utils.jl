@@ -38,3 +38,12 @@ function get_scalar_term(model::MOI.ModelLike,
     
     return zeros(T, get_ci_row_dimension(model, ci))
 end
+
+function is_diagonal_element(k::Int)
+    j = div(1 + isqrt(8k - 7), 2) # column index
+    i = k - div((j - 1) * j, 2) # row index
+    if i == j
+        return true
+    end
+    return false
+end

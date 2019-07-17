@@ -35,3 +35,7 @@ end
 function dual_set(s::MOI.RotatedSecondOrderCone)
     return MOI.RotatedSecondOrderCone(MOI.dimension(s))
 end
+
+function dual_set(s::MOI.PositiveSemidefiniteConeTriangle)
+    return MOI.PositiveSemidefiniteConeTriangle(s.side_dimension) # Change to MOI.side_dimension in MOI 0.9.0
+end

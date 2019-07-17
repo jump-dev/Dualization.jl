@@ -1,3 +1,7 @@
+push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
+import Pkg
+Pkg.activate(".")
+cd("test")
 using MathOptInterface, Dualization, Test
 
 const MOI  = MathOptInterface
@@ -37,6 +41,7 @@ include("Problems/Linear/conic_linear_problems.jl")
 include("Problems/Quadratic/quadratic_problems.jl")
 include("Problems/SOC/soc_problems.jl")
 include("Problems/RSOC/rsoc_problems.jl")
+include("Problems/SDP/sdp_triangle_problems.jl")
 
 # Run tests to travis ci
 include("Tests/test_supported.jl")
@@ -54,7 +59,6 @@ using JuMP
 include("optimize_abstract_models.jl")
 
 # Test strong duality in linear/conic problems
-# include("Solvers/clp_test.jl") 
 include("Solvers/glpk_test.jl")
-# include("Solvers/scs_test.jl")
 include("Solvers/ecos_test.jl")
+include("Solvers/csdp_test.jl")

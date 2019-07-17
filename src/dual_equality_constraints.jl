@@ -58,9 +58,8 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{SAF{T}, S}, 
                                    primal_vi::VI) where {T, 
-                                                         F <: SAF{T}, 
                                                          S <: Union{MOI.GreaterThan{T},
                                                                     MOI.LessThan{T},
                                                                     MOI.EqualTo{T}}}
@@ -77,9 +76,8 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{SVF, S}, 
                                    primal_vi::VI) where {T, 
-                                                         F <: SVF, 
                                                          S <: Union{MOI.GreaterThan{T},
                                                                     MOI.LessThan{T},
                                                                     MOI.EqualTo{T}}}
@@ -94,9 +92,8 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{VAF{T}, S}, 
                                    primal_vi::VI) where {T, 
-                                                         F <: VAF{T}, 
                                                          S <: MOI.AbstractVectorSet}
 
     moi_function = get_function(primal_model, ci)
@@ -113,9 +110,8 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{F, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{VVF, S}, 
                                    primal_vi::VI) where {T, 
-                                                         F <: VVF, 
                                                          S <: MOI.AbstractVectorSet}
 
     moi_function = get_function(primal_model, ci)
@@ -123,6 +119,46 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
         if variable == primal_vi
             dual_vi = primal_con_dual_var[ci][i]
             push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
+        end
+    end
+    return 
+end
+
+function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
+                                   primal_con_dual_var::Dict{CI, Vector{VI}},
+                                   primal_model::MOI.ModelLike, ci::CI{VAF{T}, MOI.PositiveSemidefiniteConeTriangle}, 
+                                   primal_vi::VI) where T
+
+    moi_function = get_function(primal_model, ci)
+    for (k, term) in enumerate(moi_function.terms)
+        if term.scalar_term.variable_index == primal_vi
+            dual_vi = primal_con_dual_var[ci][term.output_index] # term.output_index is the row of the VAF,
+                                                                 # it corresponds to the dual variable associated with
+                                                                 # this constraint
+            if is_diagonal_element(k)
+                push_to_scalar_affine_terms!(scalar_affine_terms, MOI.coefficient(term), dual_vi)
+            else
+                push_to_scalar_affine_terms!(scalar_affine_terms, 2*MOI.coefficient(term), dual_vi)
+            end
+        end
+    end
+    return 
+end
+
+function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
+                                   primal_con_dual_var::Dict{CI, Vector{VI}},
+                                   primal_model::MOI.ModelLike, ci::CI{VVF, MOI.PositiveSemidefiniteConeTriangle}, 
+                                   primal_vi::VI) where T
+
+    moi_function = get_function(primal_model, ci)
+    for (k, variable) in enumerate(moi_function.variables)
+        if variable == primal_vi
+            dual_vi = primal_con_dual_var[ci][k]
+            if is_diagonal_element(k)
+                push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
+            else
+                push_to_scalar_affine_terms!(scalar_affine_terms, 2*one(T), dual_vi)
+            end
         end
     end
     return 
