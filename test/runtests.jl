@@ -1,7 +1,3 @@
-push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
-import Pkg
-Pkg.activate(".")
-cd("test")
 using MathOptInterface, Dualization, Test
 
 const MOI  = MathOptInterface
@@ -52,6 +48,7 @@ include("Tests/test_dualize_conic_linear.jl")
 include("Tests/test_dualize_linear.jl")
 include("Tests/test_dualize_soc.jl")
 include("Tests/test_dualize_rsoc.jl")
+include("Tests/test_dualize_sdp.jl")
 
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies

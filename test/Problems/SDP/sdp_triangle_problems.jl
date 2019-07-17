@@ -25,14 +25,12 @@ function sdpt1_test()
 end
 
 function sdpt2_test()
-    # min X[1,1] + X[2,2]    max y
-    #     X[2,1] = 1         [0   y/2     [ 1  0
-    #                         y/2 0    <=   0  1]
-    #     X >= 0              y free
-    # Optimal solution:
-    #     ⎛ 1   1 ⎞
-    # X = ⎜       ⎟           y = 2
-    #     ⎝ 1   1 ⎠
+    #= 
+        min TR(X)
+    s.t.
+        X[2,1] = 1
+        X in PSD
+    =#
 
     model = TestModel{Float64}()
 
@@ -98,12 +96,12 @@ function sdpt3_test()
     # Eliminating ε from this set of equation give
     # (-6√2+4)δ^4 + (3√2-2)δ^2 + (2√2-3)
     # from which we find the solution
-    δ = √(1 + (3*√2+2)*√(-116*√2+166) / 14) / 2
+    # δ = √(1 + (3*√2+2)*√(-116*√2+166) / 14) / 2
     # which is optimal
-    ε = √((1 - 2*(√2-1)*δ^2) / (2-√2))
-    y2 = 1 - ε*δ
-    y1 = 1 - √2*y2
-    obj = y1 + y2/2
+    # ε = √((1 - 2*(√2-1)*δ^2) / (2-√2))
+    # y2 = 1 - ε*δ
+    # y1 = 1 - √2*y2
+    # obj = y1 + y2/2
     # The primal solution is rank one of the form
     # X = [α, β, α] * [α, β, α]'
     # and by complementary slackness, x is of the form (√2*x2, x2, x2)
@@ -114,12 +112,12 @@ function sdpt3_test()
     # Eliminating β, we get
     # 4α^2 + 4x2 = 3 - 2obj (2)
     # By complementary slackness, we have β = kα where
-    k = -2*δ/ε
+    # k = -2*δ/ε
     # Replacing β by kα in (1) allows to eliminate α^2 in (2) to get
-    x2 = ((3-2obj)*(2+k^2)-4) / (4*(2+k^2)-4*√2)
+    # x2 = ((3-2obj)*(2+k^2)-4) / (4*(2+k^2)-4*√2)
     # With (2) we get
-    α = √(3-2obj-4x2)/2
-    β = k*α
+    # α = √(3-2obj-4x2)/2
+    # β = k*α
 
    model = TestModel{Float64}()
 
@@ -190,12 +188,12 @@ function sdpt4_test()
     # Eliminating ε from this set of equation give
     # (-6√2+4)δ^4 + (3√2-2)δ^2 + (2√2-3)
     # from which we find the solution
-    δ = √(1 + (3*√2+2)*√(-116*√2+166) / 14) / 2
+    # δ = √(1 + (3*√2+2)*√(-116*√2+166) / 14) / 2
     # which is optimal
-    ε = √((1 - 2*(√2-1)*δ^2) / (2-√2))
-    y2 = 1 - ε*δ
-    y1 = 1 - √2*y2
-    obj = y1 + y2/2
+    # ε = √((1 - 2*(√2-1)*δ^2) / (2-√2))
+    # y2 = 1 - ε*δ
+    # y1 = 1 - √2*y2
+    # obj = y1 + y2/2
     # The primal solution is rank one of the form
     # X = [α, β, α] * [α, β, α]'
     # and by complementary slackness, x is of the form (√2*x2, x2, x2)
@@ -206,14 +204,14 @@ function sdpt4_test()
     # Eliminating β, we get
     # 4α^2 + 4x2 = 3 - 2obj (2)
     # By complementary slackness, we have β = kα where
-    k = -2*δ/ε
+    # k = -2*δ/ε
     # Replacing β by kα in (1) allows to eliminate α^2 in (2) to get
-    x2 = ((3-2obj)*(2+k^2)-4) / (4*(2+k^2)-4*√2)
+    # x2 = ((3-2obj)*(2+k^2)-4) / (4*(2+k^2)-4*√2)
     # With (2) we get
-    α = √(3-2obj-4x2)/2
-    β = k*α
+    # α = √(3-2obj-4x2)/2
+    # β = k*α
 
-   model = TestModel{Float64}()
+    model = TestModel{Float64}()
 
     X = MOI.add_variables(model, 6)
     x = MOI.add_variables(model, 3)

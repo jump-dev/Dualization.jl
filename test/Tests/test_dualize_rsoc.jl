@@ -71,7 +71,7 @@
        @test primal_var_dual_con[VI(4)] == CI{SAF{Float64}, MOI.EqualTo{Float64}}(5)
    end
 
-   @testset "soc2_test" begin
+   @testset "rsoc2_test" begin
     #=
     primal
         min 0a + 0b - 1x - 1y

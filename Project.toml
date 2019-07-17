@@ -4,8 +4,6 @@ authors = ["guilhermebodin <guilherme.b.moraes@gmail.com>"]
 version = "0.1.0"
 
 [deps]
-CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
-ECOS = "e2685f51-7e38-5353-a97d-a921fd2c8199"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [compat]
