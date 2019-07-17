@@ -148,18 +148,6 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
             end
         end
     end
-    # for (k, term) in enumerate(moi_function.terms)
-    #     if term.scalar_term.variable_index == primal_vi
-    #         dual_vi = primal_con_dual_var[ci][term.output_index] # term.output_index is the row of the VAF,
-    #                                                              # it corresponds to the dual variable associated with
-    #                                                              # this constraint
-    #         if is_diagonal_element(k)
-    #             push_to_scalar_affine_terms!(scalar_affine_terms, MOI.coefficient(term), dual_vi)
-    #         else
-    #             push_to_scalar_affine_terms!(scalar_affine_terms, 2*MOI.coefficient(term), dual_vi)
-    #         end
-    #     end
-    # end
     return 
 end
 
@@ -184,15 +172,5 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
             end
         end
     end
-    # for (k, variable) in enumerate(moi_function.variables)
-    #     if variable == primal_vi
-    #         dual_vi = primal_con_dual_var[ci][k]
-    #         if is_diagonal_element(k)
-    #             push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
-    #         else
-    #             push_to_scalar_affine_terms!(scalar_affine_terms, 2*one(T), dual_vi)
-    #         end
-    #     end
-    # end
     return 
 end
