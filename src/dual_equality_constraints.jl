@@ -7,7 +7,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
     num_objective_terms = MOIU.number_of_affine_terms(T, get_saf(primal_objective)) # This is used to update the scalar_term_index
     list_of_primal_vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
 
-    scalar_term_index = 1::Int
+    scalar_term_index::Int = 1
     for primal_vi in list_of_primal_vis
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_con_dual_var, 
@@ -131,7 +131,7 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
 
     moi_function = get_function(primal_model, ci)
     moi_set = get_set(primal_model, ci)
-    k = 0::Int
+    k::Int = 0
     for j in 1:moi_set.side_dimension
         for i in 1:j
             k += 1
@@ -158,7 +158,7 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
 
     moi_function = get_function(primal_model, ci)
     moi_set = get_set(primal_model, ci)
-    k = 0::Int
+    k::Int = 0
     for j in 1:moi_set.side_dimension
         for i in 1:j
             k += 1
