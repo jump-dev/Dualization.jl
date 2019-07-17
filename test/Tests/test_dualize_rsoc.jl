@@ -22,10 +22,10 @@
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 6
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
-       @test list_of_cons == [
+       @test Set(list_of_cons) == Set([
            (SAF{Float64}, MOI.EqualTo{Float64})              
            (VVF, MOI.RotatedSecondOrderCone)
-       ]
+       ])
        @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1   
        @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 4
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
@@ -71,7 +71,7 @@
        @test primal_var_dual_con[VI(4)] == CI{SAF{Float64}, MOI.EqualTo{Float64}}(5)
    end
 
-   @testset "soc2_test" begin
+   @testset "rsoc2_test" begin
     #=
     primal
         min 0a + 0b - 1x - 1y
@@ -94,10 +94,10 @@
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
-       @test list_of_cons == [
+       @test Set(list_of_cons) == Set([
            (SAF{Float64}, MOI.EqualTo{Float64})              
            (VVF, MOI.RotatedSecondOrderCone)
-       ]
+       ])
        @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1   
        @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 2
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())

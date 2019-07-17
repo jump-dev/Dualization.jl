@@ -17,11 +17,11 @@ function dual_set(s::MOI.EqualTo{T}) where T
 end
 
 function dual_set(s::MOI.Nonpositives)
-    return MOI.Nonpositives(MOI.dimension(s))
+    return copy(s) # The set is self-dual
 end
 
 function dual_set(s::MOI.Nonnegatives)
-    return MOI.Nonnegatives(MOI.dimension(s))
+    return copy(s) # The set is self-dual
 end
 
 function dual_set(s::MOI.Zeros)
@@ -29,9 +29,13 @@ function dual_set(s::MOI.Zeros)
 end
 
 function dual_set(s::MOI.SecondOrderCone)
-    return MOI.SecondOrderCone(MOI.dimension(s))
+    return copy(s) # The set is self-dual
 end
 
 function dual_set(s::MOI.RotatedSecondOrderCone)
-    return MOI.RotatedSecondOrderCone(MOI.dimension(s))
+    return copy(s) # The set is self-dual
+end
+
+function dual_set(s::MOI.PositiveSemidefiniteConeTriangle)
+    return copy(s) # The set is self-dual
 end
