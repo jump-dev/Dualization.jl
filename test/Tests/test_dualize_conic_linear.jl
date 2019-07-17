@@ -21,10 +21,10 @@
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 5
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
-        @test list_of_cons == [
+        @test Set(list_of_cons) == Set([
             (SAF{Float64}, MOI.EqualTo{Float64})
             (VVF, MOI.Nonnegatives)
-        ]
+        ])
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 3
         @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.Nonnegatives}()) == 1
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
@@ -88,11 +88,11 @@
         
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 6
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
-        @test list_of_cons == [
+        @test Set(list_of_cons) == Set([
             (SAF{Float64}, MOI.EqualTo{Float64})
             (VVF, MOI.Nonnegatives)
             (VVF, MOI.Nonpositives)
-        ]
+        ])
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 4
         @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.Nonnegatives}()) == 1
         @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.Nonpositives}()) == 1

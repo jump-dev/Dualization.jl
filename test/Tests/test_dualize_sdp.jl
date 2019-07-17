@@ -21,10 +21,10 @@
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
-       @test list_of_cons == [
+       @test Set(list_of_cons) == Set([
            (SAF{Float64}, MOI.EqualTo{Float64})              
            (VVF, MOI.PositiveSemidefiniteConeTriangle)
-       ]
+       ])
        @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.PositiveSemidefiniteConeTriangle}()) == 1   
        @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 3
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
@@ -85,10 +85,10 @@
 
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
-       @test list_of_cons == [
+       @test Set(list_of_cons) == Set([
            (SAF{Float64}, MOI.EqualTo{Float64})              
            (VVF, MOI.PositiveSemidefiniteConeTriangle)
-       ]
+       ])
        @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.PositiveSemidefiniteConeTriangle}()) == 1   
        @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 3
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
