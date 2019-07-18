@@ -15,15 +15,16 @@ const SS = Union{MOI.EqualTo{Float64}, MOI.GreaterThan{Float64}, MOI.LessThan{Fl
 mutable struct DualOptimizer <: MOI.AbstractOptimizer
     dual_problem::Union{Nothing, Dualization.DualProblem}
     dual_optimizer::Union{Nothing, MOI.AbstractOptimizer}
+    dual_optimizer_idx_map::Union{Nothing, MOIU.IndexMap}
 
     function DualOptimizer(dual_problem::Dualization.DualProblem)
-        new(dual_problem, nothing)
+        new(dual_problem, nothing, nothing)
     end
     function DualOptimizer(dual_optimizer::MOI.AbstractOptimizer)
-        new(nothing, dual_optimizer)
+        new(nothing, dual_optimizer, nothing)
     end
     function DualOptimizer()
-        new(nothing, nothing)
+        new(nothing, nothing, nothing)
     end
 end
 
@@ -48,20 +49,21 @@ end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
     dest.dual_problem = Dualization.dualize(src)
-    MOI.copy_to(dest.dual_optimizer, dest.dual_problem.dual_model; kwargs...)
+    idx_map_optimizer = MOI.copy_to(dest.dual_optimizer, dest.dual_problem.dual_model; kwargs...)
+    dest.dual_optimizer_idx_map = idx_map_optimizer
 
-    idxmap = MOIU.IndexMap()
+    idx_map = MOIU.IndexMap()
 
-    for i in MOI.get(src,  MOI.ListOfVariableIndices())
-        setindex!(idxmap, i, i)
+    for vi in MOI.get(src, MOI.ListOfVariableIndices())
+        setindex!(idx_map, vi, vi)
     end
 
     for (F, S) in MOI.get(src, MOI.ListOfConstraints())
         for con in MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
-            setindex!(idxmap, con, con)
+            setindex!(idx_map, con, con)
         end
     end
-    return idxmap
+    return idx_map
 end
 
 function MOI.optimize!(optimizer::DualOptimizer)
@@ -90,19 +92,22 @@ function MOI.empty!(optimizer::DualOptimizer)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)
-    ci = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[vi]
-    return -MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci)
+    ci_dual_problem = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[vi]
+    ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+    return -MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
                  ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S}
-    vi = optimizer.dual_problem.primal_dual_map.primal_con_dual_var[ci]
-    return MOI.get(optimizer.dual_optimizer, MOI.VariablePrimal(), vi[1])
+    vi_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_var[ci]
+    vi_dual_optimizer = optimizer.dual_optimizer_idx_map.varmap[vi_dual_problem[1]]
+    return MOI.get(optimizer.dual_optimizer, MOI.VariablePrimal(), vi_dual_optimizer)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
                  ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
-    vi = optimizer.dual_problem.primal_dual_map.primal_con_dual_var[ci]
+    vi_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_var[ci]
+    vi_dual_optimizer = optimizer.dual_optimizer_idx_map.varmap[vi_dual_problem]
     return MOI.get.(optimizer.dual_optimizer, MOI.VariablePrimal(), vi)
 end
 
