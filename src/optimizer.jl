@@ -48,6 +48,7 @@ end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
     dest.dual_problem = Dualization.dualize(src)
+    MOI.copy_to(dest.dual_optimizer, dest.dual_problem.dual_model; kwargs...)
 
     idxmap = MOIU.IndexMap()
 
@@ -64,12 +65,11 @@ function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
 end
 
 function MOI.optimize!(optimizer::DualOptimizer)
-    MOI.copy_to(optimizer.dual_optimizer, optimizer.dual_problem.dual_model)
     MOI.optimize!(optimizer.dual_optimizer)    
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolverName)
-    if isnothing(optimizer.dual_optimizer)
+    if optimizer.dual_optimizer === nothing
         return "Dualizer with no solver attached"
     else
         return "Dual model with "*MOI.get(optimizer.dual_optimizer, MOI.SolverName())*" attached"
@@ -91,7 +91,7 @@ end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)
     ci = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[vi]
-    MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci)
+    return -MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
@@ -146,6 +146,7 @@ function dual_status(term::MOI.TerminationStatusCode)
     return term
 end
 
+# To be added in MOI 0.9.0
 # function MOI.get(optimizer::DualOptimizer, ::MOI.ObjectiveValue)
 #     return MOI.get(optimizer.dual_optimizer, MOI.DualObjectiveValue())
 # end

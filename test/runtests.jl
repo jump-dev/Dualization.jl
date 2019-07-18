@@ -7,6 +7,7 @@ using MathOptInterface, JuMP, Dualization, Test
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
+const MOIT = MathOptInterface.Test
 
 const SVF = MOI.SingleVariable
 const VVF = MOI.VectorOfVariables
