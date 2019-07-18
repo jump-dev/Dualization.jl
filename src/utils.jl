@@ -31,10 +31,3 @@ function get_scalar_term(model::MOI.ModelLike,
         return MOIU.constant(get_function(model, ci))
     end
 end
-
-function get_scalar_term(model::MOI.ModelLike, 
-                         ci::CI{F, S}, T::DataType) where {F <: MOI.AbstractVectorFunction, 
-                                                           S <: MOI.SecondOrderCone}
-    
-    return zeros(T, get_ci_row_dimension(model, ci))
-end

@@ -5,13 +5,13 @@ linear_optimizer = Dualization.DualOptimizer(GLPK.Optimizer())
 conic_optimizer = Dualization.DualOptimizer(SCS.Optimizer(verbose = 0))
 
 @testset "optimizer.jl" begin    
-    linear_config = MOIT.TestConfig(atol=1e-5, rtol = 1e-5, modify_lhs = false)
+    linear_config = MOIT.TestConfig(atol=1e-5, rtol = 1e-5)
     linear_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
     linear_cached = MOIU.CachingOptimizer(linear_cache, linear_optimizer)
     linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
 
     @testset "contlineartest" begin
-        MOIT.contlineartest(linear_bridged, linear_config, ["linear13"]) # linear13 is Feasibility problem
+        MOIT.contlineartest(linear_bridged, linear_config, ["linear7", "linear13"]) # linear13 is Feasibility problem
     end
 
     conic_config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)

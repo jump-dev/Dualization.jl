@@ -112,7 +112,8 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
     if ci_dual === nothing
         return 0.0
     end
-    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual)
+    primal_ci_constant = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
+    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual) - primal_ci_constant[1]
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
@@ -122,7 +123,8 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
         set = get_set(optimizer.dual_problem.dual_model, ci)
         return zeros(Float64, MOI.dimension(set))
     end
-    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual)
+    primal_ci_constants = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
+    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual) .- primal_ci_constants
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolveTime) 
@@ -168,5 +170,5 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.DualStatus)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ResultCount)
-    return 1
+    return MOI.get(optimizer.dual_optimizer, MOI.ResultCount())
 end

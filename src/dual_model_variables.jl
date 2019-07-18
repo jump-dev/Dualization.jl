@@ -1,7 +1,6 @@
-function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, 
+function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+                                     primal_dual_map::PrimalDualMap,
                                      con_types::Vector{Tuple{DataType, DataType}}, T::DataType)
-    primal_con_dual_var = Dict{CI, Vector{VI}}()
-    primal_con_dual_con = Dict{CI, Union{Nothing, CI}}()
     dual_obj_affine_terms = Dict{VI, T}()
     for (F, S) in con_types
         primal_cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
@@ -9,11 +8,13 @@ function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MO
             # Add dual variable to dual cone
             # Fill a dual objective dictionary
             # Fill the primal_con_dual_var dictionary
-            ci_dual = add_dual_variable(dual_model, primal_model, primal_con_dual_var, dual_obj_affine_terms, ci)
-            push!(primal_con_dual_con, ci => ci_dual)
+            ci_dual = add_dual_variable(dual_model, primal_model, 
+                                        primal_dual_map.primal_con_dual_var, dual_obj_affine_terms, ci)
+            push!(primal_dual_map.primal_con_dual_con, ci => ci_dual)
+            push!(primal_dual_map.primal_con_constants, ci => get_scalar_term(primal_model, ci, T))
         end
     end
-    return primal_con_dual_var, primal_con_dual_con, dual_obj_affine_terms
+    return dual_obj_affine_terms
 end
 
 # Utils for add_dual_variable functions

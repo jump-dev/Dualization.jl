@@ -1,16 +1,15 @@
 function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
-                                       primal_con_dual_var::Dict, primal_objective::PrimalObjective{T},
+                                       primal_dual_map::PrimalDualMap, primal_objective::PrimalObjective{T},
                                        con_types::Vector{Tuple{DataType, DataType}}) where T
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
-    primal_var_dual_con = Dict{VI, CI}() # Empty primal variables dual constraints Dict
     num_objective_terms = MOIU.number_of_affine_terms(T, get_saf(primal_objective)) # This is used to update the scalar_term_index
     list_of_primal_vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
 
     scalar_term_index::Int = 1
     for primal_vi in list_of_primal_vis
         # Loop at every constraint to get the scalar affine terms
-        scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_con_dual_var, 
+        scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_dual_map.primal_con_dual_var, 
                                                       primal_vi, con_types, T)
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
@@ -27,9 +26,9 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         # Add equality constraint
         MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
         # Add primal variable to dual contraint to the link dictionary
-        push!(primal_var_dual_con, primal_vi => CI{SAF{T}, MOI.EqualTo{T}}(dual_model.nextconstraintid))
+        push!(primal_dual_map.primal_var_dual_con, primal_vi => CI{SAF{T}, MOI.EqualTo{T}}(dual_model.nextconstraintid))
     end
-    return primal_var_dual_con
+    return 
 end
 
 function get_scalar_affine_terms(primal_model::MOI.ModelLike,

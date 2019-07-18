@@ -26,6 +26,26 @@ MOIU.@model(DualizableModel,
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction,))
 
+
+struct PrimalDualMap
+    primal_var_dual_con::Dict{VI, CI}
+    primal_con_dual_var::Dict{CI, Vector{VI}}
+    primal_con_dual_con::Dict{CI, Union{Nothing, CI}}
+    primal_con_constants::Dict{CI, Vector{Float64}}
+
+    function PrimalDualMap()
+        return new(Dict{VI, CI}(),
+                   Dict{CI, Vector{VI}}(),
+                   Dict{CI, Union{Nothing, CI}}(),
+                   Dict{CI, Vector{Float64}}())
+    end
+end
+
+struct DualProblem
+    dual_model::MOI.ModelLike 
+    primal_dual_map::PrimalDualMap
+end
+
 include("utils.jl")
 include("dual_sets.jl")
 include("supported.jl")
