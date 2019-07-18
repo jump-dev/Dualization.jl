@@ -24,9 +24,9 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         end
         scalar_term = (dual_sense == MOI.MAX_SENSE ? 1 : -1) * scalar_term_value
         # Add equality constraint
-        MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
+        ci_dual = MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
         # Add primal variable to dual contraint to the link dictionary
-        push!(primal_dual_map.primal_var_dual_con, primal_vi => CI{SAF{T}, MOI.EqualTo{T}}(dual_model.nextconstraintid))
+        push!(primal_dual_map.primal_var_dual_con, primal_vi => ci_dual)
     end
     return 
 end
