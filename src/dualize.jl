@@ -41,7 +41,5 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
                                   primal_dual_map, primal_objective, 
                                   con_types)
 
-    
-
     return DualProblem(dual_model, primal_dual_map)
 end
