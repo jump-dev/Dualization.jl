@@ -1,8 +1,10 @@
-using SCS, GLPK
+using SCS, GLPK, CSDP, Clp
 
 # Optimizers
 linear_optimizer = Dualization.DualOptimizer(GLPK.Optimizer())
+linear_optimizer = Dualization.DualOptimizer(Clp.Optimizer(LogLevel = 0))
 conic_optimizer = Dualization.DualOptimizer(SCS.Optimizer(verbose = 0))
+# conic_optimizer = Dualization.DualOptimizer(CSDP.Optimizer(printlevel = 0))
 
 @testset "optimizer.jl" begin    
     linear_config = MOIT.TestConfig(atol=1e-5, rtol = 1e-5)
@@ -11,7 +13,10 @@ conic_optimizer = Dualization.DualOptimizer(SCS.Optimizer(verbose = 0))
     linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
 
     @testset "contlineartest" begin
-        MOIT.contlineartest(linear_bridged, linear_config, ["linear7", "linear13"]) # linear13 is Feasibility problem
+        MOIT.contlineartest(linear_bridged, linear_config, ["linear8b", # Asks for infeasibility ray
+                                                            "linear8c", # Asks for infeasibility ray
+                                                            "linear12", # Asks for infeasibility ray
+                                                            "linear13"]) # Feasibility problem
     end
 
     conic_config = MOIT.TestConfig(atol=1e-4, rtol=1e-4)
@@ -20,7 +25,17 @@ conic_optimizer = Dualization.DualOptimizer(SCS.Optimizer(verbose = 0))
     conic_bridged = MOIB.full_bridge_optimizer(conic_cached, Float64)
 
     @testset "contconictest" begin
-        MOIT.contconictest(conic_bridged, conic_config, ["rootdets", "logdets"])
+        MOIT.contconictest(conic_bridged, conic_config, ["lin3", # Feasibility problem
+                                                         "lin4", # Feasibility problem
+                                                         "soc3", # Feasibility problem
+                                                         "rotatedsoc2", # Feasibility problem
+                                                         "exp", # Not yet implemented
+                                                         "rootdets", # Not yet implemented
+                                                         "logdets", # Not yet implemented
+                                                         "geomean", # Not yet implemented
+                                                         "rootdet", # Not yet implemented
+                                                         "logdet" # Not yet implemented
+                                                         ])
     end
 end
 
