@@ -1,6 +1,6 @@
 module Dualization
 
-using MathOptInterface
+using MathOptInterface, JuMP
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 
@@ -15,13 +15,11 @@ const CI = MOI.ConstraintIndex
 
 MOIU.@model(DualizableModel,
             (),
-            (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,),
+            (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan,),
             (MOI.Reals, MOI.Zeros, MOI.Nonnegatives, MOI.Nonpositives,
              MOI.SecondOrderCone, MOI.RotatedSecondOrderCone,
-             MOI.GeometricMeanCone, MOI.ExponentialCone, MOI.DualExponentialCone,
-             MOI.PositiveSemidefiniteConeTriangle, MOI.PositiveSemidefiniteConeSquare,
-             MOI.RootDetConeTriangle, MOI.RootDetConeSquare, MOI.LogDetConeTriangle,
-             MOI.LogDetConeSquare),
+             MOI.ExponentialCone, MOI.DualExponentialCone,
+             MOI.PositiveSemidefiniteConeTriangle,),
             (MOI.PowerCone, MOI.DualPowerCone),
             (MOI.SingleVariable,),
             (MOI.ScalarAffineFunction,),
@@ -36,5 +34,6 @@ include("add_dual_cone_constraint.jl")
 include("dual_model_variables.jl")
 include("dual_equality_constraints.jl")
 include("dualize.jl")
+include("optimizer.jl")
 
 end # module

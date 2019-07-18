@@ -1,4 +1,8 @@
-using MathOptInterface, Dualization, Test
+push!(LOAD_PATH, "/Users/guilhermebodin/Documents/Dualization.jl/src")
+import Pkg
+Pkg.activate(".")
+cd("test")
+using MathOptInterface, JuMP, Dualization, Test
 
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
@@ -44,6 +48,7 @@ include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")
 include("Tests/test_dual_model_variables.jl")
 include("Tests/test_dual_sets.jl")
+include("Tests/test_optimizer.jl")
 include("Tests/test_dualize_conic_linear.jl")
 include("Tests/test_dualize_linear.jl")
 include("Tests/test_dualize_soc.jl")
@@ -52,7 +57,6 @@ include("Tests/test_dualize_sdp.jl")
 
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
-using JuMP
 include("optimize_abstract_models.jl")
 
 # Test strong duality in linear/conic problems
