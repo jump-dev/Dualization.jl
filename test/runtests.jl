@@ -1,7 +1,3 @@
-push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
-import Pkg
-Pkg.activate(".")
-cd("test")
 using MathOptInterface, JuMP, Dualization, Test
 
 const MOI  = MathOptInterface
