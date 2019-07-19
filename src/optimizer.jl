@@ -8,8 +8,8 @@ const SF = Union{MOI.SingleVariable,
 const SS = Union{MOI.EqualTo{Float64}, MOI.GreaterThan{Float64}, MOI.LessThan{Float64}, 
                  MOI.Zeros, MOI.Nonnegatives, MOI.Nonpositives, 
                  MOI.SecondOrderCone, MOI.RotatedSecondOrderCone,
-                 MOI.ExponentialCone, MOI.DualExponentialCone,
-                 MOI.PowerCone, MOI.DualPowerCone,
+                #  MOI.ExponentialCone, MOI.DualExponentialCone,
+                #  MOI.PowerCone, MOI.DualPowerCone,
                  MOI.PositiveSemidefiniteConeTriangle}
 
 mutable struct DualOptimizer <: MOI.AbstractOptimizer
@@ -107,29 +107,49 @@ end
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
                  ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
     vi_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_var[ci]
-    vi_dual_optimizer = optimizer.dual_optimizer_idx_map.varmap[vi_dual_problem]
-    return MOI.get.(optimizer.dual_optimizer, MOI.VariablePrimal(), vi)
+    vi_dual_optimizer = get_dual_optimizer_vis(vi_dual_problem, optimizer.dual_optimizer_idx_map.varmap)
+    return MOI.get.(optimizer.dual_optimizer, MOI.VariablePrimal(), vi_dual_optimizer)
+end
+
+function get_dual_optimizer_vis(vis::Vector{VI}, varmap::Dict{VI, VI})
+    dual_optimizer_vi = Vector{VI}(undef, length(vis))
+    for (i, vi) in enumerate(vis)
+        dual_optimizer_vi[i] = varmap[vi]
+    end
+    return dual_optimizer_vi
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
                  ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S}
-    ci_dual = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
-    if ci_dual === nothing
-        return 0.0
-    end
+    ci_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
     primal_ci_constant = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
-    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual) - primal_ci_constant[1]
+    if ci_dual_problem === nothing
+        return -primal_ci_constant[1]
+    end
+    ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer) - primal_ci_constant[1]
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
                  ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
-    ci_dual = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
-    if ci_dual === nothing
-        set = get_set(optimizer.dual_problem.dual_model, ci)
-        return zeros(Float64, MOI.dimension(set))
-    end
+    ci_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
     primal_ci_constants = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
-    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual) .- primal_ci_constants
+    if ci_dual_problem === nothing
+        return -primal_ci_constants
+    end
+    ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer) .- primal_ci_constants
+end
+
+function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
+                 ci::CI{F,S}) where {T, F <: VAF{T}, S}
+    ci_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
+    primal_ci_constants = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
+    if ci_dual_problem === nothing
+        return zeros(T, length(primal_ci_constants))
+    end
+    ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolveTime) 

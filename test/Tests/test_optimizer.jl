@@ -1,13 +1,29 @@
 using SCS, GLPK, CSDP, Clp
+push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+import Pkg
+Pkg.activate(".")
+cd("test")
+using MathOptInterface, JuMP, Dualization, Test
+
+const MOI  = MathOptInterface
+const MOIU = MathOptInterface.Utilities
+const MOIB = MathOptInterface.Bridges
+const MOIT = MathOptInterface.Test
+
+const SVF = MOI.SingleVariable
+const VVF = MOI.VectorOfVariables
+const SAF{T} = MOI.ScalarAffineFunction{T}
+const VAF{T} = MOI.VectorAffineFunction{T}
+
+const VI = MOI.VariableIndex
+const CI = MOI.ConstraintIndex
 
 # Optimizers
 linear_optimizer = Dualization.DualOptimizer(GLPK.Optimizer())
-linear_optimizer = Dualization.DualOptimizer(Clp.Optimizer(LogLevel = 0))
-conic_optimizer = Dualization.DualOptimizer(SCS.Optimizer(verbose = 0))
-# conic_optimizer = Dualization.DualOptimizer(CSDP.Optimizer(printlevel = 0))
+conic_optimizer = Dualization.DualOptimizer(CSDP.Optimizer(printlevel = 0))
 
 @testset "optimizer.jl" begin    
-    linear_config = MOIT.TestConfig(atol=1e-5, rtol = 1e-5)
+    linear_config = MOIT.TestConfig(atol=1e-4, rtol = 1e-4)
     linear_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
     linear_cached = MOIU.CachingOptimizer(linear_cache, linear_optimizer)
     linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
