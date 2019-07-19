@@ -14,12 +14,9 @@ const SS = Union{MOI.EqualTo{Float64}, MOI.GreaterThan{Float64}, MOI.LessThan{Fl
 
 mutable struct DualOptimizer <: MOI.AbstractOptimizer
     dual_problem::Union{Nothing, Dualization.DualProblem}
-    dual_optimizer::Union{Nothing, MOI.AbstractOptimizer}
+    dual_optimizer::MOI.AbstractOptimizer
     dual_optimizer_idx_map::Union{Nothing, MOIU.IndexMap}
 
-    function DualOptimizer(dual_problem::Dualization.DualProblem)
-        new(dual_problem, nothing, nothing)
-    end
     function DualOptimizer(dual_optimizer::MOI.AbstractOptimizer)
         new(nothing, dual_optimizer, nothing)
     end
@@ -131,11 +128,7 @@ function get_vis_dual_optimizer(optimizer::DualOptimizer, ci::CI)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolverName)
-    if optimizer.dual_optimizer === nothing
-        return "Dualizer with no solver attached"
-    else
-        return "Dual model with "*MOI.get(optimizer.dual_optimizer, MOI.SolverName())*" attached"
-    end
+    return "Dual model with "*MOI.get(optimizer.dual_optimizer, MOI.SolverName())*" attached"
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)

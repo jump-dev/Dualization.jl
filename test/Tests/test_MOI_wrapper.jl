@@ -4,7 +4,7 @@ using GLPK, CSDP
 linear_optimizer = Dualization.DualOptimizer(GLPK.Optimizer())
 conic_optimizer = Dualization.DualOptimizer(CSDP.Optimizer(printlevel = 0))
 
-@testset "optimizer.jl" begin    
+@testset "MOI_wrapper.jl" begin    
     linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
     linear_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
     linear_cached = MOIU.CachingOptimizer(linear_cache, linear_optimizer)
@@ -33,5 +33,10 @@ conic_optimizer = Dualization.DualOptimizer(CSDP.Optimizer(printlevel = 0))
                                                          "rootdet", # Not yet implemented
                                                          "logdet" # Not yet implemented
                                                          ])
+    end
+
+    @testset "attributes" begin
+        MOI.get(linear_optimizer, MOI.SolverName()) == "Dual model with GLPK attached"
+        MOI.get(conic_optimizer, MOI.SolverName()) == "Dual model with CSDP attached"
     end
 end
