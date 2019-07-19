@@ -12,13 +12,16 @@ const SS = Union{MOI.EqualTo{Float64}, MOI.GreaterThan{Float64}, MOI.LessThan{Fl
                 #  MOI.PowerCone, MOI.DualPowerCone,
                  MOI.PositiveSemidefiniteConeTriangle}
 
-mutable struct DualOptimizer <: MOI.AbstractOptimizer
-    dual_problem::Union{Nothing, Dualization.DualProblem}
-    dual_optimizer::MOI.AbstractOptimizer
+mutable struct DualOptimizer{OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
+    dual_problem::Union{Nothing, DualProblem}
+    dual_optimizer::OT
     dual_optimizer_idx_map::Union{Nothing, MOIU.IndexMap}
 
-    function DualOptimizer(dual_optimizer::MOI.AbstractOptimizer)
-        new(nothing, dual_optimizer, nothing)
+    function DualOptimizer{OT}(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+        return new(nothing, dual_optimizer, nothing)
+    end
+    function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+        return DualOptimizer{OT}(dual_optimizer)
     end
 end
 
@@ -65,18 +68,15 @@ function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
 end
 
 function MOI.optimize!(optimizer::DualOptimizer)
-    MOI.optimize!(optimizer.dual_optimizer)    
+    return MOI.optimize!(optimizer.dual_optimizer)    
 end
 
 function MOI.is_empty(optimizer::DualOptimizer)
-    return (optimizer.dual_problem === nothing) && 
-          ((optimizer.dual_optimizer === nothing) || MOI.is_empty(optimizer.dual_optimizer))
+    return (optimizer.dual_problem === nothing) && (MOI.is_empty(optimizer.dual_optimizer))
 end
 
 function MOI.empty!(optimizer::DualOptimizer)
-    if optimizer.dual_optimizer !== nothing
-        MOI.empty!(optimizer.dual_optimizer)
-    end
+    MOI.empty!(optimizer.dual_optimizer)
     optimizer.dual_problem = nothing
     return
 end
