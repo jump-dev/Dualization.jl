@@ -11,7 +11,6 @@ function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MO
             ci_dual = add_dual_variable(dual_model, primal_model, 
                                         primal_dual_map.primal_con_dual_var, dual_obj_affine_terms, ci)
             push!(primal_dual_map.primal_con_dual_con, ci => ci_dual)
-            push_to_dual_con_primal_con!(primal_dual_map.dual_con_primal_con, ci_dual, ci)
             push!(primal_dual_map.primal_con_constants, ci => get_scalar_term(primal_model, ci, T))
         end
     end
@@ -26,14 +25,6 @@ function push_to_dual_obj_aff_terms!(dual_obj_affine_terms::Dict{VI, T}, vi::VI,
     return 
 end
 
-# Utils for add_dual_variable functions
-function push_to_dual_con_primal_con!(dual_con_primal_con::Dict{CI, CI}, ci_dual::CI, ci_primal::CI)
-    return push!(dual_con_primal_con, ci_dual => ci_primal)
-end
-
-function push_to_dual_con_primal_con!(dual_con_primal_con::Dict{CI, CI}, ci_dual::Nothing, ci_primal::CI)
-    return 
-end
 
 function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                             primal_con_dual_var::Dict{CI, Vector{VI}}, dual_obj_affine_terms::Dict{VI, T},

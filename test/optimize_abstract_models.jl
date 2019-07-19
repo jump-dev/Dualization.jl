@@ -2,7 +2,7 @@
 Attach an MOI.ModelLike to an optimizer, 
 solve it and retrieve the termination status and objective value
 """
-function solve_abstract_model(model::MOI.ModelLike, OT::OptimizerFactory) where T
+function solve_abstract_model(model::MOI.ModelLike, factory::OptimizerFactory) where T
     JuMP_model = JuMP.Model()
     MOI.copy_to(JuMP.backend(JuMP_model), model)
     set_optimizer(JuMP_model, factory)

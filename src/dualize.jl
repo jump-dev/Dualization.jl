@@ -17,7 +17,7 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
     
     # Crates an empty dual model
     dual_model = DualizableModel{T}()
-    primal_dual_map = PrimalDualMap()
+    primal_dual_map = PrimalDualMap{T}()
     
     # Set the dual model objective sense
     set_dual_model_sense(dual_model, primal_model)

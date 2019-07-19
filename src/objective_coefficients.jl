@@ -53,7 +53,7 @@ function get_primal_objective(primal_model::MOI.ModelLike)
 end
 
 function _get_primal_objective(obj_fun::SAF{T}) where T
-    return PrimalObjective(obj_fun)
+    return PrimalObjective(MOIU.canonical(obj_fun))
 end
 
 # Float64 is default while I don't know how to take other types

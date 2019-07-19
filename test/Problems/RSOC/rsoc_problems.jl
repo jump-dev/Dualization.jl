@@ -50,7 +50,7 @@ end
 
 function rsoc3_test()
     #=
-        min 0
+        min x + 1
     s.t.
         x ≤ 1
         y = 1/2
@@ -60,7 +60,7 @@ function rsoc3_test()
     model = TestModel{Float64}()
 
     b = [-2, -1, 1/2]
-    c = [0.0,0.0,0.0]
+    c = [1.0,0.0,0.0]
 
     x = MOI.add_variables(model, 3)
 
@@ -70,7 +70,7 @@ function rsoc3_test()
 
     rsoc = MOI.add_constraint(model, MOI.VectorOfVariables(x), MOI.RotatedSecondOrderCone(3))
     
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(c, x), 0.0))
+    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(c, x), 1.0))
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
    
     return model
