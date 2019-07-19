@@ -122,17 +122,27 @@ end
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
                  ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S}
     ci_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
+<<<<<<< HEAD
     primal_ci_constant = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
     if ci_dual_problem === nothing
         return -primal_ci_constant[1]
     end
     ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+=======
+    # ci_dual = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
+    if ci_dual_problem === nothing
+        return 0.0
+    end
+    ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+    primal_ci_constant = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
+>>>>>>> fd5b1e22a38112b9b82b5ea3b4cdb1cdff23e979
     return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer) - primal_ci_constant[1]
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
                  ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
     ci_dual_problem = optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
+<<<<<<< HEAD
     primal_ci_constants = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
     if ci_dual_problem === nothing
         return -primal_ci_constants
@@ -150,6 +160,15 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
     end
     ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
     return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer)
+=======
+    if ci_dual_problem === nothing
+        set = get_set(optimizer.dual_problem.dual_model, ci)
+        return zeros(Float64, MOI.dimension(set))
+    end
+    ci_dual_optimizer = optimizer.dual_optimizer_idx_map.conmap[ci_dual_problem]
+    primal_ci_constants = optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
+    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer) .- primal_ci_constants
+>>>>>>> fd5b1e22a38112b9b82b5ea3b4cdb1cdff23e979
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolveTime) 
