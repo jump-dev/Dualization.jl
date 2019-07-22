@@ -26,9 +26,8 @@
         
         @test model.objective == MOI.SingleVariable(MOI.VariableIndex(1))
         primal_objective = Dualization.get_primal_objective(model)
-        
-        @test primal_objective.saf.terms[1] == MOI.ScalarAffineTerm{Float64}(1.0, MOI.VariableIndex(1))
+        @test Dualization.get_primal_objective(model).saf.terms[1] == MOI.ScalarAffineTerm{Float64}(1.0, MOI.VariableIndex(1))
         @test MOI._constant(Dualization.get_saf(primal_objective)) == 0.0
     end
-    
+
 end
