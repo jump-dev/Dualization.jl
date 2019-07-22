@@ -61,7 +61,6 @@ function conic_linear3_test()
     model = TestModel{Float64}()
 
     x,y,z,s = MOI.add_variables(model, 4)
-    @test MOI.get(model, MOI.NumberOfVariables()) == 4
 
     MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([3.0, 2.0, -4.0], [x,y,z]), 0.0))
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
@@ -97,7 +96,6 @@ function conic_linear4_test()
     model = TestModel{Float64}()
 
     x,y,z,s = MOI.add_variables(model, 4)
-    @test MOI.get(model, MOI.NumberOfVariables()) == 4
 
     MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([3.0, 2.0, -4.0], [x,y,z]), 0.0))
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)

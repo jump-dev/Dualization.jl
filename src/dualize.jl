@@ -1,15 +1,5 @@
 export dualize
 
-struct PrimalDualMap
-    primal_var_dual_con::Dict{VI, CI}
-    primal_con_dual_var::Dict{CI, Vector{VI}}
-end
-
-struct DualProblem
-    dual_model::MOI.ModelLike 
-    primal_dual_map::PrimalDualMap
-end
-
 """
     dualize(model::MOI.ModelLike)
 
@@ -27,6 +17,7 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
     
     # Crates an empty dual model
     dual_model = DualizableModel{T}()
+    primal_dual_map = PrimalDualMap{T}()
     
     # Set the dual model objective sense
     set_dual_model_sense(dual_model, primal_model)
@@ -36,8 +27,8 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary for dual variables with primal constraints
-    primal_con_dual_var, dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model,
-                                                                             con_types, T)
+    dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, primal_dual_map,
+                                                        con_types, T)
     
     # Fill Dual Objective Coefficients Struct
     dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)
@@ -46,11 +37,9 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
     set_dual_objective(dual_model, dual_objective)
 
     # Add dual equality constraint and get the link dictionary
-    primal_var_dual_con = add_dual_equality_constraints(dual_model, primal_model,
-                                                        primal_con_dual_var, primal_objective, 
-                                                        con_types)
+    add_dual_equality_constraints(dual_model, primal_model,
+                                  primal_dual_map, primal_objective, 
+                                  con_types)
 
-    
-
-    return DualProblem(dual_model, PrimalDualMap(primal_var_dual_con, primal_con_dual_var))
+    return DualProblem(dual_model, primal_dual_map)
 end

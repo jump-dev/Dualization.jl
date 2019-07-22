@@ -1,8 +1,9 @@
-using MathOptInterface, Dualization, Test
+using MathOptInterface, JuMP, Dualization, Test
 
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
+const MOIT = MathOptInterface.Test
 
 const SVF = MOI.SingleVariable
 const VVF = MOI.VectorOfVariables
@@ -49,10 +50,9 @@ include("Tests/test_dualize_linear.jl")
 include("Tests/test_dualize_soc.jl")
 include("Tests/test_dualize_rsoc.jl")
 include("Tests/test_dualize_sdp.jl")
-
+include("Tests/test_MOI_wrapper.jl")
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
-using JuMP
 include("optimize_abstract_models.jl")
 
 # Test strong duality in linear/conic problems
