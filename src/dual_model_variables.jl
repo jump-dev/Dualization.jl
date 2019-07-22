@@ -3,8 +3,7 @@ function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MO
                                      con_types::Vector{Tuple{DataType, DataType}}, T::DataType)
     dual_obj_affine_terms = Dict{VI, T}()
     for (F, S) in con_types
-        primal_cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
-        for ci in primal_cis
+        for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
             # Add dual variable to dual cone
             # Fill a dual objective dictionary
             # Fill the primal_con_dual_var dictionary

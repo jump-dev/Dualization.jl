@@ -39,6 +39,8 @@ include("Problems/Quadratic/quadratic_problems.jl")
 include("Problems/SOC/soc_problems.jl")
 include("Problems/RSOC/rsoc_problems.jl")
 include("Problems/SDP/sdp_triangle_problems.jl")
+include("Problems/Exponential/exponential_cone_problems.jl")
+include("Problems/Power/power_cone_problems.jl")
 
 # Run tests to travis ci
 include("Tests/test_supported.jl")
@@ -59,3 +61,4 @@ include("optimize_abstract_models.jl")
 include("Solvers/glpk_test.jl")
 include("Solvers/ecos_test.jl")
 include("Solvers/csdp_test.jl")
+include("Solvers/cosmo_test.jl")
