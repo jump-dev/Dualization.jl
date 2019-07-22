@@ -8,8 +8,8 @@ const SF = Union{MOI.SingleVariable,
 const SS = Union{MOI.EqualTo{Float64}, MOI.GreaterThan{Float64}, MOI.LessThan{Float64}, 
                  MOI.Zeros, MOI.Nonnegatives, MOI.Nonpositives, 
                  MOI.SecondOrderCone, MOI.RotatedSecondOrderCone,
-                #  MOI.ExponentialCone, MOI.DualExponentialCone,
-                #  MOI.PowerCone, MOI.DualPowerCone,
+                 MOI.ExponentialCone, MOI.DualExponentialCone,
+                 MOI.PowerCone, MOI.DualPowerCone,
                  MOI.PositiveSemidefiniteConeTriangle}
 
 mutable struct DualOptimizer{OT <: MOI.ModelLike} <: MOI.AbstractOptimizer

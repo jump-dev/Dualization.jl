@@ -39,3 +39,19 @@ end
 function dual_set(s::MOI.PositiveSemidefiniteConeTriangle)
     return copy(s) # The set is self-dual
 end
+
+function dual_set(s::MOI.ExponentialCone)
+    return MOI.DualExponentialCone()
+end
+
+function dual_set(s::MOI.DualExponentialCone)
+    return MOI.ExponentialCone()
+end
+
+function dual_set(s::MOI.PowerCone)
+    return MOI.DualPowerCone(s.exponent)
+end
+
+function dual_set(s::MOI.DualPowerCone)
+    return MOI.PowerCone(s.exponent)
+end

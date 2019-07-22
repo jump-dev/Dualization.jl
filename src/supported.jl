@@ -31,18 +31,27 @@ supported_constraint(::Type{VVF}, ::Type{MOI.Zeros}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonpositives}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Nonnegatives}) where T = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.Zeros}) where T = true
-#VVF - SOC
+# SOC
 supported_constraint(::Type{VVF}, ::Type{MOI.SecondOrderCone}) where T = true
-#VAF - SOC 
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.SecondOrderCone}) where T = true
-#VVF - RotatedSOC
+# RotatedSOC
 supported_constraint(::Type{VVF}, ::Type{MOI.RotatedSecondOrderCone}) where T = true
-#VAF - RotatedSOC 
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.RotatedSecondOrderCone}) where T = true
-#VVF - SDP Triangle
+# SDP Triangle
 supported_constraint(::Type{VVF}, ::Type{MOI.PositiveSemidefiniteConeTriangle}) where T = true
-#VAF - SDP Triangle 
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.PositiveSemidefiniteConeTriangle}) where T = true
+# ExponentialCone
+supported_constraint(::Type{VVF}, ::Type{MOI.ExponentialCone}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.ExponentialCone}) where T = true
+# DualExponentialCone
+supported_constraint(::Type{VVF}, ::Type{MOI.DualExponentialCone}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.DualExponentialCone}) where T = true
+# PowerCone
+supported_constraint(::Type{VVF}, ::Type{MOI.PowerCone{T}}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.PowerCone{T}}) where T = true
+# DualPowerCone
+supported_constraint(::Type{VVF}, ::Type{MOI.DualPowerCone{T}}) where T = true
+supported_constraint(::Type{VAF{T}}, ::Type{MOI.DualPowerCone{T}}) where T = true
 
 """
     supported_objective(obj_func_type::DataType)

@@ -45,5 +45,43 @@
     # Zeros
     @test Dualization.dual_set(zeros_3) == nothing
     @test Dualization.dual_set(zeros_4) == nothing
-    
+
+    #SOC
+    soc = MOI.SecondOrderCone(2)
+    soc3 = MOI.SecondOrderCone(3)
+    @test Dualization.dual_set(soc) == soc
+    @test Dualization.dual_set(soc) != soc3
+    @test Dualization.dual_set(soc3) == soc3
+
+    #RSOC
+    rsoc = MOI.RotatedSecondOrderCone(2)
+    rsoc3 = MOI.RotatedSecondOrderCone(3)
+    @test Dualization.dual_set(rsoc) == rsoc
+    @test Dualization.dual_set(rsoc) != rsoc3
+    @test Dualization.dual_set(rsoc3) == rsoc3
+
+    #PSD
+    psd = MOI.PositiveSemidefiniteConeTriangle(2)
+    psd3 = MOI.PositiveSemidefiniteConeTriangle(3)
+    @test Dualization.dual_set(psd) == psd
+    @test Dualization.dual_set(psd) != psd3
+    @test Dualization.dual_set(psd3) == psd3
+
+    # Exponential
+    exp = MOI.ExponentialCone()
+    dual_exp = MOI.DualExponentialCone()
+    @test Dualization.dual_set(exp) == dual_exp
+    @test Dualization.dual_set(exp) != exp
+    @test Dualization.dual_set(dual_exp) == exp
+    @test Dualization.dual_set(dual_exp) != dual_exp
+
+    # Power
+    pow = MOI.PowerCone(0.3)
+    pow4 = MOI.PowerCone(0.4)
+    dual_pow = MOI.DualPowerCone(0.3)
+    @test Dualization.dual_set(pow) == dual_pow
+    @test Dualization.dual_set(pow) != pow
+    @test Dualization.dual_set(dual_pow) == pow
+    @test Dualization.dual_set(dual_pow) != pow4
+    @test Dualization.dual_set(dual_pow) != dual_pow
 end
