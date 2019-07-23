@@ -24,6 +24,14 @@ http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
 """
 struct PrimalObjective{T}
     saf::SAF{T}
+
+    function PrimalObjective{T}(obj::SAF{T}) where T
+        canonical_obj = MOIU.canonical(obj)
+        if isempty(canonical_obj.terms)
+            error("Dualization does not support models with no variables in the objective function.")
+        end
+        return new(canonical_obj)
+    end
 end
 
 # Duals
@@ -53,13 +61,13 @@ function get_primal_objective(primal_model::MOI.ModelLike)
 end
 
 function _get_primal_objective(obj_fun::SAF{T}) where T
-    return PrimalObjective(MOIU.canonical(obj_fun))
+    return PrimalObjective{T}(obj_fun)
 end
 
 # Float64 is default while I don't know how to take other types
 _get_primal_objective(obj_fun::SVF) = _get_primal_objective(obj_fun, Float64)
 function _get_primal_objective(obj_fun::SVF, T::DataType)
-    return PrimalObjective(SAF{T}(obj_fun))
+    return PrimalObjective{T}(SAF{T}(obj_fun))
 end
 
 # You can add other generic _get_primal_obj_coeffs functions here
