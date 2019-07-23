@@ -67,7 +67,7 @@ function supported_objective(primal_model::MOI.ModelLike) where T
     end
 
     obj_func = MOI.get(primal_model, MOI.ObjectiveFunction{obj_func_type}())
-    if length(filter(t -> t.coefficient != zero(Float64), obj_func.terms)) == 0
+    if all(c -> iszero(c.coefficient), obj_func.terms)
         error("Objective function has zero terms, which is not supported (like feasibility problems)")
     end
 
