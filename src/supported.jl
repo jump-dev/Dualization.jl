@@ -65,7 +65,13 @@ function supported_objective(primal_model::MOI.ModelLike) where T
     if !supported_obj(obj_func_type)
         error("Objective functions of type ", obj_func_type," are not implemented")
     end
-    return 
+
+    obj_func = MOI.get(primal_model, MOI.ObjectiveFunction{obj_func_type}())
+    if length(filter(t -> t.coefficient != zero(Float64), obj_func.terms)) == 0
+        error("Objective function has zero terms, which is not supported (like feasibility problems)")
+    end
+
+    return
 end
 
 # General case
