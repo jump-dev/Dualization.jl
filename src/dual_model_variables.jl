@@ -31,6 +31,7 @@ function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLi
                                                     S <: MOI.AbstractSet}
 
     row_dimension = get_ci_row_dimension(primal_model, ci) 
+    #Change to add_constrained_varibales in MOI 0.9.0
     vis = MOI.add_variables(dual_model, row_dimension) # Add as many variables as the dimension of the constraint
     push!(primal_con_dual_var, ci => vis) # Add the map of the added dual variable to the relationated constraint
     # Add each vi to the dictionary
