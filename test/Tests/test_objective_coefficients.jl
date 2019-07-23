@@ -3,6 +3,8 @@
     @testset "set_dual_model_sense" begin
         # ERROR: FEASIBILITY_SENSE is not supported
         @test_throws ErrorException Dualization.set_dual_model_sense(lp11_test(), lp11_test())
+        obj = MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(0.0, VI(1))], 0.0)
+        @test_throws ErrorException Dualization.PrimalObjective{Float64}(obj)
 
         model = lp1_test()
         @test MOI.get(model, MOI.ObjectiveSense()) == MOI.MIN_SENSE

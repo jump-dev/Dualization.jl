@@ -33,11 +33,7 @@ function MOI.supports(::DualOptimizer,
 end
 
 function MOI.supports_constraint(optimizer::DualOptimizer, F::Type{<:SF}, S::Type{<:SS})
-    if optimizer.dual_optimizer !== nothing
-        MOI.supports_constraint(optimizer.dual_optimizer, F, S)
-    else
-        return true
-    end
+    return MOI.supports_constraint(optimizer.dual_optimizer, F, S)
 end
 
 function MOI.supports_constraint(::DualOptimizer, ::Type{MOI.AbstractFunction}, ::Type{MOI.AbstractSet})
