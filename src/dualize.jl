@@ -5,9 +5,11 @@ export dualize
 
 Dualize the model
 """
-dualize(primal_model::MOI.ModelLike) = dualize(primal_model, Float64)
+function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames("", ""))
+    return dualize(primal_model, dual_names, Float64)
+end
 
-function dualize(primal_model::MOI.ModelLike, T::DataType)
+function dualize(primal_model::MOI.ModelLike, dual_names::DualNames, T::DataType)
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model) 
 
@@ -28,7 +30,7 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary for dual variables with primal constraints
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, primal_dual_map,
-                                                        con_types, T)
+                                                        dual_names, con_types, T)
     
     # Fill Dual Objective Coefficients Struct
     dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)
@@ -38,8 +40,8 @@ function dualize(primal_model::MOI.ModelLike, T::DataType)
 
     # Add dual equality constraint and get the link dictionary
     add_dual_equality_constraints(dual_model, primal_model,
-                                  primal_dual_map, primal_objective, 
-                                  con_types)
+                                  primal_dual_map, dual_names,
+                                  primal_objective, con_types)
 
     return DualProblem(dual_model, primal_dual_map)
 end

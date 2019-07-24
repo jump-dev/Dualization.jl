@@ -54,6 +54,7 @@ include("Tests/test_dualize_rsoc.jl")
 include("Tests/test_dualize_sdp.jl")
 include("Tests/test_dualize_exponential.jl")
 include("Tests/test_dualize_power.jl")
+include("Tests/test_dual_names.jl")
 include("Tests/test_MOI_wrapper.jl")
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
