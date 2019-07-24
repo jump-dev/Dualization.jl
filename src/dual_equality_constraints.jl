@@ -24,10 +24,19 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         end
         scalar_term = (dual_sense == MOI.MAX_SENSE ? 1 : -1) * scalar_term_value
         # Add equality constraint
-        ci_dual = MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
+        dual_ci = MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
+        #Set constraint name with the name of the associated priaml variable
+        set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci)
         # Add primal variable to dual contraint to the link dictionary
-        push!(primal_dual_map.primal_var_dual_con, primal_vi => ci_dual)
+        push!(primal_dual_map.primal_var_dual_con, primal_vi => dual_ci)
     end
+    return 
+end
+
+function set_dual_constraint_name(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, 
+                                  primal_vi::VI, dual_ci::CI)
+    MOI.set(dual_model, MOI.ConstraintName(), dual_ci, 
+            MOI.get(primal_model, MOI.VariableName(), primal_vi))
     return 
 end
 

@@ -35,9 +35,12 @@ function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLi
     # because of https://github.com/guilhermebodin/Dualization.jl/issues/9
     vis = MOI.add_variables(dual_model, row_dimension) # Add as many variables as the dimension of the constraint
     push!(primal_con_dual_var, ci => vis) # Add the map of the added dual variable to the relationated constraint
+    # Get constraint name
+    ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary
     for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(dual_obj_affine_terms, vi, get_scalar_term(primal_model, ci, T)[i])
+        set_dual_variable_name(dual_model, vi, i, ci_name, dual_variable_prefix(""))
     end
     return vis
 end
@@ -51,4 +54,17 @@ function add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLik
     vis = _add_dual_variable(dual_model, primal_model, primal_con_dual_var, 
                              dual_obj_affine_terms, ci)
     return add_dual_cone_constraint(dual_model, primal_model, vis, ci)
+end
+
+
+function set_dual_variable_name(dual_model::MOI.ModelLike, vi::VI, i::Int, ci_name::String, prefix::String)
+    MOI.set(dual_model, MOI.VariableName(), vi, prefix*ci_name*"_$i")
+    return 
+end
+
+"""
+This can be changed by the user by redefining the method
+"""
+function dual_variable_prefix(str::String)
+    return str
 end
