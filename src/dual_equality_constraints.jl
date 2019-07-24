@@ -92,16 +92,17 @@ end
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
                                    primal_model::MOI.ModelLike, ci::CI{VAF{T}, S}, 
-                                   primal_vi::VI) where {T, 
-                                                         S <: MOI.AbstractVectorSet}
+                                   primal_vi::VI) where {T, S <: MOI.AbstractVectorSet}
 
     moi_function = get_function(primal_model, ci)
+    set = get_set(primal_model, ci)
     for term in moi_function.terms
         if term.scalar_term.variable_index == primal_vi
             dual_vi = primal_con_dual_var[ci][term.output_index] # term.output_index is the row of the VAF,
                                                                  # it corresponds to the dual variable associated with
                                                                  # this constraint
-            push_to_scalar_affine_terms!(scalar_affine_terms, MOI.coefficient(term), dual_vi)
+            push_to_scalar_affine_terms!(scalar_affine_terms, 
+                                         set_dot(term.output_index, set, T)*MOI.coefficient(term), dual_vi)
         end
     end
     return 
@@ -110,66 +111,23 @@ end
 function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
                                    primal_model::MOI.ModelLike, ci::CI{VVF, S}, 
-                                   primal_vi::VI) where {T, 
-                                                         S <: MOI.AbstractVectorSet}
+                                   primal_vi::VI) where {T, S <: MOI.AbstractVectorSet}
 
     moi_function = get_function(primal_model, ci)
+    set = get_set(primal_model, ci)
     for (i, variable) in enumerate(moi_function.variables)
         if variable == primal_vi
             dual_vi = primal_con_dual_var[ci][i]
-            push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
+            push_to_scalar_affine_terms!(scalar_affine_terms, 
+                                         set_dot(i, set, T)*one(T), dual_vi)
         end
     end
     return 
 end
 
-function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
-                                   primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{VAF{T}, MOI.PositiveSemidefiniteConeTriangle}, 
-                                   primal_vi::VI) where T
-
-    moi_function = get_function(primal_model, ci)
-    moi_set = get_set(primal_model, ci)
-    k::Int = 0
-    for j in 1:moi_set.side_dimension
-        for i in 1:j
-            k += 1
-            term = moi_function.terms[k]
-            if term.scalar_term.variable_index == primal_vi
-                dual_vi = primal_con_dual_var[ci][term.output_index] # term.output_index is the row of the VAF,
-                                                                     # it corresponds to the dual variable associated with
-                                                                     # this constraint
-                if i == j
-                    push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
-                else
-                    push_to_scalar_affine_terms!(scalar_affine_terms, 2*one(T), dual_vi)
-                end
-            end
-        end
-    end
-    return 
-end
-
-function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineTerm{T}},
-                                   primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{VVF, MOI.PositiveSemidefiniteConeTriangle}, 
-                                   primal_vi::VI) where T
-
-    moi_function = get_function(primal_model, ci)
-    moi_set = get_set(primal_model, ci)
-    k::Int = 0
-    for j in 1:moi_set.side_dimension
-        for i in 1:j
-            k += 1
-            if moi_function.variables[k] == primal_vi
-                dual_vi = primal_con_dual_var[ci][k]
-                if i == j
-                    push_to_scalar_affine_terms!(scalar_affine_terms, one(T), dual_vi)
-                else
-                    push_to_scalar_affine_terms!(scalar_affine_terms, 2*one(T), dual_vi)
-                end
-            end
-        end
-    end
-    return 
+# Change to spzeros once https://github.com/JuliaOpt/MathOptInterface.jl/pull/805 is merged
+function set_dot(i::Int, s::MOI.AbstractVectorSet, T::DataType)
+    vec = zeros(T, MOI.dimension(s))
+    vec[i] = one(T)
+    return MOIU.set_dot(vec, vec, s)
 end
