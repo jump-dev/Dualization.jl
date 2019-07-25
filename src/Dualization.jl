@@ -30,13 +30,13 @@ MOIU.@model(DualizableModel,
 struct PrimalDualMap{T}
     primal_var_dual_con::Dict{VI, CI}
     primal_con_dual_var::Dict{CI, Vector{VI}}
-    primal_con_dual_con::Dict{CI, Union{Nothing, CI}}
+    primal_con_dual_con::Dict{CI, CI}
     primal_con_constants::Dict{CI, Vector{T}}
 
     function PrimalDualMap{T}() where T
         return new(Dict{VI, CI}(),
                     Dict{CI, Vector{VI}}(),
-                    Dict{CI, Union{Nothing, CI}}(),
+                    Dict{CI, CI}(),
                     Dict{CI, Vector{T}}())
     end
 end
