@@ -1,6 +1,6 @@
 function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
-                                     primal_dual_map::PrimalDualMap, dual_names::DualNames,
-                                     con_types::Vector{Tuple{DataType, DataType}}, T::DataType)
+                                     primal_dual_map::PrimalDualMap{T}, dual_names::DualNames,
+                                     con_types::Vector{Tuple{DataType, DataType}}) where T
     dual_obj_affine_terms = Dict{VI, T}()
     for (F, S) in con_types
         for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
@@ -18,14 +18,14 @@ end
 
 # Utils for primal_con_constants
 function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}}, 
-                                      ci::CI{F, S}) where {T, F <: MOI.AbstractFunction, S <: MOI.AbstractSet}
-    push!(primal_con_constants, ci => get_scalar_term(primal_model, ci, T))
+                                      ci::CI{F, S}) where {T, F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
+    push!(primal_con_constants, ci => get_scalar_term(primal_model, ci))
     return 
 end
 
 function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}}, 
-                                       ci::CI{VVF, S}) where {T, S <: MOI.AbstractSet}
-    return # No constants in this case, don't need to push zero to the dict
+                                       ci::CI{F, S}) where {T, F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
+    return # No constants need to be passed to the DualOptimizer in this case, don't need to push zero to the dict
 end
 
 # Utils for primal_con_dual_con

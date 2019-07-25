@@ -146,36 +146,25 @@ end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
                  ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S}
-    ci_dual_problem = get_ci_dual_problem(optimizer, ci)
     primal_ci_constant = get_primal_ci_constant(optimizer, ci)
-    if ci_dual_problem === nothing
+    # If it has no key than there is no dual constraint
+    if !haskey(optimizer.dual_problem.primal_dual_map.primal_con_dual_con, ci)
         return -primal_ci_constant
     end
+    ci_dual_problem = get_ci_dual_problem(optimizer, ci)
     ci_dual_optimizer = get_ci_dual_optimizer(optimizer, ci_dual_problem)
     return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer) - primal_ci_constant
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
                  ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
-    ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-    primal_ci_constants = get_primal_ci_constants(optimizer, ci)
-    if ci_dual_problem === nothing
-        return -primal_ci_constants
+    # If it has no key than there is no dual constraint
+    if !haskey(optimizer.dual_problem.primal_dual_map.primal_con_dual_con, ci)
+        ci_dimension = 
+        ci_type = 
+        return zeros(ci_type, ci_dimension)
     end
-    ci_dual_optimizer = get_ci_dual_optimizer(optimizer, ci_dual_problem)
-    return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer) .- primal_ci_constants
-end
-
-"""
-In the VAF case it is different 
-"""
-function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
-                 ci::CI{F,S}) where {T, F <: VAF{T}, S}
     ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-    primal_ci_constants = get_primal_ci_constants(optimizer, ci)
-    if ci_dual_problem === nothing
-        return zeros(T, length(primal_ci_constants))
-    end
     ci_dual_optimizer = get_ci_dual_optimizer(optimizer, ci_dual_problem)
     return MOI.get(optimizer.dual_optimizer, MOI.ConstraintDual(), ci_dual_optimizer)
 end
