@@ -70,4 +70,11 @@ exponential_cone_optimizer = Dualization.DualOptimizer(COSMO.Optimizer(verbose =
         @test MOI.supports_constraint(conic_optimizer, VVF, MOI.PositiveSemidefiniteConeTriangle)
         @test MOI.supports(linear_optimizer, MOI.ObjectiveSense())
     end
+
+    @testset "dual_status" begin
+        @test Dualization.dual_status(MOI.INFEASIBLE) == MOI.DUAL_INFEASIBLE
+        @test Dualization.dual_status(MOI.DUAL_INFEASIBLE) == MOI.INFEASIBLE
+        @test Dualization.dual_status(MOI.ALMOST_INFEASIBLE) == MOI.ALMOST_DUAL_INFEASIBLE
+        @test Dualization.dual_status(MOI.ALMOST_DUAL_INFEASIBLE) == MOI.ALMOST_INFEASIBLE
+    end
 end
