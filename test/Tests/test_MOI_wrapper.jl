@@ -61,8 +61,8 @@ exponential_cone_optimizer = Dualization.DualOptimizer(COSMO.Optimizer(verbose =
     end
 
     @testset "attributes" begin
-        MOI.get(linear_optimizer, MOI.SolverName()) == "Dual model with GLPK attached"
-        MOI.get(conic_optimizer, MOI.SolverName()) == "Dual model with CSDP attached"
+        @test MOI.get(linear_optimizer, MOI.SolverName()) == "Dual model with GLPK attached"
+        @test MOI.get(conic_optimizer, MOI.SolverName()) == "Dual model with CSDP attached"
     end
 
     @testset "support" begin

@@ -41,7 +41,7 @@ end
 # Utils for add_dual_variable functions
 function push_to_dual_obj_aff_terms!(primal_model::MOI.ModelLike, dual_obj_affine_terms::Dict{VI, T}, vi::VI,
                                      ci::CI{F, S}, i::Int) where {T, F <: MOI.AbstractFunction, S <: MOI.AbstractSet}
-    value = get_scalar_term(primal_model, i, ci, T)
+    value = get_scalar_term(primal_model, i, ci)
     if !iszero(value) # If value is different than 0 add to the dictionary
         push!(dual_obj_affine_terms, vi => value)
     end

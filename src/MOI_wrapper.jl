@@ -133,19 +133,19 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
-                 ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S}
+                 ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
     return MOI.get(optimizer.dual_optimizer, 
                    MOI.VariablePrimal(), get_vi_dual_optimizer(optimizer, ci))
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
-                 ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
+                 ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
     return MOI.get.(optimizer.dual_optimizer, 
                     MOI.VariablePrimal(), get_vis_dual_optimizer(optimizer, ci))
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
-                 ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S}
+                 ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
     primal_ci_constant = get_primal_ci_constant(optimizer, ci)
     # If it has no key than there is no dual constraint
     if !haskey(optimizer.dual_problem.primal_dual_map.primal_con_dual_con, ci)
@@ -157,12 +157,12 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
-                 ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S}
+                 ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
     # If it has no key than there is no dual constraint
     if !haskey(optimizer.dual_problem.primal_dual_map.primal_con_dual_con, ci)
-        ci_dimension = 
-        ci_type = 
-        return zeros(ci_type, ci_dimension)
+        # The number of dual variable associated with the primal constraint is the ci dimension
+        ci_dimension = length(get_vis_dual_problem(optimizer, ci))
+        return zeros(Float64, ci_dimension)
     end
     ci_dual_problem = get_ci_dual_problem(optimizer, ci)
     ci_dual_optimizer = get_ci_dual_optimizer(optimizer, ci_dual_problem)

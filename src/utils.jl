@@ -24,24 +24,12 @@ function get_scalar_term(model::MOI.ModelLike,
     return MOIU.constant(get_function(model, ci)) .- MOIU.getconstant(get_set(model, ci))
 end
 
-# function get_scalar_term(model::MOI.ModelLike, 
-#                          ci::CI{VVF, S}, T::DataType) where {S <: MOI.AbstractVectorSet}
-
-#     return zeros(T, get_ci_row_dimension(model, ci))
-# end
-
-# function get_scalar_term(model::MOI.ModelLike, 
-#                          ci::CI{F, S}, T::DataType) where {F <: MOI.AbstractVectorFunction, 
-#                                                            S <: MOI.AbstractVectorSet}
-#     return MOIU.constant(get_function(model, ci))
-# end
-
-# # This is used to fill the dual objective dictionary
-# function get_scalar_term(model::MOI.ModelLike, i::Int,
-#                          ci::CI{F, S}, T::DataType) where {F <: MOI.AbstractVectorFunction, 
-#                                                            S <: MOI.AbstractVectorSet}
-#     return MOIU.constant(get_function(model, ci))[i]
-# end
+# This is used to fill the dual objective dictionary
+function get_scalar_term(model::MOI.ModelLike, i::Int,
+                         ci::CI{F, S}) where {F <: MOI.AbstractVectorFunction, 
+                                              S <: MOI.AbstractVectorSet}
+    return MOIU.constant(get_function(model, ci))[i]
+end
 
 # This is used to fill the dual objective dictionary
 function get_scalar_term(model::MOI.ModelLike, i::Int,
