@@ -30,7 +30,7 @@ function dualize(primal_model::MOI.ModelLike, dual_names::DualNames, T::DataType
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary for dual variables with primal constraints
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_model, primal_model, primal_dual_map,
-                                                        dual_names, con_types, T)
+                                                        dual_names, con_types)
     
     # Fill Dual Objective Coefficients Struct
     dual_objective = get_dual_objective(dual_model, dual_obj_affine_terms, primal_objective)
