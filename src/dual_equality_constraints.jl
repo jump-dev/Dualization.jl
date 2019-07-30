@@ -5,10 +5,9 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
     num_objective_terms = MOIU.number_of_affine_terms(T, get_saf(primal_objective)) # This is used to update the scalar_term_index
-    list_of_primal_vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
 
     scalar_term_index::Int = 1
-    for primal_vi in list_of_primal_vis
+    for primal_vi in MOI.get(primal_model, MOI.ListOfVariableIndices())
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_dual_map.primal_con_dual_var, 
                                                       primal_vi, con_types, T)
@@ -20,10 +19,11 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
             # If the last term of the objective is not the last primal variable we don't update 
             # the scalar_term_index
             scalar_term_index == num_objective_terms ? scalar_term_index : scalar_term_index += 1
+            # Update the coeficient with the problem sense
+            scalar_term = (dual_sense == MOI.MAX_SENSE ? 1 : -1) * scalar_term_value
         else # In this case this variable is not on the objective function
-            scalar_term_value = zero(T)
+            scalar_term = zero(T)
         end
-        scalar_term = (dual_sense == MOI.MAX_SENSE ? 1 : -1) * scalar_term_value
         # Add equality constraint
         dual_ci = MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
         #Set constraint name with the name of the associated priaml variable
@@ -133,7 +133,7 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
                                          set_dot(i, set, T)*one(T), dual_vi)
         end
     end
-    return 
+    return  
 end
 
 # Change to spzeros once https://github.com/JuliaOpt/MathOptInterface.jl/pull/805 is merged
