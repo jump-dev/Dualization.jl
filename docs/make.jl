@@ -8,7 +8,6 @@ makedocs(
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     # See https://github.com/JuliaOpt/JuMP.jl/issues/1576
     strict = true,
-    format   = Documenter.HTML(),
     sitename = "Dualization.jl",
     authors = "Guilherme Bodin, and contributors",
     pages = [
