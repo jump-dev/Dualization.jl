@@ -16,6 +16,8 @@ addons:
         - libgmp-dev
         - libglpk-dev
 after_success:
+    - julia -e 'import Pkg; Pkg.add("Documenter")'
+    - julia -e 'import Pkg; cd(Pkg.dir("Dualization")); include(joinpath("docs", "make.jl"))'
     # push coverage results to Codecov
     - julia --inline=no -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
 env:
