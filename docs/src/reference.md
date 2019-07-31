@@ -1,3 +1,5 @@
+# Reference
+
 ```@docs
 dualize
 ```
