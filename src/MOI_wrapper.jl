@@ -1,3 +1,5 @@
+export DualOptimizer
+
 # Supported Functions
 const SF = Union{MOI.SingleVariable, 
                  MOI.ScalarAffineFunction{Float64}, 
@@ -20,6 +22,9 @@ mutable struct DualOptimizer{OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
     end
     function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
         return DualOptimizer{OT}(DualProblem(dual_optimizer))
+    end
+    function DualOptimizer()
+        return error("DualOptimizer must have a solver attached")
     end
 end
 
@@ -80,14 +85,6 @@ function get_ci_dual_problem(optimizer::DualOptimizer, ci::CI)
     return optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
 end
 
-function get_ci_dual_optimizer(optimizer::DualOptimizer, vi::VI)
-    return get_ci_dual_problem(optimizer, vi)
-end
-
-function get_ci_dual_optimizer(optimizer::DualOptimizer, ci::CI)
-    return ci
-end
-
 function get_primal_ci_constant(optimizer::DualOptimizer, ci::CI)
     return first(get_primal_ci_constants(optimizer, ci))
 end
@@ -110,7 +107,7 @@ end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)
     return -MOI.get(optimizer.dual_problem.dual_model, 
-                    MOI.ConstraintDual(), get_ci_dual_optimizer(optimizer, vi))
+                    MOI.ConstraintDual(), get_ci_dual_problem(optimizer, vi))
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual, 
@@ -133,8 +130,7 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
         return -primal_ci_constant
     end
     ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-    ci_dual_optimizer = get_ci_dual_optimizer(optimizer, ci_dual_problem)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_optimizer) - primal_ci_constant
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_problem) - primal_ci_constant
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal, 
@@ -146,8 +142,7 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
         return zeros(Float64, ci_dimension)
     end
     ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-    ci_dual_optimizer = get_ci_dual_optimizer(optimizer, ci_dual_problem)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_optimizer)
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_problem)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolveTime) 
