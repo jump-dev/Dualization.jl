@@ -18,14 +18,15 @@ mutable struct DualOptimizer{OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
     dual_problem::DualProblem
 
     function DualOptimizer{OT}(dual_problem::DualProblem) where {OT <: MOI.ModelLike}
-        return new(dual_problem)
+        return new{OT}(dual_problem)
     end
-    function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
-        return DualOptimizer{OT}(DualProblem(dual_optimizer))
-    end
-    function DualOptimizer()
-        return error("DualOptimizer must have a solver attached")
-    end
+end
+
+function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+    return DualOptimizer{OT}(DualProblem(dual_optimizer))
+end 
+function DualOptimizer()
+    return error("DualOptimizer must have a solver attached")
 end
 
 function MOI.supports(::DualOptimizer,
@@ -102,7 +103,7 @@ function get_vis_dual_problem(optimizer::DualOptimizer, ci::CI)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolverName)
-    return "Dual model with "*MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName())*" attached"
+    return "Dual model with "*MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName()) * " attached"
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)

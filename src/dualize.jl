@@ -6,7 +6,7 @@ export dualize
 Dualize the model
 """
 function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames("", ""))
-    # Crates an empty dual problem
+    # Creates an empty dual problem
     dual_problem = DualProblem{Float64}()
     return dualize(primal_model, dual_problem, dual_names)
 end
