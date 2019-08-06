@@ -12,3 +12,5 @@
 [codecov-url]: http://codecov.io/github/guilhermebodin/Dualization.jl?branch=master
 
 Repository with first implementations of the automatic dualization feature for MathOptInterface.jl
+
+This is the repository of the Google Summer Of Code Project (GSOC) JuMP Automatic Dualization

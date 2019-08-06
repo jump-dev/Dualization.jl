@@ -22,6 +22,11 @@ mutable struct DualOptimizer{OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
     end
 end
 
+"""
+    DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+
+DualOptimizer constructor
+"""
 function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
     return DualOptimizer{OT}(DualProblem(dual_optimizer))
 end 

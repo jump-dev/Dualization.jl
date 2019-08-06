@@ -1,7 +1,7 @@
 """
     supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
 
-Throws an error if a constraint is not supported to be dualized 
+Returns `true` if `Function-in-Set` is supported for Dualization and throws an error if it is not.
 """
 function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
     for (F, S) in con_types
@@ -54,13 +54,11 @@ supported_constraint(::Type{VVF}, ::Type{<:MOI.DualPowerCone}) = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.DualPowerCone{T}}) where T = true
 
 """
-    supported_objective(obj_func_type::DataType)
+    supported_objective(primal_model::MOI.ModelLike)
 
-Throws an error if an objective function is not supported to be dualized in this case
-as ObjectiveFunctions can only be `AbstractScalarFunction` it only supports 
-`SingleVariableFunction` and `ScalarAffineFunction`
+Returns `true` if `MOI.ObjectiveFunctionType()` is supported for Dualization and throws an error if it is not.
 """
-function supported_objective(primal_model::MOI.ModelLike) where T
+function supported_objective(primal_model::MOI.ModelLike)
     obj_func_type = MOI.get(primal_model, MOI.ObjectiveFunctionType())
     if !supported_obj(obj_func_type)
         error("Objective functions of type $obj_func_type are not implemented")
