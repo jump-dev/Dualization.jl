@@ -138,7 +138,7 @@ a constraint not listed here, it will return an usupported error.
 |    `VectorAffineFunction`    |    `PowerCone`    |
 |    `VectorAffineFunction`    |    `DualPowerCone`    |
 
-Note that some constraints can be bridged (add link) to constraints in this list.
+Note that some of MOI constraints can be bridged, see [Bridges](http://www.juliaopt.org/MathOptInterface.jl/stable/apireference/#Bridges-1), to constraints in this list.
 
 ## Supported objective functions
 
