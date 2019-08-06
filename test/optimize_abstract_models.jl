@@ -38,9 +38,9 @@ end
 
 function test_strong_duality(primal_problems::Array{Function}, factory::OptimizerFactory; atol = 1e-6, rtol = 1e-4)
     for primal_problem in primal_problems
-        dual_problem = dualize(primal_problem()).dual_model
+        dual_problem = dualize(primal_problem())
         @testset "$primal_problem" begin
-            @test test_strong_duality(primal_problem(), dual_problem, factory, atol, rtol)
+            @test test_strong_duality(primal_problem(), dual_problem.dual_model, factory, atol, rtol)
         end
     end
 end
