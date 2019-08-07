@@ -43,18 +43,28 @@ function empty!(primal_dual_map::PrimalDualMap{T}) where T
     primal_dual_map.primal_con_constants = Dict{CI, Vector{T}}()
 end
 
-struct DualProblem{T}
-    dual_model::MOI.ModelLike #It can be a model from an optimizer or a DualizableModel{T}
+struct DualProblem{T, OT <: MOI.ModelLike}
+    dual_model::OT #It can be a model from an optimizer or a DualizableModel{T}
     primal_dual_map::PrimalDualMap{T}
 
-    # Empty DualProblem cosntructor
-    function DualProblem{T}() where T
-        return new(DualizableModel{T}(), PrimalDualMap{T}())
+    function DualProblem{T}(dual_optimizer::OT, pdmap::PrimalDualMap{T}) where {T, OT <: MOI.ModelLike}
+        return new{T, OT}(dual_optimizer, pdmap)
     end
-    function DualProblem{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
-        return new(dual_optimizer, PrimalDualMap{T}())
-    end
-    function DualProblem(dual_optimizer::OT) where {OT <: MOI.ModelLike}
-        return DualProblem{Float64}(MOIU.CachingOptimizer(DualizableModel{Float64}(), dual_optimizer))
-    end
+end
+
+function DualProblem{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
+    return DualProblem{T}(dual_optimizer, PrimalDualMap{T}())
+end
+
+function DualProblem(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+    return DualProblem{Float64}(MOIU.CachingOptimizer(DualizableModel{Float64}(), dual_optimizer))
+end
+
+function DualProblem(dual_optimizer::OT, pdmap::PrimalDualMap{T}) where {OT <: MOI.ModelLike, T}
+    return DualProblem{Float64}(dual_optimizer, pdmap)
+end
+
+# Empty DualProblem cosntructor
+function DualProblem{T}() where {T}
+    return DualProblem(DualizableModel{T}(), PrimalDualMap{T}())
 end
