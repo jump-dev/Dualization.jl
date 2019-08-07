@@ -33,7 +33,7 @@ struct PrimalDualMap{T}
     primal_con_dual_con::Dict{CI, CI}
     primal_con_constants::Dict{CI, Vector{T}}
 
-    function PrimalDualMap{T}() where T
+    function PrimalDualMap{T}() where {T}
         return new(Dict{VI, CI}(),
                     Dict{CI, Vector{VI}}(),
                     Dict{CI, CI}(),
@@ -41,9 +41,10 @@ struct PrimalDualMap{T}
     end
 end
 
-struct DualProblem
-    dual_model::MOI.ModelLike 
-    primal_dual_map::PrimalDualMap
+struct DualProblem{M <: MOI.ModelLike, T}
+    dual_model::M
+    primal_dual_map::PrimalDualMap{T}
+    DualProblem(m::M, pdmap::PrimalDualMap{T}) where {M <: MOI.ModelLike, T} = new{M, T}(m, pdmap)
 end
 
 include("utils.jl")
