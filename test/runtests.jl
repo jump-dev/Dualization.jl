@@ -43,6 +43,7 @@ include("Problems/Exponential/exponential_cone_problems.jl")
 include("Problems/Power/power_cone_problems.jl")
 
 # Run tests to travis ci
+include("Tests/test_structures.jl")
 include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")
 include("Tests/test_dual_model_variables.jl")

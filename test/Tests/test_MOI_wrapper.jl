@@ -77,4 +77,9 @@ exponential_cone_optimizer = Dualization.DualOptimizer(COSMO.Optimizer(verbose =
         @test Dualization.dual_status(MOI.ALMOST_INFEASIBLE) == MOI.ALMOST_DUAL_INFEASIBLE
         @test Dualization.dual_status(MOI.ALMOST_DUAL_INFEASIBLE) == MOI.ALMOST_INFEASIBLE
     end
+
+    @testset "DualOptimizer" begin
+        err = ErrorException("DualOptimizer must have a solver attached")
+        @test_throws err DualOptimizer()
+    end
 end
