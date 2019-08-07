@@ -1,4 +1,3 @@
-using GLPK
 const GLPKOPT = with_optimizer(GLPK.Optimizer)
 
 @testset "GLPK Linear Problems" begin
