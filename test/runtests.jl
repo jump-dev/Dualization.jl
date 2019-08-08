@@ -1,8 +1,5 @@
 using MathOptInterface, JuMP, Dualization, Test
 
-# Solvers
-using GLPK, CSDP, COSMO, ECOS
-
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges

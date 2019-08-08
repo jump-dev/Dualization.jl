@@ -1,3 +1,4 @@
+using CSDP
 const CSDPOPT = with_optimizer(CSDP.Optimizer, printlevel = 0)
 
 @testset "CSDP SDP triangle Problems" begin

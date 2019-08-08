@@ -1,3 +1,4 @@
+using GLPK
 @testset "JuMP dualize" begin
     @testset "direct_mode" begin
         JuMP_model = JuMP.direct_model(GLPK.Optimizer())

@@ -1,3 +1,4 @@
+using COSMO
 const COSMOOPT = with_optimizer(COSMO.Optimizer, verbose = false)
 
 @testset "COSMO Exponential Cone Problems" begin

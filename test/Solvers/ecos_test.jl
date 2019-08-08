@@ -1,3 +1,4 @@
+using ECOS
 const ECOSOPT = with_optimizer(ECOS.Optimizer, verbose = 0)
 
 @testset "ECOS conic Problems" begin
