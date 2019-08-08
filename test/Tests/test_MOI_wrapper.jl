@@ -1,9 +1,9 @@
 using GLPK, CSDP, COSMO
 
 # Optimizers
-linear_optimizer = Dualization.DualOptimizer(GLPK.Optimizer())
-conic_optimizer = Dualization.DualOptimizer(CSDP.Optimizer(printlevel = 0))
-exponential_cone_optimizer = Dualization.DualOptimizer(COSMO.Optimizer(verbose = false))
+linear_optimizer = DualOptimizer(GLPK.Optimizer())
+conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
+exponential_cone_optimizer = DualOptimizer(COSMO.Optimizer(verbose = false))
 
 @testset "MOI_wrapper.jl" begin    
     linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
@@ -81,5 +81,7 @@ exponential_cone_optimizer = Dualization.DualOptimizer(COSMO.Optimizer(verbose =
     @testset "DualOptimizer" begin
         err = ErrorException("DualOptimizer must have a solver attached")
         @test_throws err DualOptimizer()
+        dual_opt_f32 = Dualization.DualOptimizer{Float32}(GLPK.Optimizer())
+        @test typeof(dual_opt_f32) == DualOptimizer{Float32,GLPK.Optimizer}
     end
 end

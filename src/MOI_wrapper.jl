@@ -33,8 +33,18 @@ function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
     # the concrete type of the dual_problem.dual_model, otherwise we would have 2 different OTs
     # one for the DualProblem and another one for the DualOptimizer.
     Caching_OptimizerType = typeof(dual_problem.dual_model) 
-    return DualOptimizer{Float64, Caching_OptimizerType}(DualProblem(dual_optimizer))
+    return DualOptimizer{Float64, Caching_OptimizerType}(dual_problem)
 end 
+
+function DualOptimizer{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
+    dual_problem = DualProblem{T}(dual_optimizer)
+    # Because the DualProblem builds a CachingOptimizer on top of the provided OT we must get the
+    # the concrete type of the dual_problem.dual_model, otherwise we would have 2 different OTs
+    # one for the DualProblem and another one for the DualOptimizer.
+    Caching_OptimizerType = typeof(dual_problem.dual_model) 
+    return DualOptimizer{T, Caching_OptimizerType}(dual_problem)
+end 
+
 function DualOptimizer()
     return error("DualOptimizer must have a solver attached")
 end
