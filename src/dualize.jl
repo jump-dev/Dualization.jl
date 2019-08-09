@@ -57,9 +57,8 @@ function dualize(model::JuMP.Model; dual_names::DualNames = DualNames("", ""))
         error("Dualization does not support solvers in $(model.moi_backend.mode) mode")
     end
     # Dualize and attach to the model
-    dual_problem = dualize(backend(model); dual_names = dual_names)
-    MOI.copy_to(backend(JuMP_model), dual_problem.dual_model)
-
+    dualize(backend(model), DualProblem(backend(JuMP_model)); dual_names = dual_names)
+    
     return JuMP_model
 end
 
