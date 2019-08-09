@@ -1,7 +1,6 @@
 # Reference
 
 ```@docs
-dualize
 DualOptimizer
 Dualization.supported_constraints
 Dualization.supported_objective
