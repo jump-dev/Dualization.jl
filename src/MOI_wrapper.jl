@@ -14,11 +14,11 @@ const SS = Union{MOI.EqualTo{Float64}, MOI.GreaterThan{Float64}, MOI.LessThan{Fl
                  MOI.PowerCone, MOI.DualPowerCone,
                  MOI.PositiveSemidefiniteConeTriangle}
 
-mutable struct DualOptimizer{OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
-    dual_problem::DualProblem
+struct DualOptimizer{T, OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
+    dual_problem::DualProblem{T, OT}
 
-    function DualOptimizer{OT}(dual_problem::DualProblem) where {OT <: MOI.ModelLike}
-        return new{OT}(dual_problem)
+    function DualOptimizer{T, OT}(dual_problem::DualProblem{T, OT}) where {T, OT <: MOI.ModelLike}
+        return new{T, OT}(dual_problem)
     end
 end
 
@@ -28,8 +28,16 @@ end
 DualOptimizer constructor
 """
 function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
-    return DualOptimizer{OT}(DualProblem(dual_optimizer))
+    return DualOptimizer{Float64}(dual_optimizer)
 end 
+
+function DualOptimizer{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
+    dual_problem = DualProblem{T}(MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer))
+    # discover the type of MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
+    Caching_OptimizerType = typeof(dual_problem.dual_model)
+    return DualOptimizer{T, Caching_OptimizerType}(dual_problem)
+end 
+
 function DualOptimizer()
     return error("DualOptimizer must have a solver attached")
 end
