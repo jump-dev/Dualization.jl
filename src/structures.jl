@@ -60,11 +60,7 @@ function DualProblem(dual_optimizer::OT) where {OT <: MOI.ModelLike}
     return DualProblem{Float64}(dual_optimizer)
 end
 
-function DualProblem(dual_optimizer::OT, pdmap::PrimalDualMap{T}) where {OT <: MOI.ModelLike, T}
-    return DualProblem{T}(dual_optimizer, pdmap)
-end
-
 # Empty DualProblem cosntructor
 function DualProblem{T}() where {T}
-    return DualProblem(DualizableModel{T}(), PrimalDualMap{T}())
+    return DualProblem{T}(DualizableModel{T}(), PrimalDualMap{T}())
 end
