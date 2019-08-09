@@ -82,6 +82,7 @@ exponential_cone_optimizer = DualOptimizer(COSMO.Optimizer(verbose = false))
         err = ErrorException("DualOptimizer must have a solver attached")
         @test_throws err DualOptimizer()
         dual_opt_f32 = Dualization.DualOptimizer{Float32}(GLPK.Optimizer())
-        @test typeof(dual_opt_f32) == DualOptimizer{Float32,GLPK.Optimizer}
+        Caching_OptimizerType = typeof(dual_opt_f32.dual_problem.dual_model)
+        @test typeof(dual_opt_f32) == DualOptimizer{Float32, Caching_OptimizerType}
     end
 end

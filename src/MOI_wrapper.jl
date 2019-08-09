@@ -28,20 +28,13 @@ end
 DualOptimizer constructor
 """
 function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
-    dual_problem = DualProblem(dual_optimizer)
-    # Because the DualProblem builds a CachingOptimizer on top of the provided OT we must get the
-    # the concrete type of the dual_problem.dual_model, otherwise we would have 2 different OTs
-    # one for the DualProblem and another one for the DualOptimizer.
-    Caching_OptimizerType = typeof(dual_problem.dual_model) 
-    return DualOptimizer{Float64, Caching_OptimizerType}(dual_problem)
+    return DualOptimizer{Float64}(dual_optimizer)
 end 
 
 function DualOptimizer{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
-    dual_problem = DualProblem{T}(dual_optimizer)
-    # Because the DualProblem builds a CachingOptimizer on top of the provided OT we must get the
-    # the concrete type of the dual_problem.dual_model, otherwise we would have 2 different OTs
-    # one for the DualProblem and another one for the DualOptimizer.
-    Caching_OptimizerType = typeof(dual_problem.dual_model) 
+    dual_problem = DualProblem{T}(MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer))
+    # discover the type of MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
+    Caching_OptimizerType = typeof(dual_problem.dual_model)
     return DualOptimizer{T, Caching_OptimizerType}(dual_problem)
 end 
 
