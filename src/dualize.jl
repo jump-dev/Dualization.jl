@@ -1,10 +1,6 @@
 export dualize
 
-"""
-    dualize(model::MOI.ModelLike)
-
-Dualize the model
-"""
+# MOI dualize
 function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames("", ""))
     # Creates an empty dual problem
     dual_problem = DualProblem{Float64}()
@@ -51,3 +47,33 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}, dual
 
     return dual_problem
 end
+
+# JuMP dualize
+function dualize(model::JuMP.Model; dual_names::DualNames = DualNames("", ""))
+    # Create an empty JuMP model
+    JuMP_model = JuMP.Model()
+
+    if JuMP.mode(model) != JuMP.AUTOMATIC # Only works in AUTOMATIC mode
+        error("Dualization does not support solvers in $(model.moi_backend.mode) mode")
+    end
+    # Dualize and attach to the model
+    dualize(backend(model), DualProblem(backend(JuMP_model)); dual_names = dual_names)
+    
+    return JuMP_model
+end
+
+function dualize(model::JuMP.Model, factory::OptimizerFactory; dual_names::DualNames = DualNames("", ""))
+    # Dualize the JuMP model
+    dual_JuMP_model = dualize(model; dual_names = dual_names)
+    # Set the optimizer
+    JuMP.set_optimizer(dual_JuMP_model, factory)
+    return dual_JuMP_model
+end
+
+# dualize docs
+"""
+dualize(model; kwargs...)
+
+The argument model can be a `MOI.ModelLike` or a `JuMP.Model`. 
+"""
+function dualize end

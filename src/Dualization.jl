@@ -1,5 +1,6 @@
 module Dualization
 
+using JuMP
 using MathOptInterface
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
