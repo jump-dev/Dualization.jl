@@ -11,7 +11,7 @@ using GLPK
         MOI.copy_to(JuMP.backend(JuMP_model), lp1_test())
         dual_JuMP_model = dualize(JuMP_model)
         @test backend(dual_JuMP_model).state == MOIU.NO_OPTIMIZER
-        dual_JuMP_model = dualize(JuMP_model; factory = with_optimizer(GLPK.Optimizer))
+        dual_JuMP_model = dualize(JuMP_model, with_optimizer(GLPK.Optimizer))
         @test backend(dual_JuMP_model).state == MOIU.EMPTY_OPTIMIZER
         @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) == "GLPK"
     end
