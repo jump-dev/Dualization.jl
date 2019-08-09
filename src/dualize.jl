@@ -53,7 +53,7 @@ function dualize(model::JuMP.Model; dual_names::DualNames = DualNames("", ""))
     # Create an empty JuMP model
     JuMP_model = JuMP.Model()
 
-    if model.moi_backend.mode != MOIU.AUTOMATIC # Only works in AUTOMATIC mode
+    if JuMP.mode(model) != JuMP.AUTOMATIC # Only works in AUTOMATIC mode
         error("Dualization does not support solvers in $(model.moi_backend.mode) mode")
     end
     # Dualize and attach to the model
