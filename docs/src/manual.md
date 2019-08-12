@@ -155,7 +155,7 @@ dualize
 
 ## DualOptimizer
 
-You can solve primal problems using its dual formulation. 
+You can solve a primal problem by using its dual formulation. 
 ADD EXAMPLE.
 
 ## Adding new sets
