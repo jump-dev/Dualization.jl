@@ -155,13 +155,13 @@ dualize
 
 ## DualOptimizer
 
-You can solve a primal problem by using its dual formulation. 
+You can solve a primal problem by using its dual formulation.
 ADD EXAMPLE.
 
 ## Adding new sets
 
-As Dualization.jl it build entirely on top of MathOptInterface.jl automatically dualize models with custom sets. 
+Dualization.jl can automatically dualize models with custom sets.
 To do this, the user needs to define the set and its dual set in MathOptInterface.jl and provide the functions
-`dual_set` and `set_dot` for the set it wants to dualize.
+`dual_set` and `set_dot` for the set the user wants to dualize.
 
 ADD EXAMPLE
