@@ -97,7 +97,7 @@ The function will return a JuMP model with the dual representation of the proble
 the `OptimizerFactory` attached. The `OptimizerFactory` is the solver and its key arguments
 that users provide in JuMP models, i.e. `with_optimizer(GLPK.Optimizer)`.
 
-On each and everyone of the methods the user can provide the key argument `dual_names`.
+On each of these methods, the user can provide the keyword argument `dual_names`.
 `dual_names` must be a `DualNames` struct that allows users to set more intuitive names 
 for the dual variables and dual constraints created.
 
