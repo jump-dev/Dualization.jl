@@ -98,7 +98,7 @@ the `OptimizerFactory` attached. The `OptimizerFactory` is the solver and its ke
 that users provide in JuMP models, i.e. `with_optimizer(GLPK.Optimizer)`.
 
 On each of these methods, the user can provide the keyword argument `dual_names`.
-`dual_names` must be a `DualNames` struct that allows users to set more intuitive names 
+`dual_names` must be a `DualNames` struct. It allows users to set more intuitive names 
 for the dual variables and dual constraints created.
 
 """
