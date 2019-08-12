@@ -147,13 +147,21 @@ Note that some of MOI constraints can be bridged, see [Bridges](http://www.julia
 |   `SingleVariable`   |
 |   `ScalarAffineFunction`   |
 
-## Dualize a MathOptInterface model
+## Dualize a model
 
-Conic dual of a model
-ADD EXAMPLE.
-
+```@docs
+dualize
+```
 
 ## DualOptimizer
 
-You can solve primal problems using its dual formulation.
+You can solve a primal problem by using its dual formulation.
 ADD EXAMPLE.
+
+## Adding new sets
+
+Dualization.jl can automatically dualize models with custom sets.
+To do this, the user needs to define the set and its dual set in MathOptInterface.jl and provide the functions
+`dual_set` and `set_dot` for the set the user wants to dualize.
+
+ADD EXAMPLE

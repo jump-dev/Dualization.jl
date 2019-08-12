@@ -72,8 +72,29 @@ end
 
 # dualize docs
 """
-dualize(model; kwargs...)
+    dualize(args...; kwargs...)
 
-The argument model can be a `MOI.ModelLike` or a `JuMP.Model`. 
+The `dualize` function works in three different ways. The user can provide:
+
+* A `MathOptInterface.ModelLike`
+
+The function will return a `DualProblem` struct that has the dualized model
+and `PrimalDualMap{Float64}` for users to identify the links between primal and dual model.
+
+* A `MathOptInterface.ModelLike` and a `DualProblem{T}`
+
+* A `JuMP.Model`
+
+The function will return a JuMP model with the dual representation of the problem.
+
+* A `JuMP.Model` and an optimizer factory
+
+The function will return a JuMP model with the dual representation of the problem with 
+the `OptimizerFactory` attached. The `OptimizerFactory` is the solver and its key arguments
+that users provide in JuMP models, i.e. `with_optimizer(GLPK.Optimizer)`.
+
+On each of these methods, the user can provide the keyword argument `dual_names`.
+`dual_names` must be a `DualNames` struct. It allows users to set more intuitive names 
+for the dual variables and dual constraints created.
 """
 function dualize end
