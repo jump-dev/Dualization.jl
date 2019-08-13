@@ -200,7 +200,7 @@ The resulting JuMP model is
     & \min_{x} & x_1 + x_2 + x_3 &
     \\
     & \;\;\text{s.t.}
-    &x & \in FakeCone(3)\\
+    &x \in FakeCone(3)\\
 \end{align}
 ```
 
@@ -265,7 +265,7 @@ The resulting dual model is
 
 ```math
 \begin{align}
-    & \max_{con} & - 3con_1 - 3con_2 - 3con_3 &
+    & \max_{con} & - 3con_1& - 3con_2 - 3con_3 
     \\
     & \;\;\text{s.t.}
     &2con_1 & = 1\\
