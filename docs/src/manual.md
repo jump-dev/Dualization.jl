@@ -190,12 +190,19 @@ end
 # Define a model with your FakeCone
 model = Model()
 @variable(model, x[1:3])
-@constraint(model, x in FakeCone(3))
+@constraint(model, con,  x in FakeCone(3)) # Note that the constraint name is "con"
 @objective(model, Min, sum(x))
 ```
 The resulting JuMP model is
 
-some math here
+```math
+\begin{align}
+    & \min_{x} & x_1 + x_2 + x_3 &
+    \\
+    & \;\;\text{s.t.}
+    &x & \in FakeCone(3)\\
+\end{align}
+```
 
 Now in order to dualize we must overload the methods as described above.
 
@@ -214,4 +221,56 @@ dual_model = dualize(model)
 
 The resulting dual model is 
 
-more math here
+```math
+\begin{align}
+    & \max_{con} & 0 &
+    \\
+    & \;\;\text{s.t.}
+    &2con_1 & = 1\\
+    &&2con_2 & = 1\\
+    &&2con_3 & = 1\\
+    && con & \in DualFakeCone(3)\\
+\end{align}
+```
+
+If the model has constraints that are `MOI.VectorAffineFunction`
+
+```julia
+model = Model()
+@variable(model, x[1:3])
+@constraint(model, con, x + 3 in FakeCone(3))
+@objective(model, Min, sum(x))
+```
+
+```math
+\begin{align}
+    & \min_{x} & x_1 + x_2 + x_3 &
+    \\
+    & \;\;\text{s.t.}
+    &[x_1 + 3, x_2 + 3, x_3 + 3] & \in FakeCone(3)\\
+\end{align}
+```
+
+the user only need to extend the `supported_constraints` function.
+
+```julia
+# Overload the supported_constraints for VectorAffineFunction
+Dualization.supported_constraint(::Type{<:MOI.VectorAffineFunction}, ::Type{<:FakeCone}) = true
+
+# Dualize the model
+dual_model = dualize(model)
+```
+
+The resulting dual model is
+
+```math
+\begin{align}
+    & \max_{con} & - 3con_1 - 3con_2 - 3con_3 &
+    \\
+    & \;\;\text{s.t.}
+    &2con_1 & = 1\\
+    &&2con_2 & = 1\\
+    &&2con_3 & = 1\\
+    && con & \in DualFakeCone(3)\\
+\end{align}
+```
