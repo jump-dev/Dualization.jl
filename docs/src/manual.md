@@ -166,14 +166,14 @@ To do this, the user needs to define the set and its dual set and provide the fu
 * `supported_constraint`
 * `dual_set` 
 
-If the custom set has some special scalar product, like `MOI.PositiveSemidefiniteConeTriangle` also needs
+If the custom set has some special scalar product (see the [link](https://www.juliaopt.org/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)), the user also needs
 to provide a `set_dot` function.
 
 For example, let us define a fake cone and its dual, the fake dual cone. We will write a JuMP model
 with the fake cone and dualize it.
 
 ```julia
-using Dualization, JuMP, MathOptInterface
+using Dualization, JuMP, MathOptInterface, LinearAlgebra
 
 # Rename MathOptInterface to simplify the code
 const MOI = MathOptInterface
@@ -190,7 +190,7 @@ end
 # Define a model with your FakeCone
 model = Model()
 @variable(model, x[1:3])
-@constraint(model, con,  x in FakeCone(3)) # Note that the constraint name is "con"
+@constraint(model, con, x in FakeCone(3)) # Note that the constraint name is "con"
 @objective(model, Min, sum(x))
 ```
 The resulting JuMP model is
@@ -213,7 +213,7 @@ Dualization.supported_constraint(::Type{MOI.VectorOfVariables}, ::Type{<:FakeCon
 
 # If your set has some specific scalar product you also need to define a new set_dot function
 # Our FakeCone has this weird scalar product
-MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = sum(x.*y) + 1
+MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = dot(x, y) + 1
 
 # Dualize the model
 dual_model = dualize(model)
@@ -251,7 +251,7 @@ model = Model()
 \end{align}
 ```
 
-the user only need to extend the `supported_constraints` function.
+the user only needs to extend the `supported_constraints` function.
 
 ```julia
 # Overload the supported_constraints for VectorAffineFunction
