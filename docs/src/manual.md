@@ -213,7 +213,7 @@ Dualization.supported_constraint(::Type{MOI.VectorOfVariables}, ::Type{<:FakeCon
 
 # If your set has some specific scalar product you also need to define a new set_dot function
 # Our FakeCone has this weird scalar product
-MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = dot(x, y) + 1
+MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = 2dot(x, y)
 
 # Dualize the model
 dual_model = dualize(model)
