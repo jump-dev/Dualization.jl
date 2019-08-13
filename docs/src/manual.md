@@ -161,7 +161,57 @@ ADD EXAMPLE.
 ## Adding new sets
 
 Dualization.jl can automatically dualize models with custom sets.
-To do this, the user needs to define the set and its dual set in MathOptInterface.jl and provide the functions
-`dual_set` and `set_dot` for the set the user wants to dualize.
+To do this, the user needs to define the set and its dual set and provide the functions:
 
-ADD EXAMPLE
+* `supported_constraint`
+* `dual_set` 
+
+If the custom set has some special scalar product, like `MOI.PositiveSemidefiniteConeTriangle` also needs
+to provide a `set_dot` function.
+
+For example, let us define a fake cone and its dual, the fake dual cone. We will write a JuMP model
+with the fake cone and dualize it.
+
+```julia
+using Dualization, JuMP, MathOptInterface
+
+# Rename MathOptInterface to simplify the code
+const MOI = MathOptInterface
+
+# Define the custom cone and its dual
+struct FakeCone <: MOI.AbstractVectorSet
+    dimension::Int
+end
+
+struct FakeDualCone <: MOI.AbstractVectorSet
+    dimension::Int
+end
+
+# Define a model with your FakeCone
+model = Model()
+@variable(model, x[1:3])
+@constraint(model, x in FakeCone(3))
+@objective(model, Min, sum(x))
+```
+The resulting JuMP model is
+
+some math here
+
+Now in order to dualize we must overload the methods as described above.
+
+```julia
+# Overload the methods dual_set and supported_constraints
+Dualization.dual_set(s::FakeCone) = FakeDualCone(MOI.dimension(s))
+Dualization.supported_constraint(::Type{MOI.VectorOfVariables}, ::Type{<:FakeCone}) = true
+
+# If your set has some specific scalar product you also need to define a new set_dot function
+# Our FakeCone has this weird scalar product
+MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = sum(x.*y) + 1
+
+# Dualize the model
+dual_model = dualize(model)
+```
+
+The resulting dual model is 
+
+more math here
