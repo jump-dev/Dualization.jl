@@ -1,7 +1,6 @@
 # Reference
 
 ```@docs
-DualOptimizer
 Dualization.supported_constraints
 Dualization.supported_objective
 Dualization.set_dual_model_sense

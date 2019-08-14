@@ -107,7 +107,7 @@ and similarly, the dual is:
 ## Supported constraints
 
 This is the list of supported `Function-in-Set` constraints of the package. If you try to dualize
-a constraint not listed here, it will return an usupported error.
+a constraint not listed here, it will return an unsupported error.
 
 |  MOI Function | MOI Set |
 |:-------|:---------------|
@@ -155,8 +155,11 @@ dualize
 
 ## DualOptimizer
 
-You can solve a primal problem by using its dual formulation.
-ADD EXAMPLE.
+You can solve a primal problem by using its dual formulation using the `DualOptimizer`.
+
+```@docs
+DualOptimizer
+```
 
 ## Adding new sets
 

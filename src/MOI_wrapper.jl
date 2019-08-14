@@ -25,7 +25,22 @@ end
 """
     DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
 
-DualOptimizer constructor
+The DualOptimizer finds the solution for a problem solving its dual representation.
+It builds the dual model and solve it using the `dual_optimizer` as solver.
+
+The user can define the model providing the `DualOptimizer` and the solver of its choice
+
+```julia
+julia> using Dualization, JuMP, GLPK
+
+julia> model = Model(with_optimizer(DualOptimizer, GLPK.Optimizer()))
+A JuMP Model
+Feasibility problem with:
+Variables: 0
+Model mode: AUTOMATIC
+CachingOptimizer state: EMPTY_OPTIMIZER
+Solver name: Dual model with GLPK attached
+```
 """
 function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
     return DualOptimizer{Float64}(dual_optimizer)
