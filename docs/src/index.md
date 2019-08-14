@@ -5,7 +5,13 @@ This package has two main features: the `dualize` function, which enables users 
 
 ## Installation
 
-This package is not yet registered so you can `Pkg.add` it as follows:
+To install the package you can use `Pkg.add` it as follows:
 ```julia
-pkg> add https://github.com/guilhermebodin/Dualization.jl.git
+pkg> add Dualization
 ```
+
+## Contributing
+
+Contributions to this package are more than welcome, if you find a bug please post it on the [github issue tracker](https://github.com/JuliaOpt/Dualization.jl/issues).
+
+When contributing please note that the package follows the [JuMP style guide](https://www.juliaopt.org/JuMP.jl/stable/style/)
