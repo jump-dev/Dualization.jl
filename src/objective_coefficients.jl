@@ -1,7 +1,7 @@
 """
-    set_dualmodel_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
+    set_dual_model_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
 
-Set the dual model objective sense
+Set the dual model objective sense.
 """
 function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike)::Nothing where T
     # Get model sense
@@ -17,10 +17,9 @@ end
 
 # Primals
 """
-    PrimalObjectiveCoefficients{T}
+    PrimalObjective{T}
 
-Primal objective coefficients defined as ``a_0^Tx + b_0`` as in
-http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
+Primal objective is defined as a `MOI.ScalarAffineFunction`
 """
 struct PrimalObjective{T}
     saf::SAF{T}
@@ -36,10 +35,9 @@ end
 
 # Duals
 """
-    DualObjectiveCoefficients{T}
+    DualObjective{T}
 
-Dual objective coefficients defined as ``b_i^Ty + b_0`` or ``-b_i^Ty + b_0`` as in
-http://www.juliaopt.org/MathOptInterface.jl/stable/apimanual/#Advanced-1
+Dual objective is defined as a `MOI.ScalarAffineFunction`.
 """
 struct DualObjective{T}
     saf::SAF{T}
@@ -52,8 +50,7 @@ end
 """
     get_primal_obj_coeffs(model::MOI.ModelLike)
 
-Get the coefficients from the primal objective function and
-return a `PrimalObjectiveCoefficients{T}`
+Get the coefficients from the primal objective function and return a `PrimalObjective{T}`.
 """
 function get_primal_objective(primal_model::MOI.ModelLike)
     T = MOI.get(primal_model, MOI.ObjectiveFunctionType())
@@ -75,9 +72,9 @@ end
 
 
 """
-    set_DOC(dual_model::MOI.ModelLike, doc::DualObjectiveCoefficients{T}) where T
+    set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T})::Nothing where T
 
-Add the objective function to the dual model
+Add the objective function to the dual model.
 """
 function set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T})::Nothing where T
     # Set dual model objective function
@@ -87,10 +84,10 @@ function set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjec
 end
 
 """
-    get_dual_obj_coeffs(dual_model::MOI.ModelLike, dict_constr_coeffs::Dict, 
-                            dict_dualvar_primalcon::Dict, poc::POC{T}) where T
+    get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Dict,
+                       primal_objective::PrimalObjective{T})::DualObjective{T} where T
 
-Get dual model objective function coefficients
+build the dual model objective function from the primal model.
 """
 function get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Dict,
                             primal_objective::PrimalObjective{T})::DualObjective{T} where T
