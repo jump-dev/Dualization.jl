@@ -232,7 +232,7 @@ The resulting dual model is
     &2con_1 & = 1\\
     &&2con_2 & = 1\\
     &&2con_3 & = 1\\
-    && con & \in DualFakeCone(3)\\
+    && con & \in FakeDualCone(3)\\
 \end{align}
 ```
 
@@ -274,6 +274,6 @@ The resulting dual model is
     &2con_1 & = 1\\
     &&2con_2 & = 1\\
     &&2con_3 & = 1\\
-    && con & \in DualFakeCone(3)\\
+    && con & \in FakeDualCone(3)\\
 \end{align}
 ```
