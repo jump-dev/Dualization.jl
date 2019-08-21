@@ -13,4 +13,6 @@
 
 Repository with first implementations of the automatic dualization feature for MathOptInterface.jl
 
-This is the repository of the Google Summer Of Code Project (GSOC) JuMP Automatic Dualization
+This is the repository of the Google Summer Of Code Project (GSOC) JuMP Automatic Dualization. 
+We succeded in dualizing every possible conic problem defined in MathOptInterface. 
+For more information about the API please read the documentation.
