@@ -142,3 +142,6 @@ function set_dot(i::Int, s::MOI.AbstractVectorSet, T::DataType)
     vec[i] = one(T)
     return MOIU.set_dot(vec, vec, s)
 end
+function set_dot(i::Int, s::MOI.AbstractScalarSet, T::DataType)
+    return one(T)
+end
