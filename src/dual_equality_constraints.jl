@@ -44,7 +44,7 @@ end
 
 function get_scalar_affine_terms(primal_model::MOI.ModelLike,
                                  primal_con_dual_var::Dict{CI, Vector{VI}}, primal_vi::VI,
-                                 con_types::Vector{Tuple{DataType, DataType}}, T::DataType)
+                                 con_types::Vector{Tuple{DataType, DataType}}, T::Type)
                                  
     scalar_affine_terms = Vector{MOI.ScalarAffineTerm{T}}(undef, 0) 
     for (F, S) in con_types
@@ -137,8 +137,11 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
 end
 
 # Change to spzeros once https://github.com/JuliaOpt/MathOptInterface.jl/pull/805 is merged
-function set_dot(i::Int, s::MOI.AbstractVectorSet, T::DataType)
+function set_dot(i::Int, s::MOI.AbstractVectorSet, T::Type)
     vec = zeros(T, MOI.dimension(s))
     vec[i] = one(T)
     return MOIU.set_dot(vec, vec, s)
+end
+function set_dot(i::Int, s::MOI.AbstractScalarSet, T::Type)
+    return one(T)
 end

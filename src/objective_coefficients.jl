@@ -63,7 +63,7 @@ end
 
 # Float64 is default while I don't know how to take other types
 _get_primal_objective(obj_fun::SVF) = _get_primal_objective(obj_fun, Float64)
-function _get_primal_objective(obj_fun::SVF, T::DataType)
+function _get_primal_objective(obj_fun::SVF, T::Type)
     return PrimalObjective{T}(SAF{T}(obj_fun))
 end
 
