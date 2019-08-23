@@ -91,7 +91,7 @@ The dual_model will be registered as
 
 ```math
 \begin{align}
-    & \max_{dualeqcon, dualsoccon} & eqcon &
+    & \max_{dualeqcon, dualsoccon} & dualeqcon &
     \\
     & \;\;\text{s.t.}
     &dualeqcon + dualsoccon_1 & = 0\\
