@@ -1,15 +1,22 @@
 # Dualization.jl
 
-| **Build Status** |
-|:-----------------:|
-| [![Build Status][build-img]][build-url] [![Codecov branch][codecov-img]][codecov-url] [![Docs][docs-img]][docs-url] 
+| **Documentation** | **Build Status** | **Social** |
+|:-----------------:|:----------------:|:----------:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![Build Status][build-img]][build-url] [![Codecov branch][codecov-img]][codecov-url] | [![Gitter][gitter-img]][gitter-url] [<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Discourse_logo.png/799px-Discourse_logo.png" width="64">][discourse-url] |
 
-[docs-url]: https://juliaopt.github.io/Dualization.jl/latest/
-[docs-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[build-img]: https://travis-ci.org/guilhermebodin/Dualization.jl.svg?branch=master
-[build-url]: https://travis-ci.org/guilhermebodin/Dualization.jl
-[codecov-img]: http://codecov.io/github/guilhermebodin/Dualization.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/guilhermebodin/Dualization.jl?branch=master
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-stable-url]: http://www.juliaopt.org/Dualization.jl/stable
+[docs-dev-url]: http://www.juliaopt.org/Dualization.jl/dev
+
+[build-img]: https://travis-ci.org/JuliaOpt/MathOptInterface.jl.svg?branch=master
+[build-url]: https://travis-ci.org/JuliaOpt/Dualization.jl
+[codecov-img]: http://codecov.io/github/JuliaOpt/Dualization.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/JuliaOpt/Dualization.jl?branch=master
+
+[gitter-url]: https://gitter.im/AutomaticDualization/community#
+[gitter-img]: https://badges.gitter.im/JuliaOpt/JuMP-dev.svg
+[discourse-url]: https://discourse.julialang.org/c/domain/opt
 
 Repository with first implementations of the automatic dualization feature for MathOptInterface.jl
 
