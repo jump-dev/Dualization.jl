@@ -17,7 +17,7 @@ Let us dualize the following Second Order Cone program
 \end{align}
 ```
 
-The correspondent code in JuMP is
+The corresponding code in JuMP is
 
 ```julia
 using JuMP, Dualization
@@ -119,7 +119,7 @@ model = Model(with_optimizer(ECOS.Optimizer))
 @constraint(model, eqcon, x == 1)
 @objective(model, Min, y + z)
 
-# Solving a problem provinding its dual representation
+# Solving a problem by providing its dual representation
 model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer()))
 @variable(model, x)
 @variable(model, y)
