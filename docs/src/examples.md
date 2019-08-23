@@ -104,7 +104,7 @@ The dual_model will be registered as
 
 ## Solving a problem using its dual formulation
 
-Depending on the solver and on the type of formulation solving the dual of a problem is faster than solving its primal.
+Depending on the solver and on the type of formulation, solving the dual problem could be faster than solving the primal.
 To solve the problem via its dual formulation can be done using the `DualOptimizer`.
 
 ```julia
