@@ -17,7 +17,7 @@ Let us dualize the following Second Order Cone program
 \end{align}
 ```
 
-The correspondent code in JuMP is
+The corresponding code in JuMP is
 
 ```julia
 using JuMP, Dualization
