@@ -8,9 +8,9 @@ JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [compat]
-MathOptInterface = "~0.8.4"
+JuMP = "0.20"
+MathOptInterface = "0.9"
 julia = "1"
-JuMP = "~0.19.0"
 
 [extras]
 COSMO = "1e616198-aa4e-51ec-90a2-23f7fbd31d8d"
