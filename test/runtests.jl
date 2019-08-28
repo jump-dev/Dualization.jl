@@ -24,7 +24,7 @@ MOIU.@model(TestModel,
              MOI.RootDetConeTriangle, MOI.RootDetConeSquare, MOI.LogDetConeTriangle,
              MOI.LogDetConeSquare),
             (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2),
-            (MOI.SingleVariable,),
+            (),
             (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction),
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))

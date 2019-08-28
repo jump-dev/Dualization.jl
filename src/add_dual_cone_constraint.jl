@@ -16,5 +16,5 @@ end
 
 function add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, vis::Vector{VI},
                                   ci::CI{F, MOI.Zeros}) where {F <: MOI.AbstractVectorFunction}
-    return 
+    return
 end

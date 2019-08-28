@@ -14,11 +14,7 @@ function lp1_test()
         MOI.ScalarAffineFunction(
             MOI.ScalarAffineTerm.([1.0, 2.0], X), 0.0),
             MOI.LessThan(3.0))
-    
-    MOI.add_constraint(model, 
-        MOI.SingleVariable(X[1]),
-            MOI.GreaterThan(1.0))
-    
+        
     MOI.add_constraint(model, 
         MOI.SingleVariable(X[1]),
             MOI.GreaterThan(3.0))

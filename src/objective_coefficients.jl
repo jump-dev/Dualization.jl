@@ -107,6 +107,6 @@ function get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Di
     saf_dual_objective = MOI.ScalarAffineFunction(
                          MOI.ScalarAffineTerm.(term_vec, 
                                                vi_vec), 
-                                               MOI._constant(get_saf(primal_objective)))
+                                               MOI.constant(get_saf(primal_objective)))
     return DualObjective{T}(saf_dual_objective)
 end

@@ -16,14 +16,14 @@ function add_dual_vars_in_dual_cones(dual_model::MOI.ModelLike, primal_model::MO
     return dual_obj_affine_terms
 end
 
-# Utils for primal_con_constants dict 
-function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}}, 
+# Utils for primal_con_constants dict
+function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}},
                                       ci::CI{F, S}) where {T, F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
     push!(primal_con_constants, ci => get_scalar_term(primal_model, ci))
-    return 
+    return
 end
 
-function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}}, 
+function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}},
                                        ci::CI{F, S}) where {T, F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
     return # No constants need to be passed to the DualOptimizer in this case, don't need to push zero to the dict
 end
