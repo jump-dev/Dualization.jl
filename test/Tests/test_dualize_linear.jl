@@ -279,7 +279,7 @@
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 2.0; 1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
-        @test MOIU.getconstant(eq_con1_set) == -4.0
+        @test MOI.constant(eq_con1_set) == -4.0
         eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(4))
         eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(4))
         @test MOI.coefficient.(eq_con2_fun.terms) == [1.0; 1.0; 2.0]
