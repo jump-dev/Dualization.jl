@@ -1,5 +1,8 @@
+push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
+import Pkg
+Pkg.activate(".")
 using MathOptInterface, JuMP, Dualization, Test
-
+cd("test")
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
@@ -24,7 +27,7 @@ MOIU.@model(TestModel,
              MOI.RootDetConeTriangle, MOI.RootDetConeSquare, MOI.LogDetConeTriangle,
              MOI.LogDetConeSquare),
             (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2),
-            (MOI.SingleVariable,),
+            (),
             (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction),
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
@@ -56,8 +59,8 @@ include("Tests/test_dualize_sdp.jl")
 include("Tests/test_dualize_exponential.jl")
 include("Tests/test_dualize_power.jl")
 include("Tests/test_dual_names.jl")
-include("Tests/test_JuMP_dualize.jl")
-include("Tests/test_MOI_wrapper.jl")
+# include("Tests/test_JuMP_dualize.jl")
+# include("Tests/test_MOI_wrapper.jl")
 
 # Full version of tests, this hsould be all comented to pass travis ci because of dependencies
 include("optimize_abstract_models.jl")

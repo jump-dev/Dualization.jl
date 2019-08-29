@@ -31,24 +31,24 @@
        @test obj_type == SAF{Float64}
        obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
        @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MIN_SENSE
-       @test MOI._constant(obj) == 0.0
+       @test MOI.constant(obj) == 0.0
        @test MOI.coefficient.(obj.terms) == [-1.0; -2.0]
        
        eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
-       @test MOI._constant.(eq_con1_fun) == 0.0
-       @test MOIU.getconstant(eq_con1_set) == 0.0
+       @test MOI.constant.(eq_con1_fun) == 0.0
+       @test MOI.constant(eq_con1_set) == 0.0
        eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
        eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
        @test MOI.coefficient.(eq_con2_fun.terms) == [1.0; 1.0]
-       @test MOI._constant.(eq_con2_fun) == 0.0
-       @test MOIU.getconstant(eq_con2_set) == 0.0
+       @test MOI.constant.(eq_con2_fun) == 0.0
+       @test MOI.constant(eq_con2_set) == 0.0
        eq_con3_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(4))
        eq_con3_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(4))
        @test MOI.coefficient.(eq_con3_fun.terms) == [1.0]
-       @test MOI._constant.(eq_con3_fun) == 0.0
-       @test MOIU.getconstant(eq_con3_set) == -1.0
+       @test MOI.constant.(eq_con3_fun) == 0.0
+       @test MOI.constant(eq_con3_set) == -1.0
 
        dual_exp_con = MOI.get(dual_model, MOI.ConstraintFunction(), CI{VVF, MOI.DualPowerCone}(1))
        @test dual_exp_con.variables == VI.(3:5)
@@ -96,24 +96,24 @@
        @test obj_type == SAF{Float64}
        obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
        @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MIN_SENSE
-       @test MOI._constant(obj) == 0.0
+       @test MOI.constant(obj) == 0.0
        @test MOI.coefficient.(obj.terms) == [-1.0; -2.0]
        
        eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
-       @test MOI._constant.(eq_con1_fun) == 0.0
-       @test MOIU.getconstant(eq_con1_set) == 0.0
+       @test MOI.constant.(eq_con1_fun) == 0.0
+       @test MOI.constant(eq_con1_set) == 0.0
        eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
        eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
        @test MOI.coefficient.(eq_con2_fun.terms) == [1.0; 1.0]
-       @test MOI._constant.(eq_con2_fun) == 0.0
-       @test MOIU.getconstant(eq_con2_set) == 0.0
+       @test MOI.constant.(eq_con2_fun) == 0.0
+       @test MOI.constant(eq_con2_set) == 0.0
        eq_con3_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(4))
        eq_con3_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(4))
        @test MOI.coefficient.(eq_con3_fun.terms) == [1.0]
-       @test MOI._constant.(eq_con3_fun) == 0.0
-       @test MOIU.getconstant(eq_con3_set) == -1.0
+       @test MOI.constant.(eq_con3_fun) == 0.0
+       @test MOI.constant(eq_con3_set) == -1.0
 
        dual_exp_con = MOI.get(dual_model, MOI.ConstraintFunction(), CI{VVF, MOI.DualPowerCone}(1))
        @test dual_exp_con.variables == VI.(3:5)

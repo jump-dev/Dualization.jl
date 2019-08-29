@@ -13,6 +13,8 @@ const VAF{T} = MOI.VectorAffineFunction{T}
 const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
 
+import MathOptInterface: dual_set
+
 include("structures.jl")
 include("utils.jl")
 include("dual_sets.jl")
