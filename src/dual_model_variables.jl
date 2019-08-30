@@ -19,7 +19,7 @@ end
 # Utils for primal_con_constants dict
 function push_to_primal_con_constants!(primal_model::MOI.ModelLike, primal_con_constants::Dict{CI, Vector{T}},
                                       ci::CI{F, S}) where {T, F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
-    push!(primal_con_constants, ci => get_scalar_term(primal_model, ci))
+    push!(primal_con_constants, ci => [get_scalar_term(primal_model, ci)])
     return
 end
 
