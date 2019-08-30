@@ -195,16 +195,11 @@ function dual_status(term::MOI.TerminationStatusCode)
     return term
 end
 
-# To be added in MOI 0.9.0
-# function MOI.get(optimizer::DualOptimizer, ::MOI.ObjectiveValue)
-#     return MOI.get(optimizer.dual_optimizer, MOI.DualObjectiveValue())
-# end
-
-# function MOI.get(optimizer::DualOptimizer, ::MOI.DualObjectiveValue)
-#     return MOI.get(optimizer.dual_optimizer, MOI.ObjectiveValue())
-# end
-
 function MOI.get(optimizer::DualOptimizer, ::MOI.ObjectiveValue)
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualObjectiveValue())
+end
+
+function MOI.get(optimizer::DualOptimizer, ::MOI.DualObjectiveValue)
     return MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveValue())
 end
 

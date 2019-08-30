@@ -3,7 +3,7 @@ using GLPK, CSDP, COSMO
 # Optimizers
 linear_optimizer = DualOptimizer(GLPK.Optimizer())
 conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
-# exponential_cone_optimizer = DualOptimizer(COSMO.Optimizer(verbose = false))
+exponential_cone_optimizer = DualOptimizer(COSMO.Optimizer(verbose = false))
 
 @testset "MOI_wrapper.jl" begin    
     linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
@@ -28,9 +28,12 @@ conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
     @testset "coninc linear, soc, rsoc and sdp test" begin
         MOIT.contconictest(conic_bridged, conic_config, ["lin3", # Feasibility problem
                                                          "lin4", # Feasibility problem
+                                                         "normone2", # Feasibility problem
+                                                         "norminf2", # Feasibility problem
                                                          "soc3", # Feasibility problem
                                                          "rotatedsoc2", # Feasibility problem
-                                                         "exp", # Tested in exponential cone test
+                                                         "exp", # Tested in exponential and power cone test
+                                                         "pow", # Tested in exponential and power cone test
                                                          "rootdet", # Not yet implemented
                                                          "logdet" # Not yet implemented
                                                          ])
@@ -43,22 +46,24 @@ conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
                                                              ])
     end
 
-    # exponential_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
-    # exponential_cone_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
-    # exponential_cone_cached = MOIU.CachingOptimizer(exponential_cone_cache, exponential_cone_optimizer)
-    # exponential_cone_bridged = MOIB.full_bridge_optimizer(exponential_cone_cached, Float64)
+    exponential_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
+    exponential_cone_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
+    exponential_cone_cached = MOIU.CachingOptimizer(exponential_cone_cache, exponential_cone_optimizer)
+    exponential_cone_bridged = MOIB.full_bridge_optimizer(exponential_cone_cached, Float64)
 
-    # @testset "exponential cone test" begin
-    #     MOIT.contconictest(exponential_cone_bridged, 
-    #                        exponential_cone_config, ["lin", # Tested in coninc linear, soc, rsoc and sdp test
-    #                                                  "soc", # Tested in coninc linear, soc, rsoc and sdp test
-    #                                                  "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
-    #                                                  "geomean", # Tested in coninc linear, soc, rsoc and sdp test
-    #                                                  "sdp", # Tested in coninc linear, soc, rsoc and sdp test
-    #                                                  "rootdet", # Not yet implemented
-    #                                                  "logdet" # Not yet implemented
-    #                                                  ])
-    # end
+    @testset "exponential and power cone test" begin
+        MOIT.contconictest(exponential_cone_bridged, 
+                           exponential_cone_config, ["lin", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "normone", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "norminf", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "soc", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "geomean", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "sdp", # Tested in coninc linear, soc, rsoc and sdp test
+                                                     "rootdet", # Not yet implemented
+                                                     "logdet" # Not yet implemented
+                                                     ])
+    end
 
     @testset "attributes" begin
         @test MOI.get(linear_optimizer, MOI.SolverName()) == "Dual model with GLPK attached"

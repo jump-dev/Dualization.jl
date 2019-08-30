@@ -27,11 +27,11 @@ end
         @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) == "GLPK"
     end
     @testset "set_dot on different sets" begin
-        # primal_cosmo = solve_vaf_sdp(with_optimizer(COSMO.Optimizer, verbose = false))
-        # dual_cosmo = solve_vaf_sdp(with_optimizer(DualOptimizer, COSMO.Optimizer(verbose = false)))
+        primal_cosmo = solve_vaf_sdp(with_optimizer(COSMO.Optimizer, verbose = false))
+        dual_cosmo = solve_vaf_sdp(with_optimizer(DualOptimizer, COSMO.Optimizer(verbose = false)))
         primal_csdp = solve_vaf_sdp(with_optimizer(CSDP.Optimizer, printlevel = 0))
         dual_csdp = solve_vaf_sdp(with_optimizer(DualOptimizer, CSDP.Optimizer(printlevel = 0)))
-        # @test isapprox(primal_cosmo, dual_cosmo; atol = 1e-3)
+        @test isapprox(primal_cosmo, dual_cosmo; atol = 1e-3)
         @test isapprox(primal_csdp, dual_csdp; atol = 1e-6)
     end
 end
