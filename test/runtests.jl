@@ -1,8 +1,5 @@
-push!(LOAD_PATH, "/home/guilhermebodin/Documents/Github/Dualization.jl/src")
-import Pkg
-Pkg.activate(".")
 using MathOptInterface, JuMP, Dualization, Test
-cd("test")
+
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
@@ -69,4 +66,4 @@ include("optimize_abstract_models.jl")
 include("Solvers/glpk_test.jl")
 include("Solvers/ecos_test.jl")
 include("Solvers/csdp_test.jl")
-# include("Solvers/cosmo_test.jl")
+include("Solvers/scs_test.jl")
