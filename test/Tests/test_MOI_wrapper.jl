@@ -1,9 +1,9 @@
-using GLPK, CSDP, COSMO
+using GLPK, CSDP, SCS
 
 # Optimizers
 linear_optimizer = DualOptimizer(GLPK.Optimizer())
 conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
-exponential_cone_optimizer = DualOptimizer(COSMO.Optimizer(verbose = false))
+exponential_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
 
 @testset "MOI_wrapper.jl" begin    
     linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)

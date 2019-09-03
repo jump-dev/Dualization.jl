@@ -4,6 +4,7 @@ using JuMP
 using MathOptInterface
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
+const MOIB = MathOptInterface.Bridges
 
 const SVF = MOI.SingleVariable
 const VVF = MOI.VectorOfVariables
