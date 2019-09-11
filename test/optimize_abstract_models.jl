@@ -22,6 +22,8 @@ function test_strong_duality(primal_model::MOI.ModelLike,
     primal_term_status, primal_obj_val = solve_abstract_model(primal_model, factory)
     dual_term_status, dual_obj_val = solve_abstract_model(dual_model, factory)
 
+    @show primal_term_status, dual_term_status
+    @show dual_obj_val, primal_obj_val
     if primal_term_status == dual_term_status == MOI.OPTIMAL
         return isapprox(primal_obj_val, dual_obj_val; atol = atol, rtol = rtol)
     elseif (primal_term_status == MOI.INFEASIBLE) && (dual_term_status == MOI.DUAL_INFEASIBLE)
@@ -36,7 +38,7 @@ function test_strong_duality(primal_model::MOI.ModelLike,
     return false # In case strong duality doesn't hold
 end
 
-function test_strong_duality(primal_problems::Array{Function}, factory::OptimizerFactory; atol = 1e-4, rtol = 1e-4)
+function test_strong_duality(primal_problems::Array{Function}, factory::OptimizerFactory; atol = 1e-6, rtol = 1e-4)
     for primal_problem in primal_problems
         dual_problem = dualize(primal_problem())
         @testset "$primal_problem" begin
