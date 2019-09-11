@@ -36,7 +36,7 @@ function test_strong_duality(primal_model::MOI.ModelLike,
     return false # In case strong duality doesn't hold
 end
 
-function test_strong_duality(primal_problems::Array{Function}, factory::OptimizerFactory; atol = 1e-6, rtol = 1e-4)
+function test_strong_duality(primal_problems::Array{Function}, factory::OptimizerFactory; atol = 1e-4, rtol = 1e-4)
     for primal_problem in primal_problems
         dual_problem = dualize(primal_problem())
         @testset "$primal_problem" begin
