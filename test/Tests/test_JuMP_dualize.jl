@@ -5,7 +5,7 @@ function solve_vaf_sdp(factory::JuMP.OptimizerFactory)
     model = Model(factory)
     @variable(model, x)
     @constraint(model, [4x x; x 4x] - ones(2, 2) in PSDCone())
-    @objective(model, Min, 1x)
+    @objective(model, Min, x)
     optimize!(model)
     return JuMP.objective_value(model) # 0.6
 end

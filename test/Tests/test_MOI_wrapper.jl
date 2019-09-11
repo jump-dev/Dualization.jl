@@ -3,7 +3,7 @@ using GLPK, CSDP, SCS
 # Optimizers
 linear_optimizer = DualOptimizer(GLPK.Optimizer())
 conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
-exponential_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
+power_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
 
 @testset "MOI_wrapper.jl" begin    
     linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
@@ -32,8 +32,8 @@ exponential_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
                                                          "norminf2", # Feasibility problem
                                                          "soc3", # Feasibility problem
                                                          "rotatedsoc2", # Feasibility problem
-                                                         "exp", # Tested in exponential and power cone test
-                                                         "pow", # Tested in exponential and power cone test
+                                                         "exp", # TODO
+                                                         "pow", # Tested in power cone test
                                                          "rootdet", # Not yet implemented
                                                          "logdet" # Not yet implemented
                                                          ])
@@ -46,23 +46,24 @@ exponential_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
                                                              ])
     end
 
-    exponential_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
-    exponential_cone_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
-    exponential_cone_cached = MOIU.CachingOptimizer(exponential_cone_cache, exponential_cone_optimizer)
-    exponential_cone_bridged = MOIB.full_bridge_optimizer(exponential_cone_cached, Float64)
+    power_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
+    power_cone_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
+    power_cone_cached = MOIU.CachingOptimizer(power_cone_cache, power_cone_optimizer)
+    power_cone_bridged = MOIB.full_bridge_optimizer(power_cone_cached, Float64)
 
-    @testset "exponential and power cone test" begin
-        MOIT.contconictest(exponential_cone_bridged, 
-                           exponential_cone_config, ["lin", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "normone", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "norminf", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "soc", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "geomean", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "sdp", # Tested in coninc linear, soc, rsoc and sdp test
-                                                     "rootdet", # Not yet implemented
-                                                     "logdet" # Not yet implemented
-                                                     ])
+    @testset "power cone test" begin
+        MOIT.contconictest(power_cone_bridged, 
+                           power_cone_config, ["lin", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "normone", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "norminf", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "soc", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "geomean", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "sdp", # Tested in coninc linear, soc, rsoc and sdp test
+                                               "rootdet", # Not yet implemented
+                                               "logdet", # Not yet implemented
+                                               "exp" #TODO
+                                               ])
     end
 
     @testset "attributes" begin

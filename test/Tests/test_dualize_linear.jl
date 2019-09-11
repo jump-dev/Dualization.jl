@@ -13,7 +13,7 @@
         y_2 >= 0                
         y_3 <= 0                
         y_2 + y_3 == 0    :x_1
-        2y_3 == -4              :x_2
+        2y_3 == -4        :x_2
     =#
         primal_model = lp1_test()
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
