@@ -1,7 +1,6 @@
 module Dualization
 
 using JuMP, MathOptInterface
-using SparseArrays
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges

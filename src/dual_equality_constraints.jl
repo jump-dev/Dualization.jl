@@ -137,7 +137,7 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffineT
 end
 
 function set_dot(i::Int, s::MOI.AbstractVectorSet, T::Type)
-    vec = spzeros(T, MOI.dimension(s))
+    vec = zeros(T, MOI.dimension(s))
     vec[i] = one(T)
     return MOIU.set_dot(vec, vec, s)
 end
