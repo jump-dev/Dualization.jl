@@ -52,6 +52,12 @@ supported_constraint(::Type{VAF{T}}, ::Type{MOI.PowerCone{T}}) where T = true
 # DualPowerCone
 supported_constraint(::Type{VVF}, ::Type{<:MOI.DualPowerCone}) = true
 supported_constraint(::Type{VAF{T}}, ::Type{MOI.DualPowerCone{T}}) where T = true
+# NormOneCone
+supported_constraint(::Type{VVF}, ::Type{MOI.NormOneCone}) = true
+supported_constraint(::Type{<:VAF}, ::Type{MOI.NormOneCone}) = true
+# NormInfinityCone
+supported_constraint(::Type{VVF}, ::Type{MOI.NormInfinityCone}) = true
+supported_constraint(::Type{<:VAF}, ::Type{MOI.NormInfinityCone}) = true
 
 """
     supported_objective(primal_model::MOI.ModelLike)

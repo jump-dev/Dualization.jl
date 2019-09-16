@@ -3,7 +3,6 @@ function lp1_test()
         min -4x_2 - 1
     s.t.
         x_1 + 2x_2 <= 3
-        x_1 >= 1
         x_1 >= 3
     =#
     model = TestModel{Float64}()
@@ -14,10 +13,6 @@ function lp1_test()
         MOI.ScalarAffineFunction(
             MOI.ScalarAffineTerm.([1.0, 2.0], X), 0.0),
             MOI.LessThan(3.0))
-    
-    MOI.add_constraint(model, 
-        MOI.SingleVariable(X[1]),
-            MOI.GreaterThan(1.0))
     
     MOI.add_constraint(model, 
         MOI.SingleVariable(X[1]),

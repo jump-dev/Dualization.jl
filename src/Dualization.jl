@@ -1,9 +1,9 @@
 module Dualization
 
-using JuMP
-using MathOptInterface
+using JuMP, MathOptInterface
 const MOI  = MathOptInterface
 const MOIU = MathOptInterface.Utilities
+const MOIB = MathOptInterface.Bridges
 
 const SVF = MOI.SingleVariable
 const VVF = MOI.VectorOfVariables
@@ -12,6 +12,8 @@ const VAF{T} = MOI.VectorAffineFunction{T}
 
 const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
+
+import MathOptInterface: dual_set
 
 include("structures.jl")
 include("utils.jl")

@@ -1,4 +1,4 @@
-using GLPK, COSMO, CSDP
+using GLPK, SCS, CSDP
 
 # For testing bug found on issue # 52
 function solve_vaf_sdp(factory::JuMP.OptimizerFactory)
@@ -12,7 +12,7 @@ end
 
 @testset "JuMP dualize" begin
     @testset "direct_mode" begin
-        JuMP_model = JuMP.direct_model(GLPK.Optimizer())
+        JuMP_model = JuMP.direct_model(MOIU.MockOptimizer(MOIU.Model{Float64}()))
         err = ErrorException("Dualization does not support solvers in DIRECT mode")
         @test_throws ErrorException dualize(JuMP_model)
     end
@@ -27,11 +27,11 @@ end
         @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) == "GLPK"
     end
     @testset "set_dot on different sets" begin
-        primal_cosmo = solve_vaf_sdp(with_optimizer(COSMO.Optimizer, verbose = false))
-        dual_cosmo = solve_vaf_sdp(with_optimizer(DualOptimizer, COSMO.Optimizer(verbose = false)))
+        primal_scs = solve_vaf_sdp(with_optimizer(SCS.Optimizer, verbose = 0))
+        dual_scs = solve_vaf_sdp(with_optimizer(DualOptimizer, SCS.Optimizer(verbose = 0)))
         primal_csdp = solve_vaf_sdp(with_optimizer(CSDP.Optimizer, printlevel = 0))
         dual_csdp = solve_vaf_sdp(with_optimizer(DualOptimizer, CSDP.Optimizer(printlevel = 0)))
-        @test isapprox(primal_cosmo, dual_cosmo; atol = 1e-3)
+        @test isapprox(primal_scs, dual_scs; atol = 1e-3)
         @test isapprox(primal_csdp, dual_csdp; atol = 1e-6)
     end
 end

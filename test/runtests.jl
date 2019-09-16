@@ -24,7 +24,7 @@ MOIU.@model(TestModel,
              MOI.RootDetConeTriangle, MOI.RootDetConeSquare, MOI.LogDetConeTriangle,
              MOI.LogDetConeSquare),
             (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2),
-            (MOI.SingleVariable,),
+            (),
             (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction),
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
@@ -66,4 +66,4 @@ include("optimize_abstract_models.jl")
 include("Solvers/glpk_test.jl")
 include("Solvers/ecos_test.jl")
 include("Solvers/csdp_test.jl")
-include("Solvers/cosmo_test.jl")
+include("Solvers/scs_test.jl")

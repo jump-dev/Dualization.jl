@@ -1,23 +1,23 @@
 name = "Dualization"
 uuid = "191a621a-6537-11e9-281d-650236a99e60"
 authors = ["guilhermebodin <guilherme.b.moraes@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [compat]
-MathOptInterface = "~0.8.4"
+JuMP = "~0.20.0"
+MathOptInterface = "~0.9.0"
 julia = "1"
-JuMP = "~0.19.0"
 
 [extras]
-COSMO = "1e616198-aa4e-51ec-90a2-23f7fbd31d8d"
 CSDP = "0a46da34-8e4b-519e-b418-48813639ff34"
 ECOS = "e2685f51-7e38-5353-a97d-a921fd2c8199"
 GLPK = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
+SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "GLPK", "ECOS", "CSDP", "COSMO"]
+test = ["Test", "GLPK", "ECOS", "CSDP", "SCS"]
