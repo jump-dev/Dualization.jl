@@ -22,8 +22,6 @@ function test_strong_duality(primal_model::MOI.ModelLike,
     primal_term_status, primal_obj_val = solve_abstract_model(primal_model, factory)
     dual_term_status, dual_obj_val = solve_abstract_model(dual_model, factory)
 
-    @show primal_term_status, dual_term_status
-    @show dual_obj_val, primal_obj_val
     if primal_term_status == dual_term_status == MOI.OPTIMAL
         return isapprox(primal_obj_val, dual_obj_val; atol = atol, rtol = rtol)
     elseif (primal_term_status == MOI.INFEASIBLE) && (dual_term_status == MOI.DUAL_INFEASIBLE)
