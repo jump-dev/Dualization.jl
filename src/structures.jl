@@ -6,7 +6,7 @@ MOIU.@model(DualizableModel,
              MOI.ExponentialCone, MOI.DualExponentialCone,
              MOI.PositiveSemidefiniteConeTriangle,),
             (MOI.PowerCone, MOI.DualPowerCone),
-            (MOI.SingleVariable,),
+            (),
             (MOI.ScalarAffineFunction,),
             (MOI.VectorOfVariables,),
             (MOI.VectorAffineFunction,))
