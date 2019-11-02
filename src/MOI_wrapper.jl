@@ -174,9 +174,9 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
     return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_problem)
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.SolveTime) 
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.SolveTime())
-end
+# function MOI.get(optimizer::DualOptimizer, ::MOI.SolveTime) 
+#     return MOI.get(optimizer.dual_problem.dual_model, MOI.SolveTime())
+# end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.TerminationStatus) 
     return dual_status(MOI.get(optimizer.dual_problem.dual_model, MOI.TerminationStatus()))
@@ -211,6 +211,10 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.DualStatus)
     return MOI.get(optimizer.dual_problem.dual_model, MOI.PrimalStatus())
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.ResultCount)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ResultCount())
+# function MOI.get(optimizer::DualOptimizer, ::MOI.ResultCount)
+#     return MOI.get(optimizer.dual_problem.dual_model, MOI.ResultCount())
+# end
+
+function MOI.get(optimizer::DualOptimizer, attr::Union{MOI.AbstractModelAttribute, MOI.AbstractOptimizerAttribute})
+    return MOI.get(optimizer.dual_problem.dual_model, attr)
 end

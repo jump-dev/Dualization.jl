@@ -1,13 +1,17 @@
 function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                                        primal_dual_map::PrimalDualMap,  dual_names::DualNames,
                                        primal_objective::PrimalObjective{T},
-                                       con_types::Vector{Tuple{DataType, DataType}}) where T
+                                       con_types::Vector{Tuple{DataType, DataType}},
+                                       variable_parameters::Vector{VI}) where T
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
     num_objective_terms = MOIU.number_of_affine_terms(T, get_saf(primal_objective)) # This is used to update the scalar_term_index
 
     scalar_term_index::Int = 1
-    for primal_vi in MOI.get(primal_model, MOI.ListOfVariableIndices())
+
+    all_variable = MOI.get(primal_model, MOI.ListOfVariableIndices())
+    restricted_variables = setdiff(all_variable, variable_parameters)
+    for primal_vi in restricted_variables
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_dual_map.primal_con_dual_var, 
                                                       primal_vi, con_types, T)

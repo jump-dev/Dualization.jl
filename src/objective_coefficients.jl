@@ -67,6 +67,74 @@ function _get_primal_objective(obj_fun::SVF, T::Type)
     return PrimalObjective{T}(SAF{T}(obj_fun))
 end
 
+function get_primal_objective(primal_model::MOI.ModelLike, variable_parameters::Vector{VI})
+    p_obj = get_primal_objective(primal_model)
+    # discard variable_parameters
+    remove_variables(p_obj, variable_parameters)
+    return p_obj
+end
+
+function remove_variables(p_obj::PrimalObjective{T}, variable_parameters::Vector{VI}) where T
+    PrimalObjective{T}(remove_variables(p_obj.saf), variable_parameters)
+end
+function remove_variables(saf::MOI.ScalarAffineFunction{T}, variable_parameters::Vector{VI}) where T
+    to_delete = get_indices_variables(saf, variable_parameters)
+    new_saf = copy(saf)
+    deleteat!(new_saf, to_delete)
+    return new_saf
+end
+
+function get_indices_variables(saf::MOI.ScalarAffineFunction{T}, variable_parameters::Vector{VI}) where T
+    indices = Int[]
+    sizehint!(indices, min(length(variable_parameters), length(saf.terms)))
+    for (ind, term) in enumerate(saf.terms)
+        if MOI._hasvar(term, variable_parameters)
+            push!(indices, ind)
+        end
+    end
+    return indices
+end
+
+function split_variables(saf::MOI.ScalarAffineFunction{T}, variable_parameters::Vector{VI}) where T
+    remove = get_indices_variables(saf, variable_parameters)
+    new_saf = MOI.ScalarAffineFunction{T}(saf.terms[remove], 0.0)
+    old_saf = copy(saf)
+    deleteat!(old_saf, remove)
+    return old_saf, new_saf
+end
+
+function get_parametric_constant(saf::MOI.ScalarAffineFunction{T}, variable_parameters::Vector{VI}) where T
+    terms = get_indices_variables(saf, variable_parameters)
+    MOI.ScalarAffineFunction{T}(saf.terms[terms], 0.0)
+end
+
+function get_parametric_constants(primal_model::MOI.ModelLike,
+    # primal_dual_map::PrimalDualMap{T}, dual_names::DualNames,
+    con_types::Vector{Tuple{DataType, DataType}}, variable_parameters::Vector{VI}) where T
+    # todo
+    param_functions = Dict()
+    for (F, S) in con_types
+        for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
+            func = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+            set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
+            get_parametric_constant(func, variable_parameters)
+            i = 1 # for scalar affine
+            val = set_dot(i, set, T)*get_scalar_term(primal_model, i, ci)
+
+            # todo - requires a setdot here
+            param_functions[ci] = get_parametric_constant(func, variable_parameters)
+
+
+            param_functions[ci].constant = val
+        end
+    end
+    return param_functions
+end
+
+
+#
+
+
 # You can add other generic _get_primal_obj_coeffs functions here
 
 
