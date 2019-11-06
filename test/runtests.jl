@@ -32,6 +32,10 @@ MOIU.@model(TestModel,
 # Functions that are used inside tests
 include("utils.jl")
 
+include("bilevel.jl")
+
+error("STOP")
+
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Linear/conic_linear_problems.jl")
@@ -65,5 +69,5 @@ include("optimize_abstract_models.jl")
 # Test strong duality in linear/conic problems
 include("Solvers/glpk_test.jl")
 include("Solvers/ecos_test.jl")
-include("Solvers/csdp_test.jl")
+# include("Solvers/csdp_test.jl")
 include("Solvers/scs_test.jl")
