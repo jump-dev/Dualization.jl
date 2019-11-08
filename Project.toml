@@ -19,8 +19,5 @@ GLPK = "60bf3e95-4087-53dc-ae20-288a0d20c6a6"
 SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
-MathOptFormat = "f4570300-c277-12e8-125c-4912f86ce65d"
-Gurobi = "2e9cd046-0924-5485-92f1-d5272153d98b"
-
 [targets]
-test = ["Test", "GLPK", "ECOS", "CSDP", "SCS", "MathOptFormat", "Gurobi"]
+test = ["Test", "GLPK", "ECOS", "CSDP", "SCS"]
