@@ -18,8 +18,25 @@
 [gitter-img]: https://badges.gitter.im/JuliaOpt/JuMP-dev.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
-Repository with first implementations of the automatic dualization feature for MathOptInterface.jl
+Repository with implementations of the automatic dualization feature for MathOptInterface.jl
 
-This is the repository of the Google Summer Of Code Project (GSOC) JuMP Automatic Dualization. 
-We succeded in dualizing every possible conic problem defined in MathOptInterface. 
-For more information about the API please read the documentation.
+Dualization.jl has two main features. 
+ * The function `dualize` that can dualize either a `MathOptInterface.jl` or `JuMP.jl` model.
+
+```julia
+dual_model = Dualization.dualize(model)
+```
+
+ * The `DualOptimizer` that will pass the dual representation of the model to the solver of your choice.
+
+```julia
+model = Model(with_optimizer(DualOptimizer, SOLVER.Optimizer(options...)))
+```
+
+Solving the model through its dual representation can be useful when the solver is not a primal-dual method. 
+Solvers like:
+ * 
+ * 
+ *
+
+For more informations please read the [documentation][docs-stable-url]

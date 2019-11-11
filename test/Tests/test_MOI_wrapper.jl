@@ -32,8 +32,10 @@ power_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
                                                          "norminf2", # Feasibility problem
                                                          "soc3", # Feasibility problem
                                                          "rotatedsoc2", # Feasibility problem
-                                                         "exp", # TODO
-                                                         "pow", # Tested in power cone test
+                                                         "exp", # Tested in exp and power cone test
+                                                         "dualexp", # Tested in exp and power cone test
+                                                         "pow", # Tested in exp and power cone test
+                                                         "dualpow", # Tested in exp and power cone test
                                                          "rootdet", # Not yet implemented
                                                          "logdet" # Not yet implemented
                                                          ])
@@ -51,7 +53,7 @@ power_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
     power_cone_cached = MOIU.CachingOptimizer(power_cone_cache, power_cone_optimizer)
     power_cone_bridged = MOIB.full_bridge_optimizer(power_cone_cached, Float64)
 
-    @testset "power cone test" begin
+    @testset "exp and power cone test" begin
         MOIT.contconictest(power_cone_bridged, 
                            power_cone_config, ["lin", # Tested in coninc linear, soc, rsoc and sdp test
                                                "normone", # Tested in coninc linear, soc, rsoc and sdp test
@@ -62,7 +64,6 @@ power_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
                                                "sdp", # Tested in coninc linear, soc, rsoc and sdp test
                                                "rootdet", # Not yet implemented
                                                "logdet", # Not yet implemented
-                                               "exp" #TODO
                                                ])
     end
 
