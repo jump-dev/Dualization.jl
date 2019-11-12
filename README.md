@@ -18,13 +18,13 @@
 [gitter-img]: https://badges.gitter.im/JuliaOpt/JuMP-dev.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
-Repository with implementations of the automatic dualization feature for MathOptInterface.jl
+Repository with implementations of the automatic dualization feature for MathOptInterface.jl conic optimization problems
 
 Dualization.jl has two main features. 
  * The function `dualize` that can dualize either a `MathOptInterface.jl` or `JuMP.jl` model.
 
 ```julia
-dual_model = Dualization.dualize(model)
+dual_model = dualize(model)
 ```
 
  * The `DualOptimizer` that will pass the dual representation of the model to the solver of your choice.
@@ -33,10 +33,14 @@ dual_model = Dualization.dualize(model)
 model = Model(with_optimizer(DualOptimizer, SOLVER.Optimizer(options...)))
 ```
 
-Solving the model through its dual representation can be useful when the solver is not a primal-dual method. 
-Solvers like:
- * 
- * 
- *
+Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
+
+|  Standard form | Geometric form |
+|:-------:|:-------:|
+| SDPT3 | CDCS |
+| SDPNAL | SCS |
+| CSDP | ECOS |
+| SDPA | SeDuMi |
+| Mosek |
 
 For more informations please read the [documentation][docs-stable-url]
