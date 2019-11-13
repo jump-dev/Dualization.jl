@@ -161,6 +161,38 @@ You can solve a primal problem by using its dual formulation using the `DualOpti
 DualOptimizer
 ```
 
+Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
+
+Geometric form has affine expressions in cones
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & c^T x
+\\
+& \;\;\text{s.t.} & A_i x + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\end{align}
+```
+
+Standard form has variables in cones
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & c^T x
+\\
+& \;\;\text{s.t.} & A x + s & = b
+\\
+& & s & \in \mathcal{C}
+\end{align}
+```
+
+|  Standard form | Geometric form |
+|:-------:|:-------:|
+| SDPT3 | CDCS |
+| SDPNAL | SCS |
+| CSDP | ECOS |
+| SDPA | SeDuMi |
+| Mosek |
+
 ## Adding new sets
 
 Dualization.jl can automatically dualize models with custom sets.
