@@ -163,7 +163,7 @@ DualOptimizer
 
 Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
 
-Standard form has affine expressions in cones
+Geometric form has affine expressions in cones
 
 ```math
 \begin{align}
@@ -173,7 +173,7 @@ Standard form has affine expressions in cones
 \end{align}
 ```
 
-Geometric form has variables in cones
+Standard form has variables in cones
 
 ```math
 \begin{align}
