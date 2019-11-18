@@ -30,8 +30,10 @@
                 "norminf2", # Feasibility problem
                 "soc3", # Feasibility problem
                 "rotatedsoc2", # Feasibility problem
-                "exp", # TODO
-                "pow", # Tested in power cone test
+                "exp", # Tested in exp and power cone test
+                "dualexp", # Tested in exp and power cone test
+                "pow", # Tested in exp and power cone test
+                "dualpow", # Tested in exp and power cone test
                 "rootdet", # Not yet implemented
                 "logdet" # Not yet implemented
                 ])
@@ -62,7 +64,6 @@
                 "sdp", # Tested in coninc linear, soc, rsoc and sdp test
                 "rootdet", # Not yet implemented
                 "logdet", # Not yet implemented
-                "exp" #TODO
                 ])
         end
     end

@@ -12,6 +12,6 @@ pkg> add Dualization
 
 ## Contributing
 
-Contributions to this package are more than welcome, if you find a bug please post it on the [github issue tracker](https://github.com/JuliaOpt/Dualization.jl/issues).
+Contributions to this package are more than welcome, if you find a bug or have any suggestions for the documentation please post it on the [github issue tracker](https://github.com/JuliaOpt/Dualization.jl/issues).
 
 When contributing please note that the package follows the [JuMP style guide](https://www.juliaopt.org/JuMP.jl/stable/style/)

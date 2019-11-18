@@ -18,11 +18,20 @@
 [gitter-img]: https://badges.gitter.im/JuliaOpt/JuMP-dev.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
-Repository with first implementations of the automatic dualization feature for MathOptInterface.jl
+Repository with implementations of the automatic dualization feature for MathOptInterface.jl conic optimization problems
 
-This is the repository of the Google Summer Of Code Project (GSOC) JuMP Automatic Dualization. 
-We succeded in dualizing every possible conic problem defined in MathOptInterface. 
-For more information about the API please read the documentation.
+Dualization.jl has two main features. 
+ * The function `dualize` that can dualize either a `MathOptInterface.jl` or `JuMP.jl` model.
+
+```julia
+dual_model = dualize(model)
+```
+
+ * The `DualOptimizer` that will pass the dual representation of the model to the solver of your choice.
+
+```julia
+model = Model(with_optimizer(DualOptimizer, SOLVER.Optimizer(options...)))
+```
 
 ## Common use cases
 
@@ -33,9 +42,23 @@ can only represent specific formulation types. Dualizing the problem can leave
 a problem closer to the form expected by the solver without adding aditions
 slack variables and constraints.
 
+
+Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
+
+|  Standard form | Geometric form |
+|:-------:|:-------:|
+| SDPT3 | CDCS |
+| SDPNAL | SCS |
+| CSDP | ECOS |
+| SDPA | SeDuMi |
+| Mosek |
+
+For more informations please read the [documentation][docs-stable-url]
+
 ### Bilevel optimization
 
 One classic method employed to solve bilevel optimization programs is to add the
 KKT conditions of the second level problem to the upper level problem.
 This package is used to obtain the dual feasibility constraint of the KKT conditions
 in: https://github.com/joaquimg/BilevelJuMP.jl .
+
