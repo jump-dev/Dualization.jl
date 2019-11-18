@@ -9,14 +9,13 @@ push!(dual_power_cone_factory, SCS_DUAL_FACTORY)
 push!(dual_power_cone_optimizer, SCS_DUAL_OPT)
 push!(primal_power_cone_optimizer, SCS_PRIMAL_OPT)
 
-#TODO
-# @testset "SCS Exponential Cone Problems" begin
-#     list_of_exp_problems = [
-#         exp1_test,
-#         exp2_test
-#     ]
-#     test_strong_duality(list_of_exp_problems, SCSOPT)
-# end
+@testset "SCS Exponential Cone Problems" begin
+    list_of_exp_problems = [
+        exp1_test,
+        exp2_test
+    ]
+    test_strong_duality(list_of_exp_problems, SCS_PRIMAL_FACTORY)
+end
 
 @testset "SCS Power Cone Problems" begin
     list_of_pow_problems = [
