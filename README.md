@@ -23,3 +23,19 @@ Repository with first implementations of the automatic dualization feature for M
 This is the repository of the Google Summer Of Code Project (GSOC) JuMP Automatic Dualization. 
 We succeded in dualizing every possible conic problem defined in MathOptInterface. 
 For more information about the API please read the documentation.
+
+## Common use cases
+
+### Solve problems via dual representation
+
+This is specially useful for conic optimization because some solvers
+can only represent specific formulation types. Dualizing the problem can leave
+a problem closer to the form expected by the solver without adding aditions
+slack variables and constraints.
+
+### Bilevel optimization
+
+One classic method employed to solve bilevel optimization programs is to add the
+KKT conditions of the second level problem to the upper level problem.
+This package is used to obtain the dual feasibility constraint of the KKT conditions
+in: https://github.com/joaquimg/BilevelJuMP.jl .

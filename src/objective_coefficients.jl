@@ -26,9 +26,9 @@ struct PrimalObjective{T}
 
     function PrimalObjective{T}(obj::SAF{T}) where T
         canonical_obj = MOIU.canonical(obj)
-        if isempty(canonical_obj.terms)
-            error("Dualization does not support models with no variables in the objective function.")
-        end
+        # if isempty(canonical_obj.terms)
+        #     error("Dualization does not support models with no variables in the objective function.")
+        # end
         return new(canonical_obj)
     end
 end
@@ -71,8 +71,8 @@ end
 function get_primal_objective(primal_model::MOI.ModelLike, variable_parameters::Vector{VI})
     p_obj = get_primal_objective(primal_model)
     # discard variable_parameters
-    remove_variables(p_obj, variable_parameters)
-    return p_obj
+    new_p_obj = remove_variables(p_obj, variable_parameters)
+    return new_p_obj
 end
 
 function remove_variables(p_obj::PrimalObjective{T},
@@ -82,7 +82,7 @@ end
 function remove_variables(saf::MOI.ScalarAffineFunction{T},
     variable_parameters::Vector{VI}) where T
     to_delete = get_indices_variables(saf, variable_parameters)
-    new_saf = copy(saf)
+    new_saf = deepcopy(saf)
     deleteat!(new_saf.terms, to_delete)
     return new_saf
 end

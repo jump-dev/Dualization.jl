@@ -11,13 +11,15 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
 
     all_variable = MOI.get(primal_model, MOI.ListOfVariableIndices())
     restricted_variables = setdiff(all_variable, variable_parameters)
+
+    empty_objective = isempty(primal_objective.saf.terms)
     for primal_vi in restricted_variables
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_dual_map.primal_con_dual_var, 
                                                       primal_vi, con_types, T)
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        if primal_vi == primal_objective.saf.terms[scalar_term_index].variable_index
+        if !empty_objective && primal_vi == primal_objective.saf.terms[scalar_term_index].variable_index
             scalar_term_value = MOI.coefficient(primal_objective.saf.terms[scalar_term_index])
             # This ternary is important for the last scalar_term_index
             # If the last term of the objective is not the last primal variable we don't update 

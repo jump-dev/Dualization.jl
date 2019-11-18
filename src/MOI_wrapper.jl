@@ -25,10 +25,15 @@ end
 """
     DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
 
-The DualOptimizer finds the solution for a problem solving its dual representation.
-It builds the dual model and solve it using the `dual_optimizer` as solver.
+The DualOptimizer finds the solution for a problem by solving its dual representation.
+It builds the dual model internally and solve it using the `dual_optimizer` as solver.
+Primal results are obtained by querying dual results of the internal problem solved
+by `dual_optimizer`. Analogously, dual results are obtained by querying primal results
+of the internal problem.
 
-The user can define the model providing the `DualOptimizer` and the solver of its choice
+The user can define the model providing the `DualOptimizer` and the solver of its choice.
+
+Example:
 
 ```julia
 julia> using Dualization, JuMP, GLPK

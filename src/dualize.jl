@@ -9,14 +9,16 @@ function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames(
 end
 
 function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}; 
-                 dual_names::DualNames = DualNames(), variable_parameters::Vector{VI} = VI[],
+                 dual_names::DualNames = DualNames(),
+                 variable_parameters::Vector{VI} = VI[],
                  ignore_objective::Bool = false) where T
     # Dualize with the optimizer already attached
     return dualize(primal_model, dual_problem, dual_names, variable_parameters, ignore_objective)
 end
 
 function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
-                 dual_names::DualNames, variable_parameters::Vector{VI}, ignore_objective::Bool) where T
+                 dual_names::DualNames, variable_parameters::Vector{VI},
+                 ignore_objective::Bool) where T
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model) 
 
@@ -35,24 +37,21 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_problem.dual_model, primal_model, 
                                                         dual_problem.primal_dual_map,
                                                         dual_names, con_types)
-    
-    if length(variable_parameters) == 0
-        # Fill Dual Objective Coefficients Struct
-        dual_objective = get_dual_objective(dual_problem.dual_model, 
-                                            dual_obj_affine_terms, primal_objective)
 
-        # Add dual objective to the model
-        set_dual_objective(dual_problem.dual_model, dual_objective)
-    elseif !ignore_objective#true # product
-        get_parametric_constants(primal_model,
-                                 con_types, variable_parameters)
-        # add quadratic objective
-        # with slack
-        # without slack
-    else # complementarity
-        # product X complementarity
-        # build a triplet: (dual, affine_function, set)
+    if ignore_objective
+        # do not add objective
+    else
+        if length(variable_parameters) == 0
+            # Fill Dual Objective Coefficients Struct
+            dual_objective = get_dual_objective(dual_problem.dual_model, 
+                                                dual_obj_affine_terms, primal_objective)
 
+            # Add dual objective to the model
+            set_dual_objective(dual_problem.dual_model, dual_objective)
+        else #true # product
+            @warn("Currelty, objective is always ignored in the case of !isempty(variable_parameters)."*
+            " Otherwithe the objective would be quadratic or parametrized.")
+        end
     end
 
     # Add dual equality constraint and get the link dictionary
@@ -94,7 +93,8 @@ The `dualize` function works in three different ways. The user can provide:
 * A `MathOptInterface.ModelLike`
 
 The function will return a `DualProblem` struct that has the dualized model
-and `PrimalDualMap{Float64}` for users to identify the links between primal and dual model.
+and `PrimalDualMap{Float64}` for users to identify the links between primal
+and dual model. The `PrimalDualMap{Float64}`
 
 * A `MathOptInterface.ModelLike` and a `DualProblem{T}`
 
@@ -108,8 +108,19 @@ The function will return a JuMP model with the dual representation of the proble
 the `OptimizerFactory` attached. The `OptimizerFactory` is the solver and its key arguments
 that users provide in JuMP models, i.e. `with_optimizer(GLPK.Optimizer)`.
 
-On each of these methods, the user can provide the keyword argument `dual_names`.
-`dual_names` must be a `DualNames` struct. It allows users to set more intuitive names 
+On each of these methods, the user can provide the following keyword arguments:
+
+* `dual_names`: of type `DualNames` struct. It allows users to set more intuitive names 
 for the dual variables and dual constraints created.
+
+* `variable_parameters`: A vector of MOI.VariableIndex containing the variables that
+sould not be considered model variables during dualization. These variables will behave
+like constants during dualization. This is specially useful for the case of bi-level
+modelling, where the second level depends on some decisions from the upper level.
+
+* `ignore_objective`: a boolean indicating if the objective function should be
+added to the dual model. This is also useful for bi-level modelling, where the second
+level model is represented as a KKT in the upper level model.
+
 """
 function dualize end

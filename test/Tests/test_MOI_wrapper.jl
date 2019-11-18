@@ -1,80 +1,91 @@
-using GLPK, CSDP, SCS
+@testset "MOI_wrapper.jl" begin
+    for opt in dual_linear_optimizer
+        linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
+        linear_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
+        linear_cached = MOIU.CachingOptimizer(linear_cache, opt)
+        linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
 
-# Optimizers
-linear_optimizer = DualOptimizer(GLPK.Optimizer())
-conic_optimizer = DualOptimizer(CSDP.Optimizer(printlevel = 0))
-power_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
-
-@testset "MOI_wrapper.jl" begin    
-    linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
-    linear_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
-    linear_cached = MOIU.CachingOptimizer(linear_cache, linear_optimizer)
-    linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
-
-    @testset "linear test" begin
-        MOIT.contlineartest(linear_bridged, linear_config, ["linear8b", # Asks for infeasibility ray
-                                                            "linear8c", # Asks for infeasibility ray
-                                                            "linear12", # Asks for infeasibility ray
-                                                            "linear13", # Feasibility problem
-                                                            "linear15"  # Feasibility when written in the canonical form
-                                                            ]) 
+        @testset "linear test" begin
+            MOIT.contlineartest(linear_bridged, linear_config,
+                ["linear8b", # Asks for infeasibility ray
+                "linear8c", # Asks for infeasibility ray
+                "linear12", # Asks for infeasibility ray
+                "linear13", # Feasibility problem
+                "linear15"  # Feasibility when written in the canonical form
+                ]) 
+        end
     end
 
-    conic_config = MOIT.TestConfig(atol = 1e-4, rtol = 1e-4)
-    conic_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
-    conic_cached = MOIU.CachingOptimizer(conic_cache, conic_optimizer)
-    conic_bridged = MOIB.full_bridge_optimizer(conic_cached, Float64)
+    for opt in dual_conic_optimizer
+        conic_config = MOIT.TestConfig(atol = 1e-4, rtol = 1e-4)
+        conic_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
+        conic_cached = MOIU.CachingOptimizer(conic_cache, opt)
+        conic_bridged = MOIB.full_bridge_optimizer(conic_cached, Float64)
 
-    @testset "coninc linear, soc, rsoc and sdp test" begin
-        MOIT.contconictest(conic_bridged, conic_config, ["lin3", # Feasibility problem
-                                                         "lin4", # Feasibility problem
-                                                         "normone2", # Feasibility problem
-                                                         "norminf2", # Feasibility problem
-                                                         "soc3", # Feasibility problem
-                                                         "rotatedsoc2", # Feasibility problem
-                                                         "exp", # TODO
-                                                         "pow", # Tested in power cone test
-                                                         "rootdet", # Not yet implemented
-                                                         "logdet" # Not yet implemented
-                                                         ])
+        @testset "coninc linear, soc, rsoc and sdp test" begin
+            MOIT.contconictest(conic_bridged, conic_config,
+                ["lin3", # Feasibility problem
+                "lin4", # Feasibility problem
+                "normone2", # Feasibility problem
+                "norminf2", # Feasibility problem
+                "soc3", # Feasibility problem
+                "rotatedsoc2", # Feasibility problem
+                "exp", # TODO
+                "pow", # Tested in power cone test
+                "rootdet", # Not yet implemented
+                "logdet" # Not yet implemented
+                ])
+        end
+
+        @testset "quadratically constrained" begin
+            MOIT.contquadratictest(conic_bridged, conic_config, ["qp",
+                                                                "ncqcp",
+                                                                "socp"
+                                                                ])
+        end
     end
 
-    @testset "quadratically constrained" begin
-        MOIT.contquadratictest(conic_bridged, conic_config, ["qp",
-                                                             "ncqcp",
-                                                             "socp"
-                                                             ])
-    end
+    for opt in dual_power_cone_optimizer
+        power_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
+        power_cone_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
+        power_cone_cached = MOIU.CachingOptimizer(power_cone_cache, opt)
+        power_cone_bridged = MOIB.full_bridge_optimizer(power_cone_cached, Float64)
 
-    power_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
-    power_cone_cache = MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
-    power_cone_cached = MOIU.CachingOptimizer(power_cone_cache, power_cone_optimizer)
-    power_cone_bridged = MOIB.full_bridge_optimizer(power_cone_cached, Float64)
-
-    @testset "power cone test" begin
-        MOIT.contconictest(power_cone_bridged, 
-                           power_cone_config, ["lin", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "normone", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "norminf", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "soc", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "geomean", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "sdp", # Tested in coninc linear, soc, rsoc and sdp test
-                                               "rootdet", # Not yet implemented
-                                               "logdet", # Not yet implemented
-                                               "exp" #TODO
-                                               ])
+        @testset "power cone test" begin
+            MOIT.contconictest(power_cone_bridged, power_cone_config,
+                ["lin", # Tested in coninc linear, soc, rsoc and sdp test
+                "normone", # Tested in coninc linear, soc, rsoc and sdp test
+                "norminf", # Tested in coninc linear, soc, rsoc and sdp test
+                "soc", # Tested in coninc linear, soc, rsoc and sdp test
+                "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
+                "geomean", # Tested in coninc linear, soc, rsoc and sdp test
+                "sdp", # Tested in coninc linear, soc, rsoc and sdp test
+                "rootdet", # Not yet implemented
+                "logdet", # Not yet implemented
+                "exp" #TODO
+                ])
+        end
     end
 
     @testset "attributes" begin
-        @test MOI.get(linear_optimizer, MOI.SolverName()) == "Dual model with GLPK attached"
-        @test MOI.get(conic_optimizer, MOI.SolverName()) == "Dual model with CSDP attached"
+        for i in eachindex(dual_conic_optimizer)
+            @test MOI.get(dual_conic_optimizer[i], MOI.SolverName()) ==
+                "Dual model with $(MOI.get(primal_conic_optimizer[i], MOI.SolverName())) attached"
+        end
+        for i in eachindex(dual_linear_optimizer)
+            @test MOI.get(dual_linear_optimizer[i], MOI.SolverName()) ==
+                "Dual model with $(MOI.get(primal_linear_optimizer[i], MOI.SolverName())) attached"
+        end
     end
 
     @testset "support" begin
-        @test !MOI.supports_constraint(linear_optimizer, SVF, MOI.Integer)
-        @test MOI.supports_constraint(conic_optimizer, VVF, MOI.PositiveSemidefiniteConeTriangle)
-        @test MOI.supports(linear_optimizer, MOI.ObjectiveSense())
+        for opt in dual_linear_optimizer
+            @test !MOI.supports_constraint(opt, SVF, MOI.Integer)
+            @test MOI.supports(opt, MOI.ObjectiveSense())
+        end
+        for opt in dual_conic_optimizer
+            @test MOI.supports_constraint(opt, VVF, MOI.PositiveSemidefiniteConeTriangle)
+        end
     end
 
     @testset "dual_status" begin
@@ -85,10 +96,12 @@ power_cone_optimizer = DualOptimizer(SCS.Optimizer(verbose = false))
     end
 
     @testset "DualOptimizer" begin
-        err = ErrorException("DualOptimizer must have a solver attached")
-        @test_throws err DualOptimizer()
-        dual_opt_f32 = Dualization.DualOptimizer{Float32}(GLPK.Optimizer())
-        Caching_OptimizerType = typeof(dual_opt_f32.dual_problem.dual_model)
-        @test typeof(dual_opt_f32) == DualOptimizer{Float32, Caching_OptimizerType}
+        for opt in primal_linear_optimizer
+            err = ErrorException("DualOptimizer must have a solver attached")
+            @test_throws err DualOptimizer()
+            dual_opt_f32 = Dualization.DualOptimizer{Float32}(opt)
+            Caching_OptimizerType = typeof(dual_opt_f32.dual_problem.dual_model)
+            @test typeof(dual_opt_f32) == DualOptimizer{Float32, Caching_OptimizerType}
+        end
     end
 end

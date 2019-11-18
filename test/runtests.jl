@@ -56,14 +56,42 @@ include("Tests/test_dualize_sdp.jl")
 include("Tests/test_dualize_exponential.jl")
 include("Tests/test_dualize_power.jl")
 include("Tests/test_dual_names.jl")
-include("Tests/test_JuMP_dualize.jl")
-include("Tests/test_MOI_wrapper.jl")
 
-# Full version of tests, this hsould be all comented to pass travis ci because of dependencies
+include("Tests/test_partial_dual_linear.jl")
+
+#=
+    Tests depending on solvers
+=#
+
 include("optimize_abstract_models.jl")
 
-# Test strong duality in linear/conic problems
+primal_linear_factory = []
+primal_conic_factory = []
+primal_power_cone_factory = []
+
+dual_linear_factory = []
+dual_conic_factory = []
+dual_power_cone_factory = []
+
+dual_linear_optimizer = []
+dual_conic_optimizer = []
+dual_power_cone_optimizer = []
+
+primal_linear_optimizer = []
+primal_conic_optimizer = []
+primal_power_cone_optimizer = []
+
+# Load & Test strong duality in linear/conic problems
+# Comment the solver that are not available for development
 include("Solvers/glpk_test.jl")
 include("Solvers/ecos_test.jl")
 include("Solvers/csdp_test.jl")
 include("Solvers/scs_test.jl")
+
+include("Tests/test_JuMP_dualize.jl")
+include("Tests/test_MOI_wrapper.jl")
+
+
+
+
+
