@@ -49,8 +49,8 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
             # Add dual objective to the model
             set_dual_objective(dual_problem.dual_model, dual_objective)
         else #true # product
-            @warn("Currelty, objective is always ignored in the case of !isempty(variable_parameters)."*
-            " Otherwithe the objective would be quadratic or parametrized.")
+            @warn("Currently, objective is always ignored in the case of !isempty(variable_parameters)."*
+            " Otherwise the objective would be quadratic or parametrized.")
         end
     end
 
@@ -94,7 +94,8 @@ The `dualize` function works in three different ways. The user can provide:
 
 The function will return a `DualProblem` struct that has the dualized model
 and `PrimalDualMap{Float64}` for users to identify the links between primal
-and dual model. The `PrimalDualMap{Float64}`
+and dual model. The `PrimalDualMap{Float64}` maps variables and constraints
+from the original primal model into the respective objects of the dual model.
 
 * A `MathOptInterface.ModelLike` and a `DualProblem{T}`
 
@@ -114,7 +115,7 @@ On each of these methods, the user can provide the following keyword arguments:
 for the dual variables and dual constraints created.
 
 * `variable_parameters`: A vector of MOI.VariableIndex containing the variables that
-sould not be considered model variables during dualization. These variables will behave
+should not be considered model variables during dualization. These variables will behave
 like constants during dualization. This is specially useful for the case of bi-level
 modelling, where the second level depends on some decisions from the upper level.
 

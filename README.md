@@ -39,9 +39,8 @@ model = Model(with_optimizer(DualOptimizer, SOLVER.Optimizer(options...)))
 
 This is specially useful for conic optimization because some solvers
 can only represent specific formulation types. Dualizing the problem can leave
-a problem closer to the form expected by the solver without adding aditions
+a problem closer to the form expected by the solver without adding
 slack variables and constraints.
-
 
 Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
 

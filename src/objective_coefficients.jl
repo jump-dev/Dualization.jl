@@ -29,6 +29,14 @@ struct PrimalObjective{T}
         # if isempty(canonical_obj.terms)
         #     error("Dualization does not support models with no variables in the objective function.")
         # end
+        # This was commented for now, because the current understanding is that
+        # problems like {min 0*x} are well defined and have well defined dual problems.
+        # Therefore, they present no issue to dualization as opposed to problems
+        # with FEASIBILITY_SENSE that do not have a well defined dual problem.
+        # Moreover, JuMP and MOI default is FEASIBILITY_SENSE, if a MIN_SENSE
+        # is in the problem, it is because the user set it explicitly.
+        # For more on the original discussion, see:
+        # https://github.com/JuliaOpt/Dualization.jl/pull/64#discussion_r347484642
         return new(canonical_obj)
     end
 end
