@@ -26,9 +26,17 @@ struct PrimalObjective{T}
 
     function PrimalObjective{T}(obj::SAF{T}) where T
         canonical_obj = MOIU.canonical(obj)
-        if isempty(canonical_obj.terms)
-            error("Dualization does not support models with no variables in the objective function.")
-        end
+        # if isempty(canonical_obj.terms)
+        #     error("Dualization does not support models with no variables in the objective function.")
+        # end
+        # This was commented for now, because the current understanding is that
+        # problems like {min 0*x} are well defined and have well defined dual problems.
+        # Therefore, they present no issue to dualization as opposed to problems
+        # with FEASIBILITY_SENSE that do not have a well defined dual problem.
+        # Moreover, JuMP and MOI default is FEASIBILITY_SENSE, if a MIN_SENSE
+        # is in the problem, it is because the user set it explicitly.
+        # For more on the original discussion, see:
+        # https://github.com/JuliaOpt/Dualization.jl/pull/64#discussion_r347484642
         return new(canonical_obj)
     end
 end
@@ -66,6 +74,39 @@ _get_primal_objective(obj_fun::SVF) = _get_primal_objective(obj_fun, Float64)
 function _get_primal_objective(obj_fun::SVF, T::Type)
     return PrimalObjective{T}(SAF{T}(obj_fun))
 end
+
+# allow removing variables from objective function
+function get_primal_objective(primal_model::MOI.ModelLike, variable_parameters::Vector{VI})
+    p_obj = get_primal_objective(primal_model)
+    # discard variable_parameters
+    new_p_obj = remove_variables(p_obj, variable_parameters)
+    return new_p_obj
+end
+
+function remove_variables(p_obj::PrimalObjective{T},
+    variable_parameters::Vector{VI}) where T
+    PrimalObjective{T}(remove_variables(p_obj.saf, variable_parameters))
+end
+function remove_variables(saf::MOI.ScalarAffineFunction{T},
+    variable_parameters::Vector{VI}) where T
+    to_delete = get_indices_variables(saf, variable_parameters)
+    new_saf = deepcopy(saf)
+    deleteat!(new_saf.terms, to_delete)
+    return new_saf
+end
+
+function get_indices_variables(saf::MOI.ScalarAffineFunction{T},
+    variable_parameters::Vector{VI}) where T
+    indices = Int[]
+    sizehint!(indices, min(length(variable_parameters), length(saf.terms)))
+    for (ind, term) in enumerate(saf.terms)
+        if MOIU._hasvar(term, variable_parameters)
+            push!(indices, ind)
+        end
+    end
+    return indices
+end
+
 
 # You can add other generic _get_primal_obj_coeffs functions here
 

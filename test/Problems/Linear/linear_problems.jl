@@ -232,7 +232,6 @@ function lp7_test()
 
     MOI.add_constraint(model, c1, MOI.Nonpositives(2))
 
-
     MOI.add_constraint(model, 
         MOI.SingleVariable(X[1]),
             MOI.GreaterThan(1.0))

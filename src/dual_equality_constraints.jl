@@ -1,19 +1,25 @@
 function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                                        primal_dual_map::PrimalDualMap,  dual_names::DualNames,
                                        primal_objective::PrimalObjective{T},
-                                       con_types::Vector{Tuple{DataType, DataType}}) where T
+                                       con_types::Vector{Tuple{DataType, DataType}},
+                                       variable_parameters::Vector{VI}) where T
     
     dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
     num_objective_terms = MOIU.number_of_affine_terms(T, get_saf(primal_objective)) # This is used to update the scalar_term_index
 
     scalar_term_index::Int = 1
-    for primal_vi in MOI.get(primal_model, MOI.ListOfVariableIndices())
+
+    all_variable = MOI.get(primal_model, MOI.ListOfVariableIndices())
+    restricted_variables = setdiff(all_variable, variable_parameters)
+
+    empty_objective = isempty(primal_objective.saf.terms)
+    for primal_vi in restricted_variables
         # Loop at every constraint to get the scalar affine terms
         scalar_affine_terms = get_scalar_affine_terms(primal_model, primal_dual_map.primal_con_dual_var, 
                                                       primal_vi, con_types, T)
         # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
         # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        if primal_vi == primal_objective.saf.terms[scalar_term_index].variable_index
+        if !empty_objective && primal_vi == primal_objective.saf.terms[scalar_term_index].variable_index
             scalar_term_value = MOI.coefficient(primal_objective.saf.terms[scalar_term_index])
             # This ternary is important for the last scalar_term_index
             # If the last term of the objective is not the last primal variable we don't update 
@@ -25,7 +31,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
             scalar_term = zero(T)
         end
         # Add equality constraint
-        dual_ci = MOI.add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
+        dual_ci = MOIU.normalize_and_add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
         #Set constraint name with the name of the associated priaml variable
         set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci, 
                                  dual_names.dual_constraint_name_prefix)

@@ -1,5 +1,3 @@
-using GLPK, SCS, CSDP
-
 # For testing bug found on issue # 52
 function solve_vaf_sdp(factory::JuMP.OptimizerFactory)
     model = Model(factory)
@@ -18,20 +16,27 @@ end
     end
     @testset "dualize JuMP models" begin
         # Only testing with a small LP
-        JuMP_model = JuMP.Model()
-        MOI.copy_to(JuMP.backend(JuMP_model), lp1_test())
-        dual_JuMP_model = dualize(JuMP_model)
-        @test backend(dual_JuMP_model).state == MOIU.NO_OPTIMIZER
-        dual_JuMP_model = dualize(JuMP_model, with_optimizer(GLPK.Optimizer))
-        @test backend(dual_JuMP_model).state == MOIU.EMPTY_OPTIMIZER
-        @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) == "GLPK"
+        for i in eachindex(primal_linear_factory)
+            JuMP_model = JuMP.Model()
+            MOI.copy_to(JuMP.backend(JuMP_model), lp1_test())
+            dual_JuMP_model = dualize(JuMP_model)
+            @test backend(dual_JuMP_model).state == MOIU.NO_OPTIMIZER
+            dual_JuMP_model = dualize(JuMP_model, primal_linear_factory[i])
+            @test backend(dual_JuMP_model).state == MOIU.EMPTY_OPTIMIZER
+            @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) == 
+                MOI.get(primal_linear_optimizer[i], MOI.SolverName())#"GLPK"
+        end
     end
     @testset "set_dot on different sets" begin
-        primal_scs = solve_vaf_sdp(with_optimizer(SCS.Optimizer, verbose = 0))
-        dual_scs = solve_vaf_sdp(with_optimizer(DualOptimizer, SCS.Optimizer(verbose = 0)))
-        primal_csdp = solve_vaf_sdp(with_optimizer(CSDP.Optimizer, printlevel = 0))
-        dual_csdp = solve_vaf_sdp(with_optimizer(DualOptimizer, CSDP.Optimizer(printlevel = 0)))
-        @test isapprox(primal_scs, dual_scs; atol = 1e-3)
-        @test isapprox(primal_csdp, dual_csdp; atol = 1e-6)
+        for i in eachindex(primal_power_cone_factory)
+            primal_scs = solve_vaf_sdp(primal_power_cone_factory[i])
+            dual_scs = solve_vaf_sdp(dual_power_cone_factory[i])
+            @test isapprox(primal_scs, dual_scs; atol = 1e-3)
+        end
+        for i in eachindex(primal_conic_factory)
+            primal_csdp = solve_vaf_sdp(primal_conic_factory[i])
+            dual_csdp = solve_vaf_sdp(dual_conic_factory[i])
+            @test isapprox(primal_csdp, dual_csdp; atol = 1e-6)
+        end
     end
 end

@@ -21,8 +21,8 @@
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set([
-            (SVF, MOI.GreaterThan{Float64})           
-            (SVF, MOI.LessThan{Float64})              
+            (SVF, MOI.GreaterThan{Float64})
+            (SVF, MOI.LessThan{Float64})
             (SAF{Float64}, MOI.EqualTo{Float64})
         ])
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SVF, MOI.GreaterThan{Float64}}()) == 1
@@ -80,8 +80,8 @@
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set([
-            (SVF, MOI.GreaterThan{Float64})           
-            (SAF{Float64}, MOI.EqualTo{Float64})              
+            (SVF, MOI.GreaterThan{Float64})
+            (SAF{Float64}, MOI.EqualTo{Float64})
             (VVF, MOI.Nonpositives)
         ])
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SVF, MOI.GreaterThan{Float64}}()) == 2

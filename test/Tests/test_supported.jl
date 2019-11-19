@@ -21,5 +21,5 @@
         con_types = MOI.get(lp9_test(), MOI.ListOfConstraints())
         @test_throws ErrorException Dualization.supported_constraints(con_types) # Throws an error if constraint cannot be dualized
     end
-    
+
 end

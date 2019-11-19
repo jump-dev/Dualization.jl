@@ -33,6 +33,15 @@ dual_model = dualize(model)
 model = Model(with_optimizer(DualOptimizer, SOLVER.Optimizer(options...)))
 ```
 
+## Common use cases
+
+### Solve problems via dual representation
+
+This is specially useful for conic optimization because some solvers
+can only represent specific formulation types. Dualizing the problem can leave
+a problem closer to the form expected by the solver without adding
+slack variables and constraints.
+
 Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
 
 |  Standard form | Geometric form |
@@ -44,3 +53,11 @@ Solving an optimization problem via its dual representation can be useful becaus
 | Mosek |
 
 For more informations please read the [documentation][docs-stable-url]
+
+### Bilevel optimization
+
+One classic method employed to solve bilevel optimization programs is to add the
+KKT conditions of the second level problem to the upper level problem.
+This package is used to obtain the dual feasibility constraint of the KKT conditions
+in: https://github.com/joaquimg/BilevelJuMP.jl .
+

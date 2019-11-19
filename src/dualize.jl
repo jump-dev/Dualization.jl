@@ -1,19 +1,24 @@
 export dualize
 
 # MOI dualize
-function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames("", ""))
+function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames(),
+                 variable_parameters::Vector{VI} = VI[], ignore_objective::Bool = false)
     # Creates an empty dual problem
     dual_problem = DualProblem{Float64}()
-    return dualize(primal_model, dual_problem, dual_names)
+    return dualize(primal_model, dual_problem, dual_names, variable_parameters, ignore_objective)
 end
 
 function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}; 
-                 dual_names::DualNames = DualNames("", "")) where T
+                 dual_names::DualNames = DualNames(),
+                 variable_parameters::Vector{VI} = VI[],
+                 ignore_objective::Bool = false) where T
     # Dualize with the optimizer already attached
-    return dualize(primal_model, dual_problem, dual_names)
+    return dualize(primal_model, dual_problem, dual_names, variable_parameters, ignore_objective)
 end
 
-function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}, dual_names::DualNames) where T
+function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
+                 dual_names::DualNames, variable_parameters::Vector{VI},
+                 ignore_objective::Bool) where T
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model) 
 
@@ -25,25 +30,34 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}, dual
     set_dual_model_sense(dual_problem.dual_model, primal_model)
 
     # Get Primal Objective Coefficients
-    primal_objective = get_primal_objective(primal_model)
+    primal_objective = get_primal_objective(primal_model, variable_parameters)
 
     # Add variables to the dual model and their dual cone constraint.
-    # Return a dictionary for dual variables with primal constraints
+    # Return a dictionary from dual variables to primal constraints constants (obj coef of dual var)
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_problem.dual_model, primal_model, 
                                                         dual_problem.primal_dual_map,
                                                         dual_names, con_types)
-    
-    # Fill Dual Objective Coefficients Struct
-    dual_objective = get_dual_objective(dual_problem.dual_model, 
-                                        dual_obj_affine_terms, primal_objective)
 
-    # Add dual objective to the model
-    set_dual_objective(dual_problem.dual_model, dual_objective)
+    if ignore_objective
+        # do not add objective
+    else
+        if length(variable_parameters) == 0
+            # Fill Dual Objective Coefficients Struct
+            dual_objective = get_dual_objective(dual_problem.dual_model, 
+                                                dual_obj_affine_terms, primal_objective)
+
+            # Add dual objective to the model
+            set_dual_objective(dual_problem.dual_model, dual_objective)
+        else #true # product
+            @warn("Currently, objective is always ignored in the case of !isempty(variable_parameters)."*
+            " Otherwise the objective would be quadratic or parametrized.")
+        end
+    end
 
     # Add dual equality constraint and get the link dictionary
     add_dual_equality_constraints(dual_problem.dual_model, primal_model,
                                   dual_problem.primal_dual_map, dual_names,
-                                  primal_objective, con_types)
+                                  primal_objective, con_types, variable_parameters)
 
     return dual_problem
 end
@@ -79,7 +93,9 @@ The `dualize` function works in three different ways. The user can provide:
 * A `MathOptInterface.ModelLike`
 
 The function will return a `DualProblem` struct that has the dualized model
-and `PrimalDualMap{Float64}` for users to identify the links between primal and dual model.
+and `PrimalDualMap{Float64}` for users to identify the links between primal
+and dual model. The `PrimalDualMap{Float64}` maps variables and constraints
+from the original primal model into the respective objects of the dual model.
 
 * A `MathOptInterface.ModelLike` and a `DualProblem{T}`
 
@@ -93,8 +109,19 @@ The function will return a JuMP model with the dual representation of the proble
 the `OptimizerFactory` attached. The `OptimizerFactory` is the solver and its key arguments
 that users provide in JuMP models, i.e. `with_optimizer(GLPK.Optimizer)`.
 
-On each of these methods, the user can provide the keyword argument `dual_names`.
-`dual_names` must be a `DualNames` struct. It allows users to set more intuitive names 
+On each of these methods, the user can provide the following keyword arguments:
+
+* `dual_names`: of type `DualNames` struct. It allows users to set more intuitive names 
 for the dual variables and dual constraints created.
+
+* `variable_parameters`: A vector of MOI.VariableIndex containing the variables that
+should not be considered model variables during dualization. These variables will behave
+like constants during dualization. This is specially useful for the case of bi-level
+modelling, where the second level depends on some decisions from the upper level.
+
+* `ignore_objective`: a boolean indicating if the objective function should be
+added to the dual model. This is also useful for bi-level modelling, where the second
+level model is represented as a KKT in the upper level model.
+
 """
 function dualize end
