@@ -28,7 +28,6 @@ and the dual is:
 & & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
 \end{align}
 ```
-
 where each ``\mathcal{C}_i`` is a closed convex cone and ``\mathcal{C}_i^*`` is its dual cone.
 
 For conic-form maximization problems, the primal is:
@@ -308,4 +307,80 @@ The resulting dual model is
     &&2con_3 & = 1\\
     && con & \in FakeDualCone(3)\\
 \end{align}
+```
+
+## Advanced
+
+### KKT Conditions
+
+The KKT conditions are a set of inequalities for which the feasible soltion is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting the write them programatically.
+
+The KKT conditions of the minimization problem of the first section are the following:
+
+1. Primal Feasbility:
+
+```math
+A_i x + b_i  \in \mathcal{C}_i , \ \ i = 1 \ldots m
+```
+
+2. Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
+```
+
+3. Complementary slackness:
+
+```math
+y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
+```
+
+4. Stationarity:
+
+```math
+a_0 - \sum_{i=1}^m A_i^T y_i  = 0
+```
+
+Note that "Dual Feasibility" and "Stationarity" correspond to the two constraints of the dual problem. Therefore, after writing the primal problem, Dualization.jl can obtain the dual problem automatically and then we simply have to write the "Complementary slackness" to complete the KKT conditions.
+
+One important use case is Bilevel optimization, see [BilevelJuMP.jl](https://github.com/joaquimg/BilevelJuMP.jl). In this case, variables of an upstream model are considered as parameters in a lower level model. One classical solution method for bilevel programs is to write the KKT conditions of the lower (or inner) problem and consider them as (non-linear) constraints of the upper (or outer) problem. Dualization can be used to derive parts of KKT conditions.
+
+### Parametric problems
+
+It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by ``x`` in the duality section, there are many use cases in which we can represent parameters that will not be considred in the optimization, these are treated as constants and, hence, not "dualized".
+
+
+
+In the following, we will use ``x`` to denote primal optimization variables, ``y`` for dual optimiation variables and ``z`` for parameters.
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & a_0^T x + b_0
+\\
+& \;\;\text{s.t.} & A_i x + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\end{align}
+```
+
+
+```math
+\min_{x \in \mathbb{R}^n}  a_0^T x + b_0 + d_0^Tz \\
+\;\;\text{s.t.}  A_i x + b_i + D_i z  \in \mathcal{C}_i  i = 1 \ldots m
+```
+
+and the dual is:
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m} & -\sum_{i=1}^m b_i^T y_i + b_0
+\\
+& \;\;\text{s.t.} & a_0 - \sum_{i=1}^m A_i^T y_i & = 0
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+```math
+\max_{y_1, \ldots, y_m} -\sum_{i=1}^m (b_i + D_iz)^T y_i + b_0 + d_0^Tz \\
+\;\;\text{s.t.} a_0 - \sum_{i=1}^m A_i^T y_i = 0 \\
+y_i \in \mathcal{C}_i^* i = 1 \ldots m
 ```
