@@ -313,11 +313,11 @@ The resulting dual model is
 
 ### KKT Conditions
 
-The KKT conditions are a set of inequalities for which the feasible soltion is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting the write them programatically.
+The KKT conditions are a set of inequalities for which the feasible solution is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting to write them programatically.
 
 The KKT conditions of the minimization problem of the first section are the following:
 
-1. Primal Feasbility:
+1. Primal Feasibility:
 
 ```math
 A_i x + b_i  \in \mathcal{C}_i , \ \ i = 1 \ldots m
@@ -373,7 +373,7 @@ and the dual is:
 
 and the KKT conditions are:
 
-1. Primal Feasbility:
+1. Primal Feasibility:
 
 ```math
 A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m
@@ -401,7 +401,7 @@ a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 
 Optimization problems with conic constraints and quadratic objective are a straightforward extensions to the conic problem with linear constraints usually defined in MOI. More information [here](http://www.seas.ucla.edu/~vandenbe/publications/coneprog.pdf).
 
-A primal minimization problem can be standadized as:
+A primal minimization problem can be standardized as:
 
 ```math
 \begin{align}
@@ -413,7 +413,7 @@ A primal minimization problem can be standadized as:
 
 Where `P` is a positive semidefinite matrix.
 
-A compact formulation for the dual problem requires pseudo-inverses, however, we can add an extra slack variable `w` to tehd ual problem and obtain the following dual problem:
+A compact formulation for the dual problem requires pseudo-inverses, however, we can add an extra slack variable `w` to the dual problem and obtain the following dual problem:
 
 ```math
 \begin{align}
@@ -425,12 +425,12 @@ A compact formulation for the dual problem requires pseudo-inverses, however, we
 \end{align}
 ```
 
-note that the signal in front of the `P` matrix can be changed because `w` is free and the only other term depending in `w` is quadratic and symmetric.
-This sign choice is interesint to keep the dual problem closer to the KKT conditions that reads as follows:
+note that the sign in front of the `P` matrix can be changed because `w` is free and the only other term depending in `w` is quadratic and symmetric.
+The sign choice is interesting to keep the dual problem closer to the KKT conditions that reads as follows:
 
 \
 
-1. Primal Feasbility:
+1. Primal Feasibility:
 
 ```math
 A_i x + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m
@@ -484,7 +484,7 @@ The Dual is:
 and the KKT conditions are:
 
 
-1. Primal Feasbility:
+1. Primal Feasibility:
 
 ```math
 A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m
