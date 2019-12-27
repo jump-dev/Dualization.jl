@@ -88,3 +88,82 @@ function set_dual_variable_name(dual_model::MOI.ModelLike, vi::VI, i::Int, ci_na
     MOI.set(dual_model, MOI.VariableName(), vi, prefix*ci_name*"_$i")
     return 
 end
+
+function add_primal_parameter_vars(dual_model::MOI.ModelLike,
+    primal_model::MOI.ModelLike, primal_dual_map::PrimalDualMap{T},
+    dual_names::DualNames, variable_parameters::Vector{VI},
+    primal_objective, ignore_objective::Bool) where T
+    # if objective is ignored we only need parameters that appear in the
+    # quadratic objective
+    if ignore_objective
+        # only crossed terms (parameter times primal variable) of the objective
+        # are required
+        added = Set{VI}()
+        for vec in values(primal_objective.quad_cross_parameters)
+            for term in vec
+                ind = term.variable_index
+                if ind in added
+                    # do nothing
+                else
+                    push!(added, ind)
+                    vi = MOI.add_variable(dual_model)
+                    push_to_primal_parameter!(primal_dual_map.primal_parameter, ind, vi)
+                    # set name
+                    vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
+                    set_dual_variable_name(dual_model, vi, vi_name, dual_names)
+                end
+            end
+        end
+    elseif length(variable_parameters) > 0
+        vis = MOI.add_variables(dual_model, length(variable_parameters))
+        for i in eachindex(vis)
+            push_to_primal_parameter!(primal_dual_map.primal_parameter,
+                variable_parameters[i], vis[i])
+            vi_name = MOI.get(primal_model, MOI.VariableName(), variable_parameters[i])
+            set_parameter_variable_name(dual_model, vis[i], vi_name, dual_names)
+        end
+    end
+    return
+end
+function push_to_primal_parameter!(primal_parameter::Dict{VI, VI}, vi::VI, vi_dual::VI)
+    push!(primal_parameter, vi => vi_dual)
+    return 
+end
+function set_parameter_variable_name(dual_model::MOI.ModelLike, vi::VI, vi_name::String, dual_names)
+    prefix = dual_names.parameter_name_prefix == "" ? "param_" : dual_names.parameter_name_prefix
+    MOI.set(dual_model, MOI.VariableName(), vi, prefix*vi_name)
+    return 
+end
+
+function add_quadratic_slack_vars(dual_model::MOI.ModelLike,
+    primal_model::MOI.ModelLike, primal_dual_map::PrimalDualMap{T},
+    dual_names::DualNames, variable_parameters::Vector{VI},
+    primal_objective, ignore_objective::Bool) where T
+    # only crossed terms (parameter times primal variable) of the objective
+    # are required
+    added = Set{VI}()
+    for term in primal_objective.obj.quadratic_terms
+        for ind in [term.variable_index_1, term.variable_index_2]
+            if ind in added
+                #do nothing
+            else
+                push!(added, ind)
+                vi = MOI.add_variable(dual_model)
+                push_to_quad_slack!(primal_dual_map.primal_var_dual_quad_slack, ind, vi)
+                # set name
+                vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
+                set_quad_slack_name(dual_model, vi, vi_name, dual_names)
+            end
+        end
+    end
+    return
+end
+function push_to_quad_slack!(dual_quad_slack::Dict{VI, VI}, vi::VI, vi_dual::VI)
+    push!(dual_quad_slack, vi => vi_dual)
+    return 
+end
+function set_quad_slack_name(dual_model::MOI.ModelLike, vi::VI, vi_name::String, dual_names)
+    prefix = dual_names.quadratic_slack_name_prefix == "" ? "quadslack_" : dual_names.quadratic_slack_name_prefix
+    MOI.set(dual_model, MOI.VariableName(), vi, prefix*vi_name)
+    return 
+end

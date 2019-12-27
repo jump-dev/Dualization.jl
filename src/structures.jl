@@ -18,11 +18,17 @@ mutable struct PrimalDualMap{T}
     primal_con_dual_con::Dict{CI, CI}
     primal_con_constants::Dict{CI, Vector{T}}
 
+    primal_parameter::Dict{VI, VI} # in the future we could have Parameters, as in ParameterJuMP
+    primal_var_dual_quad_slack::Dict{VI, VI}
+
     function PrimalDualMap{T}() where T
         return new(Dict{VI, CI}(),
                    Dict{CI, Vector{VI}}(),
                    Dict{CI, CI}(),
-                   Dict{CI, Vector{T}}())
+                   Dict{CI, Vector{T}}(),
+                   Dict{VI, VI}(),
+                   Dict{VI, VI}(),
+                   )
     end
 end
 
@@ -30,7 +36,9 @@ function is_empty(primal_dual_map::PrimalDualMap{T}) where T
     if isempty(primal_dual_map.primal_var_dual_con) &&
        isempty(primal_dual_map.primal_con_dual_var) &&
        isempty(primal_dual_map.primal_con_dual_con) &&
-       isempty(primal_dual_map.primal_con_constants)
+       isempty(primal_dual_map.primal_con_constants) &&
+       isempty(primal_dual_map.primal_parameter) &&
+       isempty(primal_dual_map.primal_var_dual_quad_slack)
        return true
     end
     return false
@@ -41,6 +49,8 @@ function empty!(primal_dual_map::PrimalDualMap{T}) where T
     primal_dual_map.primal_con_dual_var = Dict{CI, Vector{VI}}()
     primal_dual_map.primal_con_dual_con = Dict{CI, CI}()
     primal_dual_map.primal_con_constants = Dict{CI, Vector{T}}()
+    primal_dual_map.primal_parameter = Dict{VI, VI}()
+    primal_dual_map.primal_var_dual_quad_slack = Dict{VI, VI}()
 end
 
 struct DualProblem{T, OT <: MOI.ModelLike}

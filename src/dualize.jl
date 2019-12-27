@@ -38,27 +38,30 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
                                                         dual_problem.primal_dual_map,
                                                         dual_names, con_types)
 
-    if ignore_objective
-        # do not add objective
-    else
-        if length(variable_parameters) == 0
-            # Fill Dual Objective Coefficients Struct
-            dual_objective = get_dual_objective(dual_problem.dual_model, 
-                                                dual_obj_affine_terms, primal_objective)
-
-            # Add dual objective to the model
-            set_dual_objective(dual_problem.dual_model, dual_objective)
-        else #true # product
-            @warn("Currently, objective is always ignored in the case of !isempty(variable_parameters)."*
-            " Otherwise the objective would be quadratic or parametrized.")
-        end
-    end
+    add_primal_parameter_vars(dual_problem.dual_model,
+        primal_model, dual_problem.primal_dual_map,
+        dual_names, variable_parameters,
+        primal_objective, ignore_objective)
+    add_quadratic_slack_vars(dual_problem.dual_model,
+        primal_model, dual_problem.primal_dual_map,
+        dual_names, variable_parameters,
+        primal_objective, ignore_objective)
 
     # Add dual equality constraint and get the link dictionary
-    add_dual_equality_constraints(dual_problem.dual_model, primal_model,
+    scalar_affine_terms = add_dual_equality_constraints(dual_problem.dual_model, primal_model,
                                   dual_problem.primal_dual_map, dual_names,
                                   primal_objective, con_types, variable_parameters)
 
+    if ignore_objective
+        # do not add objective
+    else
+        # Fill Dual Objective Coefficients Struct
+        dual_objective = get_dual_objective(dual_problem, 
+            dual_obj_affine_terms, primal_objective, con_types,
+            scalar_affine_terms, variable_parameters)
+        # Add dual objective to the model
+        set_dual_objective(dual_problem.dual_model, dual_objective)
+    end
     return dual_problem
 end
 
