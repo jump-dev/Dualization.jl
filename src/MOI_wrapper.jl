@@ -65,7 +65,9 @@ end
 function MOI.supports(::DualOptimizer,
                       ::Union{MOI.ObjectiveSense,
                               MOI.ObjectiveFunction{MOI.SingleVariable},
-                              MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}})
+                              MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}},
+                              MOI.ObjectiveFunction{MOI.ScalarQuadraticFunction{Float64}},
+                              })
     return true
 end
 
