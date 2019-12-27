@@ -125,18 +125,19 @@ function split_variables(func::MOI.ScalarQuadraticFunction{T},
     # linear part
     lin_params = MOI.ScalarAffineTerm{T}[]
     lin_vars = MOI.ScalarAffineTerm{T}[]
-    for (ind, term) in enumerate(func.affine_terms)
+    for term in func.affine_terms
         if MOIU._hasvar(term, variable_parameters)
             push!(lin_params, term)
         else
             push!(lin_vars, term)
         end
     end
+
     # Quadratic part
     quad_params = MOI.ScalarQuadraticTerm{T}[]
     quad_vars = MOI.ScalarQuadraticTerm{T}[]
     quad_cross_params = Dict{VI, Vector{MOI.ScalarAffineTerm{T}}}()
-    for (ind, term) in enumerate(func.quadratic_terms)
+    for term in func.quadratic_terms
         is_param_1 = term.variable_index_1 in variable_parameters
         is_param_2 = term.variable_index_2 in variable_parameters
         if is_param_1 && is_param_2
@@ -156,7 +157,7 @@ function split_variables(func::MOI.ScalarQuadraticFunction{T},
     return variables_func, quad_cross_params, parameters_func
 end
 
-function push_affine_term(dic, term::MOI.ScalarQuadraticTerm{T}, var_is_first) where T
+function push_affine_term(dic, term::MOI.ScalarQuadraticTerm{T}, var_is_first::Bool) where T
     variable = var_is_first ? term.variable_index_1 : term.variable_index_2
     parameter = var_is_first ? term.variable_index_2 : term.variable_index_1
     if haskey(dic, variable)
@@ -167,9 +168,6 @@ function push_affine_term(dic, term::MOI.ScalarQuadraticTerm{T}, var_is_first) w
             [MOI.ScalarAffineTerm{T}(term.coefficient, parameter)]
     end
 end
-
-
-# You can add other generic _get_primal_obj_coeffs functions here
 
 """
     set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T})::Nothing where T
@@ -208,7 +206,7 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
     num_objective_terms = length(dual_obj_affine_terms)
     lin_terms = MOI.ScalarAffineTerm{T}[]
     sizehint!(lin_terms, num_objective_terms)
-    for (i, var) in enumerate(keys(dual_obj_affine_terms)) # Number of constraints of the primal model
+    for var in keys(dual_obj_affine_terms) # Number of constraints of the primal model
         coef = dual_obj_affine_terms[var]
         push!(lin_terms, MOI.ScalarAffineTerm{T}(
             # Add positive terms bi if dual model sense is max
@@ -252,7 +250,6 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
 
         # crossed
         # TODO? set_dot
-        # TODO affine equalities shoudl be built this way also
         for vi in variable_parameters
             param = map.primal_parameter[vi]
             for term in scalar_affine_terms[vi]
@@ -263,7 +260,6 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
                     ))
             end
         end
-
     end
 
     saf_dual_objective = MOI.ScalarQuadraticFunction{T}(

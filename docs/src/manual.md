@@ -405,7 +405,7 @@ A primal minimization problem can be standardized as:
 
 ```math
 \begin{align}
-& \min_{x \in \mathbb{R}^n} & a_0^T x + b_0 + \frac{1}{2} x^T P x
+& \min_{x \in \mathbb{R}^n} & \frac{1}{2} x^T P x + a_0^T x + b_0
 \\
 & \;\;\text{s.t.} & A_i x + b_i & \in \mathcal{C}_i & i = 1 \ldots m
 \end{align}
@@ -417,7 +417,7 @@ A compact formulation for the dual problem requires pseudo-inverses, however, we
 
 ```math
 \begin{align}
-& \max_{y_1, \ldots, y_m} & -\sum_{i=1}^m b_i^T y_i + b_0 - \frac{1}{2} w^T P w
+& \max_{y_1, \ldots, y_m} & - \frac{1}{2} w^T P w - \sum_{i=1}^m b_i^T y_i + b_0
 \\
 & \;\;\text{s.t.} & a_0 - \sum_{i=1}^m A_i^T y_i + P w & = 0
 \\
@@ -460,8 +460,9 @@ Just like the linear problems, these quadratic programs can be parametric. The P
 
 ```math
 \begin{align}
-& \min_{x \in \mathbb{R}^n} & a_0^T x + b_0 + d_0^T z + \frac{1}{2} x^T P_1 x \\
-& & + x^T P_2 z + \frac{1}{2} z^T P_3 z \notag
+& \min_{x \in \mathbb{R}^n} &  + \frac{1}{2} x^T P_1 x + x^T P_2 z + \frac{1}{2} z^T P_3 z
+\\
+& &  + a_0^T x + b_0 + d_0^T z \notag
 \\
 & \;\;\text{s.t.} & A_i x + b_i + D_i z & \in \mathcal{C}_i & i = 1 \ldots m
 \end{align}
@@ -471,9 +472,9 @@ The Dual is:
 
 ```math
 \begin{align}
-& \max_{y_1, \ldots, y_m} & -\sum_{i=1}^m (b_i + D_i z)^T y_i + b_0 + d_0^T z + \frac{1}{2} z^T P_3 z
+& \max_{y_1, \ldots, y_m} & - \frac{1}{2} w^T P_1 w + \frac{1}{2} z^T P_3 z 
 \\
-& & - \frac{1}{2} w^T P_1 w  \notag
+& & -\sum_{i=1}^m (b_i + D_i z)^T y_i + d_0^T z + b_0 \notag
 \\
 & \;\;\text{s.t.} & a_0 + P_2 z - \sum_{i=1}^m A_i^T y_i + P_1 w & = 0
 \\

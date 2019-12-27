@@ -19,15 +19,11 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
 
     # Add terms from objective:
     # Terms from quadratic part
-    add_scalar_affine_terms_from_quad_obj(scalar_affine_terms,
-        primal_model::MOI.ModelLike,
-        primal_dual_map.primal_var_dual_quad_slack,
-        primal_objective::PrimalObjective{T})
+    add_scalar_affine_terms_from_quad_obj(scalar_affine_terms, primal_model,
+        primal_dual_map.primal_var_dual_quad_slack, primal_objective)
     # terms from mixing variables and parameters
-    add_scalar_affine_terms_from_quad_params(scalar_affine_terms,
-        primal_model::MOI.ModelLike,
-        primal_dual_map.primal_parameter,
-        primal_objective::PrimalObjective{T})
+    add_scalar_affine_terms_from_quad_params(scalar_affine_terms, primal_model,
+        primal_dual_map.primal_parameter, primal_objective)
 
     empty_linear_objective = isempty(get_affine_terms(primal_objective))
     for primal_vi in restricted_variables
