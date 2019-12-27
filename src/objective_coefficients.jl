@@ -15,7 +15,7 @@ function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.Model
     return 
 end
 
-function _scalar_quadratic_function(func::MOI.ScalarQuadraticFunction)
+function _scalar_quadratic_function(func::MOI.ScalarQuadraticFunction{T}) where T
     return MOIU.canonical(func)
 end
 function _scalar_quadratic_function(func::MOI.ScalarAffineFunction{T}) where T
@@ -266,7 +266,7 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
 
     end
 
-    saf_dual_objective = MOI.ScalarQuadraticFunction(
+    saf_dual_objective = MOI.ScalarQuadraticFunction{T}(
         lin_terms, quad_terms, MOI.constant(get_raw_obj(primal_objective)))
     return DualObjective{T}(saf_dual_objective)
 end
