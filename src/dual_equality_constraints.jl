@@ -4,18 +4,19 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
                                        con_types::Vector{Tuple{DataType, DataType}},
                                        variable_parameters::Vector{VI}) where T
 
-    dual_sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
-    num_objective_terms = MOIU.number_of_affine_terms(T, get_raw_obj(primal_objective)) # This is used to update the scalar_term_index
+    sense_change = MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
 
-    scalar_term_index::Int = 1
-
-    all_variable = MOI.get(primal_model, MOI.ListOfVariableIndices())
-    restricted_variables = setdiff(all_variable, variable_parameters)
+    all_variables = MOI.get(primal_model, MOI.ListOfVariableIndices())
+    restricted_variables = setdiff(all_variables, variable_parameters)
 
     # Loop at every constraint to get the scalar affine terms
     scalar_affine_terms = get_scalar_affine_terms(primal_model,
         primal_dual_map.primal_con_dual_var, 
-        all_variable, con_types, T)
+        all_variables, con_types, T)
+
+    # get RHS from objective coeficients
+    scalar_terms = get_scalar_terms(primal_model,
+        all_variables, primal_objective)
 
     # Add terms from objective:
     # Terms from quadratic part
@@ -25,27 +26,11 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
     add_scalar_affine_terms_from_quad_params(scalar_affine_terms, primal_model,
         primal_dual_map.primal_parameter, primal_objective)
 
-    empty_linear_objective = isempty(get_affine_terms(primal_objective))
     for primal_vi in restricted_variables
-        # Add constraint, the sense of a0 depends on the dual_model ObjectiveSense
-        # If max sense scalar term is -a0 and if min sense sacalar term is a0
-        # This block depends on the ordering of the objective
-        if !empty_linear_objective && primal_vi == get_affine_terms(primal_objective)[scalar_term_index].variable_index
-            scalar_term_value = MOI.coefficient(
-                get_affine_terms(primal_objective)[scalar_term_index])
-            # This ternary is important for the last scalar_term_index
-            # If the last term of the objective is not the last primal variable we don't update 
-            # the scalar_term_index
-            scalar_term_index == num_objective_terms ? scalar_term_index : scalar_term_index += 1
-            # Update the coeficient with the problem sense
-            scalar_term = (dual_sense == MOI.MAX_SENSE ? 1 : -1) * scalar_term_value
-        else # In this case this variable is not on the objective function
-            scalar_term = zero(T)
-        end
         # Add equality constraint
         dual_ci = MOIU.normalize_and_add_constraint(dual_model,
             MOI.ScalarAffineFunction(scalar_affine_terms[primal_vi], zero(T)),
-            MOI.EqualTo(scalar_term))
+            MOI.EqualTo(sense_change * scalar_terms[primal_vi]))
         #Set constraint name with the name of the associated priaml variable
         set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci, 
                                  dual_names.dual_constraint_name_prefix)
@@ -55,9 +40,10 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
     return scalar_affine_terms
 end
 
-function add_scalar_affine_terms_from_quad_obj(scalar_affine_terms,
+function add_scalar_affine_terms_from_quad_obj(
+    scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
     primal_model::MOI.ModelLike,
-    primal_var_dual_quad_slack,
+    primal_var_dual_quad_slack::Dict{VI, VI},
     primal_objective::PrimalObjective{T}) where T
     for term in primal_objective.obj.quadratic_terms
         if term.variable_index_1 == term.variable_index_2
@@ -78,9 +64,10 @@ function add_scalar_affine_terms_from_quad_obj(scalar_affine_terms,
     end
 end
 
-function add_scalar_affine_terms_from_quad_params(scalar_affine_terms,
+function add_scalar_affine_terms_from_quad_params(
+    scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
     primal_model::MOI.ModelLike,
-    primal_parameter,
+    primal_parameter::Dict{VI, VI},
     primal_objective::PrimalObjective{T}) where T
     for (key,val) in primal_objective.quad_cross_parameters
         for terms in val
@@ -97,6 +84,20 @@ function set_dual_constraint_name(dual_model::MOI.ModelLike, primal_model::MOI.M
     MOI.set(dual_model, MOI.ConstraintName(), dual_ci, 
             prefix*MOI.get(primal_model, MOI.VariableName(), primal_vi))
     return 
+end
+
+function get_scalar_terms(primal_model::MOI.ModelLike,
+    variables::Vector{VI},
+    primal_objective::PrimalObjective{T}) where T
+
+    scalar_terms = Dict{VI,T}()
+    for vi in variables
+        scalar_terms[vi] = zero(T)
+    end
+    for term in get_affine_terms(primal_objective)
+        scalar_terms[term.variable_index] += MOI.coefficient(term)
+    end
+    return scalar_terms
 end
 
 function get_scalar_affine_terms(primal_model::MOI.ModelLike,
@@ -131,10 +132,9 @@ end
 function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
                                    primal_model::MOI.ModelLike, ci::CI{SAF{T}, S}, 
-                                   ) where {T, 
-                                                         S <: Union{MOI.GreaterThan{T},
-                                                                    MOI.LessThan{T},
-                                                                    MOI.EqualTo{T}}}
+                                   ) where {T, S <: Union{MOI.GreaterThan{T},
+                                                          MOI.LessThan{T},
+                                                          MOI.EqualTo{T}}}
 
     moi_function = get_function(primal_model, ci)
     for term in moi_function.terms
