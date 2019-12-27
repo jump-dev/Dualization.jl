@@ -68,8 +68,10 @@ function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLi
     # Add each vi to the dictionary
     for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(primal_model, dual_obj_affine_terms, vi, ci, i)
-        set_dual_variable_name(dual_model, vi, i, ci_name, 
-                               dual_names.dual_variable_name_prefix)
+        if !is_empty(dual_names) 
+            set_dual_variable_name(dual_model, vi, i, ci_name, 
+                                   dual_names.dual_variable_name_prefix)
+        end
     end
     return vis
 end

@@ -33,8 +33,10 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         # Add equality constraint
         dual_ci = MOIU.normalize_and_add_constraint(dual_model, MOI.ScalarAffineFunction(scalar_affine_terms, zero(T)), MOI.EqualTo(scalar_term))
         #Set constraint name with the name of the associated priaml variable
-        set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci, 
-                                 dual_names.dual_constraint_name_prefix)
+        if !is_empty(dual_names)
+            set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci, 
+                                     dual_names.dual_constraint_name_prefix)
+        end
         # Add primal variable to dual contraint to the link dictionary
         push!(primal_dual_map.primal_var_dual_con, primal_vi => dual_ci)
     end
