@@ -30,7 +30,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         # Add equality constraint
         dual_ci = MOIU.normalize_and_add_constraint(dual_model,
             MOI.ScalarAffineFunction(scalar_affine_terms[primal_vi], zero(T)),
-            MOI.EqualTo(sense_change * scalar_terms[primal_vi]))
+            MOI.EqualTo(sense_change * get(scalar_terms, primal_vi, zero(T))))
         #Set constraint name with the name of the associated priaml variable
         set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci, 
                                  dual_names.dual_constraint_name_prefix)
@@ -91,11 +91,12 @@ function get_scalar_terms(primal_model::MOI.ModelLike,
     primal_objective::PrimalObjective{T}) where T
 
     scalar_terms = Dict{VI,T}()
-    for vi in variables
-        scalar_terms[vi] = zero(T)
-    end
     for term in get_affine_terms(primal_objective)
-        scalar_terms[term.variable_index] += MOI.coefficient(term)
+        if haskey(scalar_terms, term.variable_index)
+            scalar_terms[term.variable_index] += MOI.coefficient(term)
+        else
+            scalar_terms[term.variable_index] = MOI.coefficient(term)
+        end
     end
     return scalar_terms
 end
@@ -126,7 +127,7 @@ function push_to_scalar_affine_terms!(scalar_affine_terms::Vector{MOI.ScalarAffi
     if !iszero(affine_term) # if term is different than 0 add to the scalar affine terms vector
         push!(scalar_affine_terms, MOI.ScalarAffineTerm(affine_term, vi))
     end
-    return 
+    return
 end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
