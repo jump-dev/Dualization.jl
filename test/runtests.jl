@@ -60,6 +60,7 @@ include("Tests/test_dualize_quadratic.jl")
 include("Tests/test_dual_names.jl")
 
 include("Tests/test_partial_dual_linear.jl")
+include("Tests/test_partial_dual_quadratic.jl")
 
 #=
     Tests depending on solvers

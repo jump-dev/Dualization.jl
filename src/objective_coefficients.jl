@@ -200,7 +200,7 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
 
     dual_model = dual_problem.dual_model
     map = dual_problem.primal_dual_map
-    sense = MOI.get(dual_model, MOI.ObjectiveSense()) # Get dual model sense
+    sense_change = MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? -one(T) : one(T)
 
     # standard linear part
     num_objective_terms = length(dual_obj_affine_terms)
@@ -210,7 +210,7 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
         coef = dual_obj_affine_terms[var]
         push!(lin_terms, MOI.ScalarAffineTerm{T}(
             # Add positive terms bi if dual model sense is max
-            (sense == MOI.MAX_SENSE ? -1 : 1) * coef,
+            sense_change * coef,
             # Variable index associated with term bi
             var
             ))
@@ -254,7 +254,7 @@ function get_dual_objective(dual_problem, dual_obj_affine_terms::Dict,
             param = map.primal_parameter[vi]
             for term in scalar_affine_terms[vi]
                 push!(quad_terms, MOI.ScalarQuadraticTerm{T}(
-                    MOI.coefficient(term),
+                    sense_change * MOI.coefficient(term),
                     param,
                     term.variable_index,
                     ))

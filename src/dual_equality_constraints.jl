@@ -70,11 +70,9 @@ function add_scalar_affine_terms_from_quad_params(
     primal_parameter::Dict{VI, VI},
     primal_objective::PrimalObjective{T}) where T
     for (key,val) in primal_objective.quad_cross_parameters
-        for terms in val
-            for term in terms
-                dual_vi = primal_parameter[term.variable_index]
-                push_to_scalar_affine_terms!(scalar_affine_terms[key], -MOI.coefficient(term), dual_vi)
-            end
+        for term in val
+            dual_vi = primal_parameter[term.variable_index]
+            push_to_scalar_affine_terms!(scalar_affine_terms[key], -MOI.coefficient(term), dual_vi)
         end
     end
 end
