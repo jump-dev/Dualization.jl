@@ -110,7 +110,7 @@ function add_primal_parameter_vars(dual_model::MOI.ModelLike,
                     push_to_primal_parameter!(primal_dual_map.primal_parameter, ind, vi)
                     # set name
                     vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
-                    set_dual_variable_name(dual_model, vi, vi_name, dual_names)
+                    set_parameter_variable_name(dual_model, vi, vi_name, dual_names)
                 end
             end
         end
