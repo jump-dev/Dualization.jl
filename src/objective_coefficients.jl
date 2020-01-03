@@ -126,7 +126,7 @@ function split_variables(func::MOI.ScalarQuadraticFunction{T},
     lin_params = MOI.ScalarAffineTerm{T}[]
     lin_vars = MOI.ScalarAffineTerm{T}[]
     for term in func.affine_terms
-        if MOIU._hasvar(term, variable_parameters)
+        if term.variable_index in variable_parameters
             push!(lin_params, term)
         else
             push!(lin_vars, term)
