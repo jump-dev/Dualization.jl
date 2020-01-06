@@ -125,10 +125,14 @@ function add_primal_parameter_vars(dual_model::MOI.ModelLike,
     end
     return
 end
+
+# Save mapping between primal parameter and dual parameter
 function push_to_primal_parameter!(primal_parameter::Dict{VI, VI}, vi::VI, vi_dual::VI)
     push!(primal_parameter, vi => vi_dual)
     return 
 end
+
+# Add name to parameter variable
 function set_parameter_variable_name(dual_model::MOI.ModelLike, vi::VI, vi_name::String, dual_names)
     prefix = dual_names.parameter_name_prefix == "" ? "param_" : dual_names.parameter_name_prefix
     MOI.set(dual_model, MOI.VariableName(), vi, prefix*vi_name)
@@ -158,10 +162,14 @@ function add_quadratic_slack_vars(dual_model::MOI.ModelLike,
     end
     return
 end
+
+# Save mapping between primal variable and dual quadratic slack
 function push_to_quad_slack!(dual_quad_slack::Dict{VI, VI}, vi::VI, vi_dual::VI)
     push!(dual_quad_slack, vi => vi_dual)
     return 
 end
+
+# set name for dual quadratic slack
 function set_quad_slack_name(dual_model::MOI.ModelLike, vi::VI, vi_name::String, dual_names)
     prefix = dual_names.quadratic_slack_name_prefix == "" ? "quadslack_" : dual_names.quadratic_slack_name_prefix
     MOI.set(dual_model, MOI.VariableName(), vi, prefix*vi_name)

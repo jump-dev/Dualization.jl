@@ -96,29 +96,6 @@ function get_primal_objective(primal_model::MOI.ModelLike, variable_parameters::
     return p_obj
 end
 
-# function remove_variables(p_obj::PrimalObjective{T},
-#     variable_parameters::Vector{VI}) where T
-#     PrimalObjective{T}(remove_variables(get_raw_obj(p_obj), variable_parameters))
-# end
-# function remove_variables(saf::MOI.ScalarAffineFunction{T},
-#     variable_parameters::Vector{VI}) where T
-#     to_delete = get_indices_variables(saf, variable_parameters)
-#     new_saf = deepcopy(saf)
-#     deleteat!(new_saf.terms, to_delete)
-#     return new_saf
-# end
-# function get_indices_variables(terms,
-#     variable_parameters::Vector{VI}) where T
-#     indices = Int[]
-#     sizehint!(indices, min(length(variable_parameters), length(terms)))
-#     for (ind, term) in enumerate(terms)
-#         if MOIU._hasvar(term, variable_parameters)
-#             push!(indices, ind)
-#         end
-#     end
-#     return indices
-# end
-
 function split_variables(func::MOI.ScalarQuadraticFunction{T},
     variable_parameters::Vector{VI}) where T
 

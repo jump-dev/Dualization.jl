@@ -33,15 +33,12 @@ mutable struct PrimalDualMap{T}
 end
 
 function is_empty(primal_dual_map::PrimalDualMap{T}) where T
-    if isempty(primal_dual_map.primal_var_dual_con) &&
+    return isempty(primal_dual_map.primal_var_dual_con) &&
        isempty(primal_dual_map.primal_con_dual_var) &&
        isempty(primal_dual_map.primal_con_dual_con) &&
        isempty(primal_dual_map.primal_con_constants) &&
        isempty(primal_dual_map.primal_parameter) &&
        isempty(primal_dual_map.primal_var_dual_quad_slack)
-       return true
-    end
-    return false
 end
 
 function empty!(primal_dual_map::PrimalDualMap{T}) where T
