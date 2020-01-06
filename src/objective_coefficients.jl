@@ -12,7 +12,7 @@ function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.Model
     # Set dual model sense
     dual_sense = (primal_sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
-    return 
+    return
 end
 
 # Primals
@@ -100,7 +100,7 @@ function get_indices_variables(saf::MOI.ScalarAffineFunction{T},
     indices = Int[]
     sizehint!(indices, min(length(variable_parameters), length(saf.terms)))
     for (ind, term) in enumerate(saf.terms)
-        if MOIU._hasvar(term, variable_parameters)
+        if term.variable_index in variable_parameters
             push!(indices, ind)
         end
     end
@@ -119,9 +119,9 @@ Add the objective function to the dual model.
 """
 function set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T})::Nothing where T
     # Set dual model objective function
-    MOI.set(dual_model, MOI.ObjectiveFunction{SAF{T}}(),  
+    MOI.set(dual_model, MOI.ObjectiveFunction{SAF{T}}(),
             get_saf(dual_objective))
-    return 
+    return
 end
 
 """
@@ -146,8 +146,8 @@ function get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Di
         vi_vec[i] = var
     end
     saf_dual_objective = MOI.ScalarAffineFunction(
-                         MOI.ScalarAffineTerm.(term_vec, 
-                                               vi_vec), 
+                         MOI.ScalarAffineTerm.(term_vec,
+                                               vi_vec),
                                                MOI.constant(get_saf(primal_objective)))
     return DualObjective{T}(saf_dual_objective)
 end
