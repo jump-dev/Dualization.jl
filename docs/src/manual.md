@@ -347,9 +347,9 @@ One important use case is Bilevel optimization, see [BilevelJuMP.jl](https://git
 
 ### Parametric problems
 
-It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by ``x`` in the duality section, there are many use cases in which we can represent parameters that will not be considred in the optimization, these are treated as constants and, hence, not "dualized".
+It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by ``x`` in the duality section, there are many use cases in which we can represent parameters that will not be considered in the optimization, these are treated as constants and, hence, not "dualized".
 
-In the following, we will use ``x`` to denote primal optimization variables, ``y`` for dual optimiation variables and ``z`` for parameters.
+In the following, we will use ``x`` to denote primal optimization variables, ``y`` for dual optimization variables and ``z`` for parameters.
 
 ```math
 \begin{align}
