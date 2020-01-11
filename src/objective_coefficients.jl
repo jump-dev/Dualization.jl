@@ -12,7 +12,7 @@ function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.Model
     # Set dual model sense
     dual_sense = (primal_sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
-    return 
+    return
 end
 
 function _scalar_quadratic_function(func::MOI.ScalarQuadraticFunction{T}) where T
