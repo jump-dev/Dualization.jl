@@ -17,7 +17,7 @@
         y_2 + y_3 == 0    :x_1
     =#
         primal_model = lp1_test()
-        dual = Dualization.dualize(primal_model, variable_parameters = VI[VI(2)])
+        dual = Dualization.dualize(primal_model, variable_parameters = VI[VI(2)], ignore_objective = true)
         dual_model = dual.dual_model
         primal_dual_map = dual.primal_dual_map
 
@@ -68,7 +68,7 @@
         y_4 <= 0
     =#  
         primal_model = lp7_test()
-        dual = Dualization.dualize(primal_model, variable_parameters = VI[VI(1)])
+        dual = Dualization.dualize(primal_model, variable_parameters = VI[VI(1)], ignore_objective = true)
         dual_model = dual.dual_model
         primal_dual_map = dual.primal_dual_map
 
@@ -121,7 +121,7 @@
         y_3 <= 0
     =#
         primal_model = lp12_test()
-        dual = Dualization.dualize(primal_model, variable_parameters = VI[VI(1), VI(3)])
+        dual = Dualization.dualize(primal_model, variable_parameters = VI[VI(1), VI(3)], ignore_objective = true)
         dual_model = dual.dual_model
         primal_dual_map = dual.primal_dual_map
 

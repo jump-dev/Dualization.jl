@@ -8,5 +8,8 @@ See more on naming the variables.
 mutable struct DualNames
     dual_variable_name_prefix::String
     dual_constraint_name_prefix::String
+    parameter_name_prefix::String
+    quadratic_slack_name_prefix::String
 end
-DualNames() = DualNames("", "")
+DualNames() = DualNames("", "", "", "")
+DualNames(var,ctr) = DualNames(var, ctr, "", "")

@@ -28,7 +28,6 @@ and the dual is:
 & & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
 \end{align}
 ```
-
 where each ``\mathcal{C}_i`` is a closed convex cone and ``\mathcal{C}_i^*`` is its dual cone.
 
 For conic-form maximization problems, the primal is:
@@ -308,4 +307,204 @@ The resulting dual model is
     &&2con_3 & = 1\\
     && con & \in FakeDualCone(3)\\
 \end{align}
+```
+
+## Advanced
+
+### KKT Conditions
+
+The KKT conditions are a set of inequalities for which the feasible solution is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting to write them programatically.
+
+The KKT conditions of the minimization problem of the first section are the following:
+
+1. Primal Feasibility:
+
+```math
+A_i x + b_i  \in \mathcal{C}_i , \ \ i = 1 \ldots m
+```
+
+2. Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
+```
+
+3. Complementary slackness:
+
+```math
+y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
+```
+
+4. Stationarity:
+
+```math
+a_0 - \sum_{i=1}^m A_i^T y_i  = 0
+```
+
+Note that "Dual Feasibility" and "Stationarity" correspond to the two constraints of the dual problem. Therefore, after writing the primal problem, Dualization.jl can obtain the dual problem automatically and then we simply have to write the "Complementary slackness" to complete the KKT conditions.
+
+One important use case is Bilevel optimization, see [BilevelJuMP.jl](https://github.com/joaquimg/BilevelJuMP.jl). In this case, variables of an upstream model are considered as parameters in a lower level model. One classical solution method for bilevel programs is to write the KKT conditions of the lower (or inner) problem and consider them as (non-linear) constraints of the upper (or outer) problem. Dualization can be used to derive parts of KKT conditions.
+
+### Parametric problems
+
+It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by ``x`` in the duality section, there are many use cases in which we can represent parameters that will not be considered in the optimization, these are treated as constants and, hence, not "dualized".
+
+In the following, we will use ``x`` to denote primal optimization variables, ``y`` for dual optimization variables and ``z`` for parameters.
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & a_0^T x + b_0 + d_0^Tz
+\\
+& \;\;\text{s.t.} & A_i x + b_i + D_i z & \in \mathcal{C}_i & i = 1 \ldots m
+\end{align}
+```
+
+and the dual is:
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m} & -\sum_{i=1}^m (b_i + D_iz)^T y_i + b_0 + d_0^Tz
+\\
+& \;\;\; \text{s.t.} & a_0 - \sum_{i=1}^m A_i^T y_i & = 0
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+and the KKT conditions are:
+
+1. Primal Feasibility:
+
+```math
+A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m
+```
+
+2. Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
+```
+
+3. Complementary slackness:
+
+```math
+y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
+```
+
+4. Stationarity:
+
+```math
+a_0 - \sum_{i=1}^m A_i^T y_i  = 0
+```
+
+### Quadratic problems
+
+Optimization problems with conic constraints and quadratic objective are a straightforward extensions to the conic problem with linear constraints usually defined in MOI. More information [here](http://www.seas.ucla.edu/~vandenbe/publications/coneprog.pdf).
+
+A primal minimization problem can be standardized as:
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & \frac{1}{2} x^T P x + a_0^T x + b_0
+\\
+& \;\;\text{s.t.} & A_i x + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\end{align}
+```
+
+Where `P` is a positive semidefinite matrix.
+
+A compact formulation for the dual problem requires pseudo-inverses, however, we can add an extra slack variable `w` to the dual problem and obtain the following dual problem:
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m} & - \frac{1}{2} w^T P w - \sum_{i=1}^m b_i^T y_i + b_0
+\\
+& \;\;\text{s.t.} & a_0 - \sum_{i=1}^m A_i^T y_i + P w & = 0
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+note that the sign in front of the `P` matrix can be changed because `w` is free and the only other term depending in `w` is quadratic and symmetric.
+The sign choice is interesting to keep the dual problem closer to the KKT conditions that reads as follows:
+
+\
+
+1. Primal Feasibility:
+
+```math
+A_i x + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m
+```
+
+2. Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
+```
+
+3. Complementary slackness:
+
+```math
+y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
+```
+
+4. Stationarity:
+
+```math
+P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
+```
+
+### Parametric quadratic problems
+
+Just like the linear problems, these quadratic programs can be parametric. The Primal minimization form is:
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} &  + \frac{1}{2} x^T P_1 x + x^T P_2 z + \frac{1}{2} z^T P_3 z
+\\
+& &  + a_0^T x + b_0 + d_0^T z \notag
+\\
+& \;\;\text{s.t.} & A_i x + b_i + D_i z & \in \mathcal{C}_i & i = 1 \ldots m
+\end{align}
+```
+
+The Dual is:
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m} & - \frac{1}{2} w^T P_1 w + \frac{1}{2} z^T P_3 z 
+\\
+& & -\sum_{i=1}^m (b_i + D_i z)^T y_i + d_0^T z + b_0 \notag
+\\
+& \;\;\text{s.t.} & a_0 + P_2 z - \sum_{i=1}^m A_i^T y_i + P_1 w & = 0
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+and the KKT conditions are:
+
+
+1. Primal Feasibility:
+
+```math
+A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m
+```
+
+2. Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
+```
+
+3. Complementary slackness:
+
+```math
+y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
+```
+
+4. Stationarity:
+
+```math
+P_1 x + P_2 z + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 ```

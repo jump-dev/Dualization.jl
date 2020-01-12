@@ -9,6 +9,7 @@ const SVF = MOI.SingleVariable
 const VVF = MOI.VectorOfVariables
 const SAF{T} = MOI.ScalarAffineFunction{T}
 const VAF{T} = MOI.VectorAffineFunction{T}
+const SQF{T} = MOI.ScalarQuadraticFunction{T}
 
 const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
@@ -55,9 +56,11 @@ include("Tests/test_dualize_rsoc.jl")
 include("Tests/test_dualize_sdp.jl")
 include("Tests/test_dualize_exponential.jl")
 include("Tests/test_dualize_power.jl")
+include("Tests/test_dualize_quadratic.jl")
 include("Tests/test_dual_names.jl")
 
 include("Tests/test_partial_dual_linear.jl")
+include("Tests/test_partial_dual_quadratic.jl")
 
 #=
     Tests depending on solvers
@@ -90,8 +93,4 @@ include("Solvers/scs_test.jl")
 
 include("Tests/test_JuMP_dualize.jl")
 include("Tests/test_MOI_wrapper.jl")
-
-
-
-
 
