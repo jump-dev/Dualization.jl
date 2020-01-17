@@ -20,7 +20,7 @@
 
 Repository with implementations of the automatic dualization feature for MathOptInterface.jl conic optimization problems
 
-Dualization.jl has two main features. 
+Dualization.jl has two main features.
  * The function `dualize` that can dualize either a `MathOptInterface.jl` or `JuMP.jl` model.
 
 ```julia
@@ -30,7 +30,7 @@ dual_model = dualize(model)
  * The `DualOptimizer` that will pass the dual representation of the model to the solver of your choice.
 
 ```julia
-model = Model(with_optimizer(DualOptimizer, SOLVER.Optimizer(options...)))
+model = Model(with_optimizer(() -> DualOptimizer(SOLVER.Optimizer(options...)))
 ```
 
 ## Common use cases
@@ -50,7 +50,7 @@ Solving an optimization problem via its dual representation can be useful becaus
 | SDPNAL | SCS |
 | CSDP | ECOS |
 | SDPA | SeDuMi |
-| Mosek |
+| Mosek | MOI.FileFormats.SDPA |
 
 For more informations please read the [documentation][docs-stable-url]
 
