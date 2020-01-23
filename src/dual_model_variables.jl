@@ -68,8 +68,10 @@ function _add_dual_variable(dual_model::MOI.ModelLike, primal_model::MOI.ModelLi
     # Add each vi to the dictionary
     for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(primal_model, dual_obj_affine_terms, vi, ci, i)
-        set_dual_variable_name(dual_model, vi, i, ci_name, 
-                               dual_names.dual_variable_name_prefix)
+        if !is_empty(dual_names)
+            set_dual_variable_name(dual_model, vi, i, ci_name, 
+                                   dual_names.dual_variable_name_prefix)
+        end
     end
     return vis
 end
@@ -109,8 +111,10 @@ function add_primal_parameter_vars(dual_model::MOI.ModelLike,
                     vi = MOI.add_variable(dual_model)
                     push_to_primal_parameter!(primal_dual_map.primal_parameter, ind, vi)
                     # set name
-                    vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
-                    set_parameter_variable_name(dual_model, vi, vi_name, dual_names)
+                    if !is_empty(dual_names)
+                        vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
+                        set_parameter_variable_name(dual_model, vi, vi_name, dual_names)
+                    end
                 end
             end
         end
@@ -119,8 +123,10 @@ function add_primal_parameter_vars(dual_model::MOI.ModelLike,
         for i in eachindex(vis)
             push_to_primal_parameter!(primal_dual_map.primal_parameter,
                 variable_parameters[i], vis[i])
-            vi_name = MOI.get(primal_model, MOI.VariableName(), variable_parameters[i])
-            set_parameter_variable_name(dual_model, vis[i], vi_name, dual_names)
+            if !is_empty(dual_names)
+                vi_name = MOI.get(primal_model, MOI.VariableName(), variable_parameters[i])
+                set_parameter_variable_name(dual_model, vis[i], vi_name, dual_names)
+            end
         end
     end
     return
@@ -155,8 +161,10 @@ function add_quadratic_slack_vars(dual_model::MOI.ModelLike,
                 vi = MOI.add_variable(dual_model)
                 push_to_quad_slack!(primal_dual_map.primal_var_dual_quad_slack, ind, vi)
                 # set name
-                vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
-                set_quad_slack_name(dual_model, vi, vi_name, dual_names)
+                if !is_empty(dual_names)
+                    vi_name = MOI.get(primal_model, MOI.VariableName(), ind)
+                    set_quad_slack_name(dual_model, vi, vi_name, dual_names)
+                end
             end
         end
     end

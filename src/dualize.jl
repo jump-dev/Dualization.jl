@@ -1,7 +1,7 @@
 export dualize
 
 # MOI dualize
-function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames(),
+function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = EMPTY_DUAL_NAMES,
                  variable_parameters::Vector{VI} = VI[], ignore_objective::Bool = false)
     # Creates an empty dual problem
     dual_problem = DualProblem{Float64}()
@@ -9,7 +9,7 @@ function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = DualNames(
 end
 
 function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}; 
-                 dual_names::DualNames = DualNames(),
+                 dual_names::DualNames = EMPTY_DUAL_NAMES,
                  variable_parameters::Vector{VI} = VI[],
                  ignore_objective::Bool = false) where T
     # Dualize with the optimizer already attached
@@ -66,7 +66,7 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
 end
 
 # JuMP dualize
-function dualize(model::JuMP.Model; dual_names::DualNames = DualNames("", ""))
+function dualize(model::JuMP.Model; dual_names::DualNames = EMPTY_DUAL_NAMES)
     # Create an empty JuMP model
     JuMP_model = JuMP.Model()
 
@@ -79,7 +79,7 @@ function dualize(model::JuMP.Model; dual_names::DualNames = DualNames("", ""))
     return JuMP_model
 end
 
-function dualize(model::JuMP.Model, factory::OptimizerFactory; dual_names::DualNames = DualNames("", ""))
+function dualize(model::JuMP.Model, factory::OptimizerFactory; dual_names::DualNames = EMPTY_DUAL_NAMES)
     # Dualize the JuMP model
     dual_JuMP_model = dualize(model; dual_names = dual_names)
     # Set the optimizer
