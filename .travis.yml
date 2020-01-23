@@ -1,27 +1,31 @@
 language: julia
-os:
-    - linux
 julia:
-    - 1.0
-    - 1.1
-    - 1.2
-    - 1.3
-matrix:
-    allow_failures:
-        - julia: nightly
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+os:
+  - linux
+after_success:
+  - julia --project -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
 notifications:
     email: false
-sudo: false
 addons:
     apt_packages:
         - gfortran
         - liblapack-dev
         - libgmp-dev
         - libglpk-dev
-after_success:
-    - julia -e 'import Pkg; Pkg.add("Documenter")'
-    - julia -e 'import Pkg; cd(Pkg.dir("Dualization")); include(joinpath("docs", "make.jl"))'
-    # push coverage results to Codecov
-    - julia --inline=no -e 'import Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-env:
-- CODECOV_TOKEN="4199e271-3fd5-4b25-ba53-e249bbe857f4"
+branches:
+  only:
+    - master
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.0
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
+                                    Pkg.develop(PackageSpec(path=pwd()))'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip
