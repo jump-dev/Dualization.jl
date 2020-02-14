@@ -34,8 +34,9 @@
                 "dualexp", # Tested in exp and power cone test
                 "pow", # Tested in exp and power cone test
                 "dualpow", # Tested in exp and power cone test
-                "rootdet", # Not yet implemented
-                "logdet" # Not yet implemented
+                "rootdet", # Dual not defined in MOI
+                "logdet", # Dual not defined in MOI
+                "relentr" # Dual not defined in MOI
                 ])
         end
 
@@ -62,8 +63,9 @@
                 "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
                 "geomean", # Tested in coninc linear, soc, rsoc and sdp test
                 "sdp", # Tested in coninc linear, soc, rsoc and sdp test
-                "rootdet", # Not yet implemented
-                "logdet", # Not yet implemented
+                "rootdet", # Dual not defined in MOI
+                "logdet", # Dual not defined in MOI
+                "relentr", # Dual not defined in MOI
                 ])
         end
     end
