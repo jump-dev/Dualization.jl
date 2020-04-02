@@ -1,6 +1,6 @@
 # For testing bug found on issue # 52
-function solve_vaf_sdp(factory::JuMP.OptimizerFactory)
-    model = Model(factory)
+function solve_vaf_sdp(optimizer_constructor)
+    model = Model(optimizer_constructor)
     @variable(model, x)
     @constraint(model, [4x x; x 4x] - ones(2, 2) in PSDCone())
     @objective(model, Min, x)
