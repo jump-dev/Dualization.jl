@@ -1,4 +1,4 @@
-# Examples 
+# Examples
 
 Here we discuss some useful examples of usage.
 
@@ -48,12 +48,12 @@ And you should get the model
 \end{align}
 ```
 
-Note that if you declare the model with an optimizer attached you will lose the optimizer during the dualization. 
-To dualize the model and attach the optimizer to the dual model you should do `dualize(dual_model; with_optimizer(...))`
+Note that if you declare the model with an optimizer attached you will lose the optimizer during the dualization.
+To dualize the model and attach the optimizer to the dual model you should do `dualize(dual_model, SolverName.Optimizer)`
 
 ```julia
 using JuMP, Dualization, ECOS
-model = Model(with_optimizer(ECOS.Optimizer))
+model = Model(ECOS.Optimizer)
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
@@ -61,7 +61,7 @@ model = Model(with_optimizer(ECOS.Optimizer))
 @constraint(model, eqcon, x == 1)
 @objective(model, Min, y + z)
 
-dual_model = dualize(model, with_optimizer(ECOS.Optimizer))
+dual_model = dualize(model, ECOS.Optimizer)
 ```
 
 ## Naming the dual variables and dual constraints
@@ -69,7 +69,7 @@ dual_model = dualize(model, with_optimizer(ECOS.Optimizer))
 You can provide prefixes for the name of the variables and the name of the constraints using the a `DualNames` variable.
 Everytime you use the dualize function you can provide a `DualNames` as keyword argument. Consider the following example.
 
-You want to dualize this JuMP problem and add a prefix to the name of each constraint to be more clear on what the variables 
+You want to dualize this JuMP problem and add a prefix to the name of each constraint to be more clear on what the variables
 represent. For instance you want to put `"dual"` before the name of the constraint.
 
 ```julia
@@ -87,7 +87,7 @@ model = Model()
 dual_model = dualize(model; dual_names = DualNames("dual", ""))
 ```
 
-The dual_model will be registered as 
+The dual_model will be registered as
 
 ```math
 \begin{align}
@@ -111,7 +111,7 @@ To solve the problem via its dual formulation can be done using the `DualOptimiz
 using JuMP, Dualization, ECOS
 
 # Solving a problem the standard way
-model = Model(with_optimizer(ECOS.Optimizer))
+model = Model(ECOS.Optimizer)
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
@@ -120,7 +120,7 @@ model = Model(with_optimizer(ECOS.Optimizer))
 @objective(model, Min, y + z)
 
 # Solving a problem by providing its dual representation
-model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer()))
+model = Model(dual_optimizer(ECOS.Optimizer))
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
@@ -128,8 +128,8 @@ model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer()))
 @constraint(model, eqcon, x == 1)
 @objective(model, Min, y + z)
 
-# You can pass arguments to the solver by putting them as arguments inside the solver `Optimizer`
-model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer(maxit = 5)))
+# You can pass arguments to the solver by attaching them to the solver constructor.
+model = Model(dual_optimizer(optimizer_with_attributes(ECOS.Optimizer, "maxit" => 5)))
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)

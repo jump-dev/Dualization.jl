@@ -30,7 +30,7 @@ dual_model = dualize(model)
  * The `DualOptimizer` that will pass the dual representation of the model to the solver of your choice.
 
 ```julia
-model = Model(with_optimizer(() -> DualOptimizer(SOLVER.Optimizer(options...)))
+model = Model(dual_optimizer(SOLVER.Optimizer))
 ```
 
 ## Common use cases

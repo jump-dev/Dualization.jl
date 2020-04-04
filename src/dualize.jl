@@ -79,11 +79,11 @@ function dualize(model::JuMP.Model; dual_names::DualNames = EMPTY_DUAL_NAMES)
     return JuMP_model
 end
 
-function dualize(model::JuMP.Model, factory::OptimizerFactory; dual_names::DualNames = EMPTY_DUAL_NAMES)
+function dualize(model::JuMP.Model, optimizer_constructor; dual_names::DualNames = EMPTY_DUAL_NAMES)
     # Dualize the JuMP model
     dual_JuMP_model = dualize(model; dual_names = dual_names)
     # Set the optimizer
-    JuMP.set_optimizer(dual_JuMP_model, factory)
+    JuMP.set_optimizer(dual_JuMP_model, optimizer_constructor)
     return dual_JuMP_model
 end
 
@@ -106,11 +106,10 @@ from the original primal model into the respective objects of the dual model.
 
 The function will return a JuMP model with the dual representation of the problem.
 
-* A `JuMP.Model` and an optimizer factory
+* A `JuMP.Model` and an optimizer constructor
 
 The function will return a JuMP model with the dual representation of the problem with 
-the `OptimizerFactory` attached. The `OptimizerFactory` is the solver and its key arguments
-that users provide in JuMP models, i.e. `with_optimizer(GLPK.Optimizer)`.
+the optimizer constructor attached.
 
 On each of these methods, the user can provide the following keyword arguments:
 

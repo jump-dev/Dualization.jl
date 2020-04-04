@@ -1,8 +1,8 @@
 using SCS
-const SCS_PRIMAL_OPT = SCS.Optimizer(verbose = false)
-const SCS_DUAL_OPT = DualOptimizer(SCS.Optimizer(verbose = false))
-const SCS_PRIMAL_FACTORY = with_optimizer(SCS.Optimizer, verbose = false)
-const SCS_DUAL_FACTORY = with_optimizer(DualOptimizer, SCS.Optimizer(verbose = false))
+const SCS_PRIMAL_FACTORY = MOI.OptimizerWithAttributes(SCS.Optimizer, MOI.Silent() => true)
+const SCS_DUAL_FACTORY = dual_optimizer(SCS_PRIMAL_FACTORY)
+const SCS_PRIMAL_OPT = MOI.instantiate(SCS_PRIMAL_FACTORY)
+const SCS_DUAL_OPT = MOI.instantiate(SCS_DUAL_FACTORY)
 
 push!(primal_power_cone_factory, SCS_PRIMAL_FACTORY)
 push!(dual_power_cone_factory, SCS_DUAL_FACTORY)

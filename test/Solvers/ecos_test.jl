@@ -1,8 +1,8 @@
 using ECOS
-const ECOS_PRIMAL_OPT = ECOS.Optimizer(verbose = 0)
-const ECOS_DUAL_OPT = DualOptimizer(ECOS.Optimizer(verbose = 0))
-const ECOS_PRIMAL_FACTORY = with_optimizer(ECOS.Optimizer, verbose = 0)
-const ECOS_DUAL_FACTORY = with_optimizer(DualOptimizer, ECOS.Optimizer(verbose = 0))
+const ECOS_PRIMAL_FACTORY = MOI.OptimizerWithAttributes(ECOS.Optimizer, MOI.Silent() => true)
+const ECOS_DUAL_FACTORY = dual_optimizer(ECOS_PRIMAL_FACTORY)
+const ECOS_PRIMAL_OPT = MOI.instantiate(ECOS_PRIMAL_FACTORY)
+const ECOS_DUAL_OPT = MOI.instantiate(ECOS_DUAL_FACTORY)
 
 # push!(dual_linear_optimizer, DualOptimizer(ECOS.Optimizer(verbose = 0)))
 

@@ -1,8 +1,8 @@
 using CSDP
-const CSDP_PRIMAL_OPT = CSDP.Optimizer(printlevel = 0)
-const CSDP_DUAL_OPT = DualOptimizer(CSDP.Optimizer(printlevel = 0))
-const CSDP_PRIMAL_FACTORY = with_optimizer(CSDP.Optimizer, printlevel = 0)
-const CSDP_DUAL_FACTORY = with_optimizer(DualOptimizer, CSDP.Optimizer(printlevel = 0))
+const CSDP_PRIMAL_FACTORY = MOI.OptimizerWithAttributes(CSDP.Optimizer, MOI.Silent() => true)
+const CSDP_DUAL_FACTORY = dual_optimizer(CSDP_PRIMAL_FACTORY)
+const CSDP_PRIMAL_OPT = MOI.instantiate(CSDP_PRIMAL_FACTORY)
+const CSDP_DUAL_OPT = MOI.instantiate(CSDP_DUAL_FACTORY)
 
 push!(primal_conic_factory, CSDP_PRIMAL_FACTORY)
 push!(dual_conic_factory, CSDP_DUAL_FACTORY)

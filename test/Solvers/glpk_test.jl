@@ -1,8 +1,8 @@
 using GLPK
-const GLPK_PRIMAL_OPT = GLPK.Optimizer()
-const GLPK_DUAL_OPT = DualOptimizer(GLPK.Optimizer())
-const GLPK_PRIMAL_FACTORY = with_optimizer(GLPK.Optimizer)
-const GLPK_DUAL_FACTORY = with_optimizer(DualOptimizer, GLPK.Optimizer())
+const GLPK_PRIMAL_FACTORY = MOI.OptimizerWithAttributes(GLPK.Optimizer, MOI.Silent() => true)
+const GLPK_DUAL_FACTORY = dual_optimizer(GLPK_PRIMAL_FACTORY)
+const GLPK_PRIMAL_OPT = MOI.instantiate(GLPK_PRIMAL_FACTORY)
+const GLPK_DUAL_OPT = MOI.instantiate(GLPK_DUAL_FACTORY)
 
 push!(primal_linear_factory, GLPK_PRIMAL_FACTORY)
 push!(dual_linear_factory, GLPK_DUAL_FACTORY)
