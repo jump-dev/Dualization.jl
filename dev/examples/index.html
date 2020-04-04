@@ -21,8 +21,8 @@ model = Model()
     &amp;&amp; soccon_2 &amp; = 1\\
     &amp;&amp; soccon_3 &amp; = 1\\
     &amp;&amp;soccon_1 &amp; \geq ||(soccon_2,soccon_3)||_2\\
-\end{align}\]</div><p>Note that if you declare the model with an optimizer attached you will lose the optimizer during the dualization.  To dualize the model and attach the optimizer to the dual model you should do <code>dualize(dual_model; with_optimizer(...))</code></p><pre><code class="language-julia">using JuMP, Dualization, ECOS
-model = Model(with_optimizer(ECOS.Optimizer))
+\end{align}\]</div><p>Note that if you declare the model with an optimizer attached you will lose the optimizer during the dualization. To dualize the model and attach the optimizer to the dual model you should do <code>dualize(dual_model, SolverName.Optimizer)</code></p><pre><code class="language-julia">using JuMP, Dualization, ECOS
+model = Model(ECOS.Optimizer)
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
@@ -30,7 +30,7 @@ model = Model(with_optimizer(ECOS.Optimizer))
 @constraint(model, eqcon, x == 1)
 @objective(model, Min, y + z)
 
-dual_model = dualize(model, with_optimizer(ECOS.Optimizer))</code></pre><h2 id="Naming-the-dual-variables-and-dual-constraints-1"><a class="docs-heading-anchor" href="#Naming-the-dual-variables-and-dual-constraints-1">Naming the dual variables and dual constraints</a><a class="docs-heading-anchor-permalink" href="#Naming-the-dual-variables-and-dual-constraints-1" title="Permalink"></a></h2><p>You can provide prefixes for the name of the variables and the name of the constraints using the a <code>DualNames</code> variable. Everytime you use the dualize function you can provide a <code>DualNames</code> as keyword argument. Consider the following example.</p><p>You want to dualize this JuMP problem and add a prefix to the name of each constraint to be more clear on what the variables  represent. For instance you want to put <code>&quot;dual&quot;</code> before the name of the constraint.</p><pre><code class="language-julia">using JuMP, Dualization
+dual_model = dualize(model, ECOS.Optimizer)</code></pre><h2 id="Naming-the-dual-variables-and-dual-constraints-1"><a class="docs-heading-anchor" href="#Naming-the-dual-variables-and-dual-constraints-1">Naming the dual variables and dual constraints</a><a class="docs-heading-anchor-permalink" href="#Naming-the-dual-variables-and-dual-constraints-1" title="Permalink"></a></h2><p>You can provide prefixes for the name of the variables and the name of the constraints using the a <code>DualNames</code> variable. Everytime you use the dualize function you can provide a <code>DualNames</code> as keyword argument. Consider the following example.</p><p>You want to dualize this JuMP problem and add a prefix to the name of each constraint to be more clear on what the variables represent. For instance you want to put <code>&quot;dual&quot;</code> before the name of the constraint.</p><pre><code class="language-julia">using JuMP, Dualization
 model = Model()
 @variable(model, x)
 @variable(model, y)
@@ -41,7 +41,7 @@ model = Model()
 
 # The first field of DualNames is the prefix of the dual variables
 # and the second field is the prefix of the dual constraint
-dual_model = dualize(model; dual_names = DualNames(&quot;dual&quot;, &quot;&quot;))</code></pre><p>The dual_model will be registered as </p><div>\[\begin{align}
+dual_model = dualize(model; dual_names = DualNames(&quot;dual&quot;, &quot;&quot;))</code></pre><p>The dual_model will be registered as</p><div>\[\begin{align}
     &amp; \max_{dualeqcon, dualsoccon} &amp; dualeqcon &amp;
     \\
     &amp; \;\;\text{s.t.}
@@ -52,7 +52,7 @@ dual_model = dualize(model; dual_names = DualNames(&quot;dual&quot;, &quot;&quot
 \end{align}\]</div><h2 id="Solving-a-problem-using-its-dual-formulation-1"><a class="docs-heading-anchor" href="#Solving-a-problem-using-its-dual-formulation-1">Solving a problem using its dual formulation</a><a class="docs-heading-anchor-permalink" href="#Solving-a-problem-using-its-dual-formulation-1" title="Permalink"></a></h2><p>Depending on the solver and on the type of formulation, solving the dual problem could be faster than solving the primal. To solve the problem via its dual formulation can be done using the <code>DualOptimizer</code>.</p><pre><code class="language-julia">using JuMP, Dualization, ECOS
 
 # Solving a problem the standard way
-model = Model(with_optimizer(ECOS.Optimizer))
+model = Model(ECOS.Optimizer)
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
@@ -61,7 +61,7 @@ model = Model(with_optimizer(ECOS.Optimizer))
 @objective(model, Min, y + z)
 
 # Solving a problem by providing its dual representation
-model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer()))
+model = Model(dual_optimizer(ECOS.Optimizer))
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
@@ -69,11 +69,11 @@ model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer()))
 @constraint(model, eqcon, x == 1)
 @objective(model, Min, y + z)
 
-# You can pass arguments to the solver by putting them as arguments inside the solver `Optimizer`
-model = Model(with_optimizer(DualOptimizer, ECOS.Optimizer(maxit = 5)))
+# You can pass arguments to the solver by attaching them to the solver constructor.
+model = Model(dual_optimizer(optimizer_with_attributes(ECOS.Optimizer, &quot;maxit&quot; =&gt; 5)))
 @variable(model, x)
 @variable(model, y)
 @variable(model, z)
 @constraint(model, soccon, [x; y; z] in SecondOrderCone())
 @constraint(model, eqcon, x == 1)
-@objective(model, Min, y + z)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../manual/">« Manual</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 15 February 2020 21:10">Saturday 15 February 2020</span>. Using Julia version 1.0.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+@objective(model, Min, y + z)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../manual/">« Manual</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 4 April 2020 20:34">Saturday 4 April 2020</span>. Using Julia version 1.0.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
