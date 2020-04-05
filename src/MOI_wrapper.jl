@@ -54,7 +54,7 @@ function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
 end
 
 function DualOptimizer{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
-    dual_problem = DualProblem{T}(MOIB.full_bridge_optimizer(MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer), T))
+    dual_problem = DualProblem{T}(MOIB.full_bridge_optimizer(MOIU.CachingOptimizer(MOIU.UniversalFallback(DualizableModel{T}()), dual_optimizer), T))
     # discover the type of MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
     OptimizerType = typeof(dual_problem.dual_model)
     return DualOptimizer{T, OptimizerType}(dual_problem)
