@@ -71,6 +71,13 @@
     end
 
     @testset "attributes" begin
+        for optimizer in [dual_conic_optimizer; dual_linear_optimizer]
+            before = MOI.get(optimizer, MOI.Silent())
+            MOI.set(optimizer, MOI.Silent(), !before)
+            @test MOI.get(optimizer, MOI.Silent()) == !before
+            MOI.set(optimizer, MOI.Silent(), before)
+            @test MOI.get(optimizer, MOI.Silent()) == before
+        end
         for i in eachindex(dual_conic_optimizer)
             @test MOI.get(dual_conic_optimizer[i], MOI.SolverName()) ==
                 "Dual model with $(MOI.get(primal_conic_optimizer[i], MOI.SolverName())) attached"

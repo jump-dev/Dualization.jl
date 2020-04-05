@@ -216,6 +216,9 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.DualStatus)
     return MOI.get(optimizer.dual_problem.dual_model, MOI.PrimalStatus())
 end
 
+function MOI.set(optimizer::DualOptimizer, attr::MOI.AbstractOptimizerAttribute, value)
+    return MOI.set(optimizer.dual_problem.dual_model, attr, value)
+end
 function MOI.get(optimizer::DualOptimizer, attr::Union{MOI.AbstractModelAttribute, MOI.AbstractOptimizerAttribute})
     return MOI.get(optimizer.dual_problem.dual_model, attr)
 end
