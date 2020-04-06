@@ -68,7 +68,7 @@ function MOI.supports_constraint(
     F::Type{<:Union{MOI.SingleVariable, MOI.ScalarAffineFunction{T}}},
     S::Type{<:MOI.AbstractScalarSet}) where T
     D = try
-        D = dual_set_type(S)
+        dual_set_type(S)
     catch
         return false # The fallback of `dual_set_type` throws an error.
     end
@@ -84,7 +84,7 @@ function MOI.supports_constraint(
     F::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction{T}}},
     S::Type{<:MOI.AbstractVectorSet}) where T
     D = try
-        D = dual_set_type(S)
+        dual_set_type(S)
     catch
         return false # The fallback of `dual_set_type` throws an error.
     end
@@ -101,7 +101,7 @@ end
 #function MOI.supports_add_constrained_variables(
 #    optimizer::DualOptimizer{T}, S::Type{<:MOI.AbstractVectorSet}) where T
 #    D = try
-#        D = dual_set_type(S)
+#        dual_set_type(S)
 #    catch
 #        return false # The fallback of `dual_set_type` throws an error.
 #    end
