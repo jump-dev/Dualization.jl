@@ -11,7 +11,7 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
 
     # Loop at every constraint to get the scalar affine terms
     scalar_affine_terms = get_scalar_affine_terms(primal_model,
-        primal_dual_map.primal_con_dual_var, 
+        primal_dual_map.primal_con_dual_var,
         all_variables, con_types, T)
 
     # get RHS from objective coeficients
@@ -32,9 +32,9 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
             MOI.ScalarAffineFunction(scalar_affine_terms[primal_vi], zero(T)),
             MOI.EqualTo(sense_change * get(scalar_terms, primal_vi, zero(T))))
         #Set constraint name with the name of the associated priaml variable
-        if !is_empty(dual_names) 
-            set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci, 
-                                     dual_names.dual_constraint_name_prefix)    
+        if !is_empty(dual_names)
+            set_dual_constraint_name(dual_model, primal_model, primal_vi, dual_ci,
+                                     dual_names.dual_constraint_name_prefix)
         end
         # Add primal variable to dual contraint to the link dictionary
         push!(primal_dual_map.primal_var_dual_con, primal_vi => dual_ci)
@@ -79,11 +79,11 @@ function add_scalar_affine_terms_from_quad_params(
     end
 end
 
-function set_dual_constraint_name(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike, 
+function set_dual_constraint_name(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                                   primal_vi::VI, dual_ci::CI, prefix::String)
-    MOI.set(dual_model, MOI.ConstraintName(), dual_ci, 
+    MOI.set(dual_model, MOI.ConstraintName(), dual_ci,
             prefix*MOI.get(primal_model, MOI.VariableName(), primal_vi))
-    return 
+    return
 end
 
 function get_scalar_terms(primal_model::MOI.ModelLike,
@@ -106,7 +106,7 @@ function get_scalar_affine_terms(primal_model::MOI.ModelLike,
                                  variables::Vector{VI},
                                  con_types::Vector{Tuple{DataType, DataType}},
                                  T::Type)
-                                 
+
     scalar_affine_terms = Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}()
     for vi in variables
         scalar_affine_terms[vi] = MOI.ScalarAffineTerm{T}[]
@@ -114,8 +114,8 @@ function get_scalar_affine_terms(primal_model::MOI.ModelLike,
     for (F, S) in con_types
         primal_cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
         for ci in primal_cis
-            fill_scalar_affine_terms!(scalar_affine_terms, primal_con_dual_var, 
-                                      primal_model, ci) 
+            fill_scalar_affine_terms!(scalar_affine_terms, primal_con_dual_var,
+                                      primal_model, ci)
         end
     end
     return scalar_affine_terms
@@ -132,7 +132,7 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{SAF{T}, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{SAF{T}, S},
                                    ) where {T, S <: Union{MOI.GreaterThan{T},
                                                           MOI.LessThan{T},
                                                           MOI.EqualTo{T}}}
@@ -143,12 +143,12 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.Scala
         push_to_scalar_affine_terms!(scalar_affine_terms[term.variable_index],
                                      MOI.coefficient(term), dual_vi)
     end
-    return 
+    return
 end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{SVF, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{SVF, S},
                                    ) where {T, S <: Union{MOI.GreaterThan{T},
                                                           MOI.LessThan{T},
                                                           MOI.EqualTo{T}}}
@@ -156,12 +156,12 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.Scala
     moi_function = get_function(primal_model, ci)
     dual_vi = primal_con_dual_var[ci][1] # In this case we only have one vi
     push_to_scalar_affine_terms!(scalar_affine_terms[moi_function.variable], one(T), dual_vi)
-    return 
+    return
 end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{VAF{T}, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{VAF{T}, S},
                                    ) where {T, S <: MOI.AbstractVectorSet}
 
     moi_function = get_function(primal_model, ci)
@@ -170,7 +170,7 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.Scala
         dual_vi = primal_con_dual_var[ci][term.output_index]
         # term.output_index is the row of the VAF,
         # it corresponds to the dual variable associated with this constraint
-        push_to_scalar_affine_terms!(scalar_affine_terms[term.scalar_term.variable_index], 
+        push_to_scalar_affine_terms!(scalar_affine_terms[term.scalar_term.variable_index],
             set_dot(term.output_index, set, T)*MOI.coefficient(term), dual_vi)
     end
     return
@@ -178,17 +178,17 @@ end
 
 function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
                                    primal_con_dual_var::Dict{CI, Vector{VI}},
-                                   primal_model::MOI.ModelLike, ci::CI{VVF, S}, 
+                                   primal_model::MOI.ModelLike, ci::CI{VVF, S},
                                    ) where {T, S <: MOI.AbstractVectorSet}
 
     moi_function = get_function(primal_model, ci)
     set = get_set(primal_model, ci)
     for (i, variable) in enumerate(moi_function.variables)
         dual_vi = primal_con_dual_var[ci][i]
-        push_to_scalar_affine_terms!(scalar_affine_terms[variable], 
+        push_to_scalar_affine_terms!(scalar_affine_terms[variable],
                                     set_dot(i, set, T)*one(T), dual_vi)
     end
-    return  
+    return
 end
 
 function set_dot(i::Int, s::MOI.AbstractVectorSet, T::Type)
