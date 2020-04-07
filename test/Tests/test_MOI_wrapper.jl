@@ -12,7 +12,7 @@
                 "linear12", # Asks for infeasibility ray
                 "linear13", # Feasibility problem
                 "linear15"  # Feasibility when written in the canonical form
-                ]) 
+                ])
         end
     end
 
@@ -22,10 +22,11 @@
         conic_cached = MOIU.CachingOptimizer(conic_cache, opt)
         conic_bridged = MOIB.full_bridge_optimizer(conic_cached, Float64)
 
-        @testset "coninc linear, soc, rsoc and sdp test" begin
+        @testset "conic linear, soc, rsoc and sdp test" begin
             MOIT.contconictest(conic_bridged, conic_config,
                 ["lin3", # Feasibility problem
                 "lin4", # Feasibility problem
+                "geomean3f", "geomean3v", # CSDP does not converge after https://github.com/JuliaOpt/Dualization.jl/pull/86
                 "normone2", # Feasibility problem
                 "norminf2", # Feasibility problem
                 "soc3", # Feasibility problem
