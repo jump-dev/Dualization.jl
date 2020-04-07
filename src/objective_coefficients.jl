@@ -15,15 +15,15 @@ function set_dual_model_sense(dual_model::MOI.ModelLike, primal_model::MOI.Model
     return
 end
 
-function _scalar_quadratic_function(func::MOI.ScalarQuadraticFunction{T}) where T
+function _scalar_quadratic_function(func::MOI.ScalarQuadraticFunction{T}, ::Type{T}) where T
     return MOIU.canonical(func)
 end
-function _scalar_quadratic_function(func::MOI.ScalarAffineFunction{T}) where T
+function _scalar_quadratic_function(func::MOI.ScalarAffineFunction{T}, ::Type{T}) where T
     return _scalar_quadratic_function(
-        SQF{T}(func.terms, MOI.ScalarQuadraticTerm{T}[], func.constant))
+        SQF{T}(func.terms, MOI.ScalarQuadraticTerm{T}[], func.constant), T)
 end
-function _scalar_quadratic_function(func::MOI.SingleVariable)
-    return _scalar_quadratic_function(SAF{Float64}(func))
+function _scalar_quadratic_function(func::MOI.SingleVariable, T::Type)
+    return _scalar_quadratic_function(SAF{T}(func), T)
 end
 
 # Primals
@@ -38,7 +38,7 @@ mutable struct PrimalObjective{T}
     obj_parametric::Union{SQF{T},Nothing}
 
     function PrimalObjective{T}(obj) where T
-        canonical_obj = _scalar_quadratic_function(obj)
+        canonical_obj = _scalar_quadratic_function(obj, T)
         # if isempty(canonical_obj.terms)
         #     error("Dualization does not support models with no variables in the objective function.")
         # end
@@ -75,18 +75,18 @@ function get_affine_terms(objective::Objective{T}) where T
     return objective.obj.affine_terms
 end
 
-function get_primal_objective(primal_model::MOI.ModelLike)
-    T = MOI.get(primal_model, MOI.ObjectiveFunctionType())
-    return _get_primal_objective(MOI.get(primal_model, MOI.ObjectiveFunction{T}()))
+function get_primal_objective(primal_model::MOI.ModelLike, T::Type=Float64)
+    F = MOI.get(primal_model, MOI.ObjectiveFunctionType())
+    return _get_primal_objective(MOI.get(primal_model, MOI.ObjectiveFunction{F}()), T)
 end
 
-function _get_primal_objective(obj_fun)# where T
-    return PrimalObjective{Float64}(obj_fun)
+function _get_primal_objective(obj_fun, T::Type)
+    return PrimalObjective{T}(obj_fun)
 end
 
 # allow removing variables from objective function
-function get_primal_objective(primal_model::MOI.ModelLike, variable_parameters::Vector{VI})
-    p_obj = get_primal_objective(primal_model)
+function get_primal_objective(primal_model::MOI.ModelLike, variable_parameters::Vector{VI}, T::Type)
+    p_obj = get_primal_objective(primal_model, T)
     if length(variable_parameters) > 0
         vars_func, quad_cross_params, params_func = split_variables(p_obj.obj, variable_parameters)
         p_obj.obj = vars_func
@@ -158,10 +158,10 @@ function set_dual_objective(dual_model::MOI.ModelLike,
     if MOIU.number_of_quadratic_terms(T, raw_obj) > 0
         MOI.set(dual_model, MOI.ObjectiveFunction{SQF{T}}(), raw_obj)
     else
-        MOI.set(dual_model, MOI.ObjectiveFunction{SAF{T}}(),  
+        MOI.set(dual_model, MOI.ObjectiveFunction{SAF{T}}(),
             SAF{T}(raw_obj.affine_terms, raw_obj.constant))
     end
-    return 
+    return
 end
 
 """

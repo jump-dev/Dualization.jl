@@ -30,7 +30,7 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
     set_dual_model_sense(dual_problem.dual_model, primal_model)
 
     # Get Primal Objective Coefficients
-    primal_objective = get_primal_objective(primal_model, variable_parameters)
+    primal_objective = get_primal_objective(primal_model, variable_parameters, T)
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary from dual variables to primal constraints constants (obj coef of dual var)
