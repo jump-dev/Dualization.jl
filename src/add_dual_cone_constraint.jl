@@ -1,6 +1,6 @@
 function add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                                   ci::CI{F, S}) where {F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
-    vi, con_index = MOI.add_constrained_variable(dual_model, MOI.dual_set(get_set(primal_model, ci)))
+    vi, con_index = MOI.add_constrained_variable(dual_model, _dual_set(get_set(primal_model, ci)))
     return [vi], con_index
 end
 
@@ -12,7 +12,7 @@ end
 
 function add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
                                   ci::CI{F, S}) where {F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
-    return MOI.add_constrained_variables(dual_model, MOI.dual_set(get_set(primal_model, ci)))
+    return MOI.add_constrained_variables(dual_model, _dual_set(get_set(primal_model, ci)))
 end
 
 function add_dual_cone_constraint(dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,

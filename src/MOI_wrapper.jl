@@ -67,10 +67,9 @@ function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
     F::Type{<:Union{MOI.SingleVariable, MOI.ScalarAffineFunction{T}}},
     S::Type{<:MOI.AbstractScalarSet}) where T
-    D = try
-        dual_set_type(S)
-    catch
-        return false # The fallback of `dual_set_type` throws an error.
+    D = _dual_set_type(S)
+    if D === nothing
+        return false
     end
     if D <: MOI.AbstractVectorSet # The dual of `EqualTo` is `Reals`
         return MOI.supports_add_constrained_variables(optimizer.dual_problem.dual_model, D)
@@ -83,10 +82,9 @@ function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
     F::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction{T}}},
     S::Type{<:MOI.AbstractVectorSet}) where T
-    D = try
-        dual_set_type(S)
-    catch
-        return false # The fallback of `dual_set_type` throws an error.
+    D = _dual_set_type(S)
+    if D === nothing
+        return false
     end
     return MOI.supports_add_constrained_variables(optimizer.dual_problem.dual_model, D)
 end
@@ -100,13 +98,12 @@ end
 #end
 #function MOI.supports_add_constrained_variables(
 #    optimizer::DualOptimizer{T}, S::Type{<:MOI.AbstractVectorSet}) where T
-#    D = try
-#        dual_set_type(S)
-#    catch
-#        return false # The fallback of `dual_set_type` throws an error.
+#    D = _dual_set_type(S)
+#    if D === nothing
+#        return false
 #    end
 #    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
-#                                   MOI.VectorAffineFunction{T}, MOI.dual_set_type(S))
+#                                   MOI.VectorAffineFunction{T}, D)
 #end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)

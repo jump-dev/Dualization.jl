@@ -12,52 +12,9 @@ function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
     return 
 end
 
-# General case
-supported_constraint(::DataType, ::DataType) = false
-# List of supported constraints
-# SVF - Linear
-supported_constraint(::Type{SVF}, ::Type{<:MOI.GreaterThan}) = true
-supported_constraint(::Type{SVF}, ::Type{<:MOI.LessThan}) = true
-supported_constraint(::Type{SVF}, ::Type{<:MOI.EqualTo}) = true
-# SAF - Linear
-supported_constraint(::Type{SAF{T}}, ::Type{MOI.GreaterThan{T}}) where T = true
-supported_constraint(::Type{SAF{T}}, ::Type{MOI.LessThan{T}}) where T = true
-supported_constraint(::Type{SAF{T}}, ::Type{MOI.EqualTo{T}}) where T = true
-# VVF - Linear
-supported_constraint(::Type{VVF}, ::Type{MOI.Nonpositives}) = true
-supported_constraint(::Type{VVF}, ::Type{MOI.Nonnegatives}) = true
-supported_constraint(::Type{VVF}, ::Type{MOI.Zeros}) = true
-# VAF - Linear
-supported_constraint(::Type{<:VAF}, ::Type{MOI.Nonpositives}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.Nonnegatives}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.Zeros}) = true
-# SOC
-supported_constraint(::Type{VVF}, ::Type{MOI.SecondOrderCone}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.SecondOrderCone}) = true
-# RotatedSOC
-supported_constraint(::Type{VVF}, ::Type{MOI.RotatedSecondOrderCone}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.RotatedSecondOrderCone}) = true
-# SDP Triangle
-supported_constraint(::Type{VVF}, ::Type{MOI.PositiveSemidefiniteConeTriangle}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.PositiveSemidefiniteConeTriangle}) = true
-# ExponentialCone
-supported_constraint(::Type{VVF}, ::Type{MOI.ExponentialCone}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.ExponentialCone}) = true
-# DualExponentialCone
-supported_constraint(::Type{VVF}, ::Type{MOI.DualExponentialCone}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.DualExponentialCone}) = true
-# PowerCone
-supported_constraint(::Type{VVF}, ::Type{<:MOI.PowerCone}) = true
-supported_constraint(::Type{VAF{T}}, ::Type{MOI.PowerCone{T}}) where T = true
-# DualPowerCone
-supported_constraint(::Type{VVF}, ::Type{<:MOI.DualPowerCone}) = true
-supported_constraint(::Type{VAF{T}}, ::Type{MOI.DualPowerCone{T}}) where T = true
-# NormOneCone
-supported_constraint(::Type{VVF}, ::Type{MOI.NormOneCone}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.NormOneCone}) = true
-# NormInfinityCone
-supported_constraint(::Type{VVF}, ::Type{MOI.NormInfinityCone}) = true
-supported_constraint(::Type{<:VAF}, ::Type{MOI.NormInfinityCone}) = true
+supported_constraint(::Type, ::Type) = false
+supported_constraint(::Type{<:Union{MOI.SingleVariable, MOI.ScalarAffineFunction}}, S::Type{<:MOI.AbstractScalarSet}) = _dual_set_type(S) !== nothing
+supported_constraint(::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction}}, S::Type{<:MOI.AbstractVectorSet}) = _dual_set_type(S) !== nothing
 
 """
     supported_objective(primal_model::MOI.ModelLike)
@@ -73,7 +30,7 @@ function supported_objective(primal_model::MOI.ModelLike)
 end
 
 # General case
-supported_obj(::Any) = false
+supported_obj(::Type) = false
 # List of supported objective functions
 supported_obj(::Type{SVF}) = true
 supported_obj(::Type{<:SAF}) = true
