@@ -5,7 +5,9 @@ makedocs(
     doctest  = false,
     clean = true,
     # See https://github.com/JuliaDocs/Documenter.jl/issues/868
-    format = Documenter.HTML(assets = ["assets/favicon.ico"], mathengine = Documenter.MathJax(), prettyurls = get(ENV, "CI", nothing) == "true"),
+    format = Documenter.HTML(assets = ["assets/favicon.ico"], 
+                    mathengine = Documenter.MathJax(),
+                    prettyurls = get(ENV, "CI", nothing) == "true"),
     sitename = "Dualization.jl",
     authors = "Guilherme Bodin, and contributors",
     pages = [
