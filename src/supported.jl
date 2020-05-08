@@ -6,7 +6,7 @@ Returns `true` if `Function-in-Set` is supported for Dualization and throws an e
 function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
     for (F, S) in con_types
         if !supported_constraint(F, S)
-            error("Constraints of funtion ", F, " in the Set ", S," are not implemented")
+            error("Constraints of function ", F, " in the Set ", S," are not implemented")
         end
     end
     return 
