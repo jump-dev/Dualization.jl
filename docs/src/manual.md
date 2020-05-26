@@ -317,25 +317,25 @@ The KKT conditions are a set of inequalities for which the feasible solution is 
 
 The KKT conditions of the minimization problem of the first section are the following:
 
-1. Primal Feasibility:
+* Primal Feasibility:
 
 ```math
 A_i x + b_i  \in \mathcal{C}_i , \ \ i = 1 \ldots m
 ```
 
-2. Dual Feasibility:
+* Dual Feasibility:
 
 ```math
 y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
 ```
 
-3. Complementary slackness:
+* Complementary slackness:
 
 ```math
 y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
 ```
 
-4. Stationarity:
+* Stationarity:
 
 ```math
 a_0 - \sum_{i=1}^m A_i^T y_i  = 0
@@ -373,25 +373,25 @@ and the dual is:
 
 and the KKT conditions are:
 
-1. Primal Feasibility:
+* Primal Feasibility:
 
 ```math
 A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m
 ```
 
-2. Dual Feasibility:
+* Dual Feasibility:
 
 ```math
 y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
 ```
 
-3. Complementary slackness:
+* Complementary slackness:
 
 ```math
 y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
 ```
 
-4. Stationarity:
+* Stationarity:
 
 ```math
 a_0 - \sum_{i=1}^m A_i^T y_i  = 0
@@ -430,25 +430,25 @@ The sign choice is interesting to keep the dual problem closer to the KKT condit
 
 \
 
-1. Primal Feasibility:
+* Primal Feasibility:
 
 ```math
 A_i x + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m
 ```
 
-2. Dual Feasibility:
+* Dual Feasibility:
 
 ```math
 y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
 ```
 
-3. Complementary slackness:
+* Complementary slackness:
 
 ```math
 y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
 ```
 
-4. Stationarity:
+* Stationarity:
 
 ```math
 P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
@@ -485,25 +485,25 @@ The Dual is:
 and the KKT conditions are:
 
 
-1. Primal Feasibility:
+* Primal Feasibility:
 
 ```math
 A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m
 ```
 
-2. Dual Feasibility:
+* Dual Feasibility:
 
 ```math
 y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m
 ```
 
-3. Complementary slackness:
+* Complementary slackness:
 
 ```math
 y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
 ```
 
-4. Stationarity:
+* Stationarity:
 
 ```math
 P_1 x + P_2 z + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
