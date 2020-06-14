@@ -26,7 +26,7 @@
             MOIT.contconictest(conic_bridged, conic_config,
                 ["lin3", # Feasibility problem
                 "lin4", # Feasibility problem
-                "geomean3f", "geomean3v", # CSDP does not converge after https://github.com/JuliaOpt/Dualization.jl/pull/86
+                "geomean3f", "geomean3v", # CSDP does not converge after https://github.com/jump-dev/Dualization.jl/pull/86
                 "normone2", # Feasibility problem
                 "norminf2", # Feasibility problem
                 "soc3", # Feasibility problem

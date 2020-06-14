@@ -19,5 +19,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/JuliaOpt/Dualization.jl.git",
+    repo = "github.com/jump-dev/Dualization.jl.git",
 )
