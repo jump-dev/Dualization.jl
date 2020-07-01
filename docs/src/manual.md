@@ -137,7 +137,7 @@ a constraint not listed here, it will return an unsupported error.
 |    `VectorAffineFunction`    |    `PowerCone`    |
 |    `VectorAffineFunction`    |    `DualPowerCone`    |
 
-Note that some of MOI constraints can be bridged, see [Bridges](http://www.juliaopt.org/MathOptInterface.jl/stable/apireference/#Bridges-1), to constraints in this list.
+Note that some of MOI constraints can be bridged, see [Bridges](http://jump.dev/MathOptInterface.jl/stable/apireference/#Bridges-1), to constraints in this list.
 
 ## Supported objective functions
 
@@ -200,7 +200,7 @@ To do this, the user needs to define the set and its dual set and provide the fu
 * `supported_constraint`
 * `dual_set` 
 
-If the custom set has some special scalar product (see the [link](https://www.juliaopt.org/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)), the user also needs
+If the custom set has some special scalar product (see the [link](https://jump.dev/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)), the user also needs
 to provide a `set_dot` function.
 
 For example, let us define a fake cone and its dual, the fake dual cone. We will write a JuMP model
