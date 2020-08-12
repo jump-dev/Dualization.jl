@@ -6,16 +6,16 @@
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-stable-url]: http://www.juliaopt.org/Dualization.jl/stable
-[docs-dev-url]: http://www.juliaopt.org/Dualization.jl/dev
+[docs-stable-url]: https://jump.dev/Dualization.jl/stable/
+[docs-dev-url]: https://jump.dev/Dualization.jl/dev/
 
-[build-img]: https://travis-ci.org/JuliaOpt/MathOptInterface.jl.svg?branch=master
-[build-url]: https://travis-ci.org/JuliaOpt/Dualization.jl
-[codecov-img]: http://codecov.io/github/JuliaOpt/Dualization.jl/coverage.svg?branch=master
-[codecov-url]: http://codecov.io/github/JuliaOpt/Dualization.jl?branch=master
+[build-img]: https://travis-ci.org/jump-dev/Dualization.jl.svg?branch=master
+[build-url]: https://travis-ci.org/jump-dev/Dualization.jl
+[codecov-img]: http://codecov.io/github/jump-dev/Dualization.jl/coverage.svg?branch=master
+[codecov-url]: http://codecov.io/github/jump-dev/Dualization.jl?branch=master
 
 [gitter-url]: https://gitter.im/AutomaticDualization/community#
-[gitter-img]: https://badges.gitter.im/JuliaOpt/JuMP-dev.svg
+[gitter-img]: https://badges.gitter.im/jump-dev/JuMP-dev.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
 Repository with implementations of the automatic dualization feature for MathOptInterface.jl conic optimization problems
