@@ -89,6 +89,16 @@ function MOI.supports_constraint(
     return MOI.supports_add_constrained_variables(optimizer.dual_problem.dual_model, D)
 end
 
+function MOI.modify(optimizer::DualOptimizer{T},
+                    obj::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
+                    obj_change::MOI.ScalarCoefficientChange{T}) where T
+    # We must find the constraint corresponding to the variable in the objective
+    # function and chaange its coeeficient on the constraint.
+    ci_to_change = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[obj_change.variable]
+    con_change = MOI.ScalarConstantChange{T}(obj_change.new_coefficient)
+    return MOI.modify(optimizer.dual_problem.dual_model, ci_to_change, con_change)
+end
+
 # TODO add this when constrained variables are implemented
 #function MOI.supports_add_constrained_variables(
 #    optimizer::DualOptimizer{T}, S::Type{MOI.Reals}) where T
