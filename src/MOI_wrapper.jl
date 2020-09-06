@@ -80,7 +80,7 @@ end
 
 function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
-    F::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction{T}}},
+    ::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction{T}}},
     S::Type{<:MOI.AbstractVectorSet}) where T
     D = _dual_set_type(S)
     if D === nothing
@@ -90,13 +90,17 @@ function MOI.supports_constraint(
 end
 
 function MOI.modify(optimizer::DualOptimizer{T},
-                    obj::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
+                    ::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
                     obj_change::MOI.ScalarCoefficientChange{T}) where T
     # We must find the constraint corresponding to the variable in the objective
     # function and chaange its coeeficient on the constraint.
     ci_to_change = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[obj_change.variable]
-    con_change = MOI.ScalarConstantChange{T}(obj_change.new_coefficient)
-    return MOI.modify(optimizer.dual_problem.dual_model, ci_to_change, con_change)
+    sense_change = MOI.get(optimizer.dual_problem.dual_model, 
+                           MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
+    MOI.transform(optimizer.dual_problem.dual_model, 
+                  ci_to_change, 
+                  MOI.EqualTo(sense_change * obj_change.new_coefficient))
+    return
 end
 
 # TODO add this when constrained variables are implemented

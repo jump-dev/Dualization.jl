@@ -15,15 +15,14 @@ function add_dual_equality_constraints(dual_model::MOI.ModelLike, primal_model::
         all_variables, con_types, T)
 
     # get RHS from objective coeficients
-    scalar_terms = get_scalar_terms(primal_model,
-        all_variables, primal_objective)
+    scalar_terms = get_scalar_terms(primal_objective)
 
     # Add terms from objective:
     # Terms from quadratic part
-    add_scalar_affine_terms_from_quad_obj(scalar_affine_terms, primal_model,
+    add_scalar_affine_terms_from_quad_obj(scalar_affine_terms,
         primal_dual_map.primal_var_dual_quad_slack, primal_objective)
     # terms from mixing variables and parameters
-    add_scalar_affine_terms_from_quad_params(scalar_affine_terms, primal_model,
+    add_scalar_affine_terms_from_quad_params(scalar_affine_terms,
         primal_dual_map.primal_parameter, primal_objective)
 
     for primal_vi in restricted_variables
@@ -44,7 +43,6 @@ end
 
 function add_scalar_affine_terms_from_quad_obj(
     scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
-    primal_model::MOI.ModelLike,
     primal_var_dual_quad_slack::Dict{VI, VI},
     primal_objective::PrimalObjective{T}) where T
     for term in primal_objective.obj.quadratic_terms
@@ -68,7 +66,6 @@ end
 
 function add_scalar_affine_terms_from_quad_params(
     scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}},
-    primal_model::MOI.ModelLike,
     primal_parameter::Dict{VI, VI},
     primal_objective::PrimalObjective{T}) where T
     for (key,val) in primal_objective.quad_cross_parameters
@@ -86,9 +83,7 @@ function set_dual_constraint_name(dual_model::MOI.ModelLike, primal_model::MOI.M
     return
 end
 
-function get_scalar_terms(primal_model::MOI.ModelLike,
-    variables::Vector{VI},
-    primal_objective::PrimalObjective{T}) where T
+function get_scalar_terms(primal_objective::PrimalObjective{T}) where T
 
     scalar_terms = Dict{VI,T}()
     for term in get_affine_terms(primal_objective)
@@ -196,6 +191,6 @@ function set_dot(i::Int, s::MOI.AbstractVectorSet, T::Type)
     vec[i] = one(T)
     return MOIU.set_dot(vec, vec, s)
 end
-function set_dot(i::Int, s::MOI.AbstractScalarSet, T::Type)
+function set_dot(::Int, ::MOI.AbstractScalarSet, T::Type)
     return one(T)
 end
