@@ -93,7 +93,7 @@ function MOI.modify(optimizer::DualOptimizer{T},
                     ::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
                     obj_change::MOI.ScalarCoefficientChange{T}) where T
     # We must find the constraint corresponding to the variable in the objective
-    # function and chaange its coeeficient on the constraint.
+    # function and change its coeeficient on the constraint.
     ci_to_change = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[obj_change.variable]
     sense_change = MOI.get(optimizer.dual_problem.dual_model, 
                            MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
