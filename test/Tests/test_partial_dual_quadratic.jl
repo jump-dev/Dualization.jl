@@ -34,16 +34,16 @@
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
         @test MOI.coefficient.(obj.affine_terms) == [1.0; 4.0]
-        @test MOI.coefficient.(obj.quadratic_terms) == [-2.0; -1.0; -2.0; 2.0; -3.0]
+        @test sort(MOI.coefficient.(obj.quadratic_terms)) == sort([-2.0; -1.0; -2.0; 2.0; -3.0])
         
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0; -2.0; -1.0]
+        @test sort(MOI.coefficient.(eq_con1_fun.terms)) == sort([1.0; 1.0; -2.0; -1.0])
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 0.0
         eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
         eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
-        @test MOI.coefficient.(eq_con2_fun.terms) == [2.0; 1.0; -1.0; -2.0; -1.0]
+        @test sort(MOI.coefficient.(eq_con2_fun.terms)) == sort([2.0; 1.0; -1.0; -2.0; -1.0])
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
 
@@ -96,11 +96,11 @@
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 1.0
         @test MOI.coefficient.(obj.affine_terms) == [1.0; 1.0]
-        @test MOI.coefficient.(obj.quadratic_terms) == [-4.0; 2.0; -1.0; -1.0]
+        @test sort(MOI.coefficient.(obj.quadratic_terms)) == sort([-4.0; 2.0; -1.0; -1.0])
         
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0; -4.0; -1.0]
+        @test sort(MOI.coefficient.(eq_con1_fun.terms)) == sort([1.0; 1.0; -4.0; -1.0])
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 1.0
 
@@ -155,7 +155,7 @@
         
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0; -4.0; -1.0]
+        @test sort(MOI.coefficient.(eq_con1_fun.terms)) == sort([1.0; 1.0; -4.0; -1.0])
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 1.0
 
