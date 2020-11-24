@@ -191,11 +191,11 @@ function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.Scala
     return
 end
 
-function set_dot(i::Int, s::MOI.AbstractVectorSet, T::Type)
+function set_dot(i::Integer, s::MOI.AbstractVectorSet, T::Type)
     vec = zeros(T, MOI.dimension(s))
     vec[i] = one(T)
     return MOIU.set_dot(vec, vec, s)
 end
-function set_dot(i::Int, s::MOI.AbstractScalarSet, T::Type)
+function set_dot(i::Integer, s::MOI.AbstractScalarSet, T::Type)
     return one(T)
 end
