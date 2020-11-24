@@ -7,7 +7,7 @@
         a    == 1/2 :w_2
         b    == 1   :w_1
         2a*b >= x^2+y^2  :w_3, w_4, w_5, w_6
-   
+
    dual
         max w_2 + (1/2)w_1
     s.t.
@@ -23,18 +23,18 @@
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 6
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
        @test Set(list_of_cons) == Set([
-           (SAF{Float64}, MOI.EqualTo{Float64})              
+           (SAF{Float64}, MOI.EqualTo{Float64})
            (VVF, MOI.RotatedSecondOrderCone)
        ])
-       @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1   
+       @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1
        @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 4
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
        @test obj_type == SAF{Float64}
        obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
        @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
        @test MOI.constant(obj) == 0.0
-       @test MOI.coefficient.(obj.terms) == [0.5; 1.0]
-       
+       @test MOI.coefficient.(obj.terms) == (Sys.WORD_SIZE == 32 ? [1.0; 0.5] : [0.5; 1.0])
+
        eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0]
@@ -79,7 +79,7 @@
         a    == 1/2
         b    == 1
         2a*b >= x^2+y^2
-   
+
     dual
         max w_2 + (1/2)w_1
     s.t.
@@ -95,10 +95,10 @@
        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
        list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
        @test Set(list_of_cons) == Set([
-           (SAF{Float64}, MOI.EqualTo{Float64})              
+           (SAF{Float64}, MOI.EqualTo{Float64})
            (VVF, MOI.RotatedSecondOrderCone)
        ])
-       @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1   
+       @test MOI.get(dual_model, MOI.NumberOfConstraints{VVF, MOI.RotatedSecondOrderCone}()) == 1
        @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 2
        obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
        @test obj_type == SAF{Float64}
@@ -106,7 +106,7 @@
        @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
        @test MOI.constant(obj) == 0.0
        @test MOI.coefficient.(obj.terms) == [-1.0; -0.5]
-       
+
        eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0]
