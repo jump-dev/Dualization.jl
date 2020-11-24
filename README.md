@@ -21,7 +21,7 @@
 Repository with implementations of the automatic dualization feature for MathOptInterface.jl conic optimization problems
 
 Dualization.jl has two main features.
- * The function `dualize` that can dualize either a `MathOptInterface.jl` or `JuMP.jl` model.
+ * The function `dualize` that can dualize either a [`MathOptInterface.jl`](https://github.com/jump-dev/MathOptInterface.jl) or [`JuMP.jl`](https://github.com/jump-dev/JuMP.jl) model.
 
 ```julia
 dual_model = dualize(model)
@@ -59,5 +59,4 @@ For more informations please read the [documentation][docs-stable-url]
 One classic method employed to solve bilevel optimization programs is to add the
 KKT conditions of the second level problem to the upper level problem.
 This package is used to obtain the dual feasibility constraint of the KKT conditions
-in: https://github.com/joaquimg/BilevelJuMP.jl .
-
+in [`BilevelJuMP.jl`](https://github.com/joaquimg/BilevelJuMP.jl).
