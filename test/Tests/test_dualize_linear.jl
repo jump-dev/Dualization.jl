@@ -2,16 +2,16 @@
     @testset "lp1_test" begin
     #=
     primal
-        min -4x_2 - 1 
+        min -4x_2 - 1
     s.t.
         x_1 >= 3         :y_2
         x_1 + 2x_2 <= 3  :y_3
 
     dual
-        max 3y_2 + 3y_3 - 1 
+        max 3y_2 + 3y_3 - 1
     s.t.
-        y_2 >= 0                
-        y_3 <= 0                
+        y_2 >= 0
+        y_3 <= 0
         y_2 + y_3 == 0    :x_1
         2y_3 == -4        :x_2
     =#
@@ -33,7 +33,7 @@
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test MOI.coefficient.(obj.terms) == [3.0; 3.0]
-        
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
@@ -91,8 +91,8 @@
         @test obj_type == SAF{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
-        @test MOI.coefficient.(obj.terms) == [3.0; 1.0; 3.0]
-        
+        @test MOI.coefficient.(obj.terms) == (Sys.WORD_SIZE == 32 ? [1.0, 3.0, 3.0] : [3.0; 1.0; 3.0])
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
         @test MOI.coefficient.(eq_con1_fun.terms) == [2.0; 1.0; 1.0]
@@ -116,7 +116,7 @@
 
     @testset "lp10_test" begin
     #=
-    primal 
+    primal
         min x1
     s.t.
         2x1 + x2  == 3 :y_3
@@ -133,12 +133,12 @@
     =#
         primal_model = lp10_test()
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
-        
+
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set([
-            (SVF, MOI.GreaterThan{Float64})           
-            (SAF{Float64}, MOI.EqualTo{Float64})              
+            (SVF, MOI.GreaterThan{Float64})
+            (SAF{Float64}, MOI.EqualTo{Float64})
         ])
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SVF, MOI.GreaterThan{Float64}}()) == 1
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 2
@@ -147,7 +147,7 @@
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
         @test MOI.coefficient.(obj.terms) == [1.0; 3.0; 3.0]
-        
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         @test MOI.coefficient.(eq_con1_fun.terms) == [2.0; 1.0; 1.0]
@@ -195,8 +195,8 @@
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set([
-            (SVF, MOI.LessThan{Float64})           
-            (SAF{Float64}, MOI.EqualTo{Float64})              
+            (SVF, MOI.LessThan{Float64})
+            (SAF{Float64}, MOI.EqualTo{Float64})
         ])
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SVF, MOI.LessThan{Float64}}()) == 3
         @test MOI.get(dual_model, MOI.NumberOfConstraints{SAF{Float64}, MOI.EqualTo{Float64}}()) == 3
@@ -204,8 +204,8 @@
         @test obj_type == SAF{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 5.0
-        @test MOI.coefficient.(obj.terms) == [1.0; 3.0; 20.0]
-        
+        @test MOI.coefficient.(obj.terms) == (Sys.WORD_SIZE == 32 ? [3.0, 1.0, 20.0] : [1.0; 3.0; 20.0])
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(1))
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
@@ -259,7 +259,7 @@
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set([
-            (SAF{Float64}, MOI.EqualTo{Float64})              
+            (SAF{Float64}, MOI.EqualTo{Float64})
             (VVF, MOI.Nonnegatives)
             (VVF, MOI.Nonpositives)
         ])
@@ -271,7 +271,7 @@
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test MOI.coefficient.(obj.terms) == [3.0; 3.0]
-        
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 2.0; 1.0]

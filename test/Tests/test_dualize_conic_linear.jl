@@ -3,7 +3,7 @@
     #=
     primal
         min -3x - 2y - 4z
-    s.t.    
+    s.t.
         x +  y +  z == 3 :w_4
         y +  z == 2      :w_5
         x>=0 y>=0 z>=0   :w_1, w_2, w_3
@@ -33,7 +33,7 @@
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
         @test MOI.coefficient.(obj.terms) == [3.0; 2.0]
-        
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
@@ -62,9 +62,9 @@
 
     @testset "conic_linear3_test" begin
     #=
-    primal 
+    primal
         min  3x + 2y - 4z + 0s
-    s.t.  
+    s.t.
         x           -  s == -4    :w_4
             y            == -3    :w_5
         x      +  z      == 12    :w_6
@@ -85,7 +85,7 @@
     =#
         primal_model = conic_linear3_test()
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
-        
+
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 6
         list_of_cons =  MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set([
@@ -101,8 +101,12 @@
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
-        @test MOI.coefficient.(obj.terms) == [-4.0; -3.0; 12.0]
-        
+        if Sys.WORD_SIZE == 32
+            @test MOI.coefficient.(obj.terms) == [-4.0; 12.0; -3.0]
+        else
+            @test MOI.coefficient.(obj.terms) == [-4.0; -3.0; 12.0]
+        end
+
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]

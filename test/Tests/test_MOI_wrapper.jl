@@ -31,6 +31,7 @@
                 "norminf2", # Feasibility problem
                 "soc3", # Feasibility problem
                 "rotatedsoc2", # Feasibility problem
+                "rotatedsoc4", # Termination status is `ALMOST_OPTIMAL`
                 "exp", # Tested in exp and power cone test
                 "dualexp", # Tested in exp and power cone test
                 "pow", # Tested in exp and power cone test
