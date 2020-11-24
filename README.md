@@ -9,8 +9,8 @@
 [docs-stable-url]: https://jump.dev/Dualization.jl/stable/
 [docs-dev-url]: https://jump.dev/Dualization.jl/dev/
 
-[build-img]: https://travis-ci.org/jump-dev/Dualization.jl.svg?branch=master
-[build-url]: https://travis-ci.org/jump-dev/Dualization.jl
+[build-img]: https://github.com/jump-dev/Dualization.jl/workflows/CI/badge.svg?branch=master
+[build-url]: https://github.com/jump-dev/Dualization.jl/actions?query=workflow%3ACI
 [codecov-img]: http://codecov.io/github/jump-dev/Dualization.jl/coverage.svg?branch=master
 [codecov-url]: http://codecov.io/github/jump-dev/Dualization.jl?branch=master
 
