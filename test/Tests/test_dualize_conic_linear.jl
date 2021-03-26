@@ -32,7 +32,7 @@
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
-        @test MOI.coefficient.(obj.terms) == [3.0; 2.0]
+        @test Set(MOI.coefficient.(obj.terms)) == Set([3.0; 2.0])
 
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(2))
@@ -101,11 +101,7 @@
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
-        if Sys.WORD_SIZE == 32
-            @test MOI.coefficient.(obj.terms) == [-4.0; 12.0; -3.0]
-        else
-            @test MOI.coefficient.(obj.terms) == [-4.0; -3.0; 12.0]
-        end
+        @test Set(MOI.coefficient.(obj.terms)) == Set([-4.0; 12.0; -3.0])
 
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), CI{SAF{Float64}, MOI.EqualTo{Float64}}(3))
