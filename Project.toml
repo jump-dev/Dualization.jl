@@ -9,7 +9,7 @@ MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [compat]
 JuMP = "0.21"
-MathOptInterface = "0.9.12, 0.9.13, 0.9.14, 0.9.15, 0.9.16, 0.9.17, 0.9.18, 0.9.19, 0.9.20"
+MathOptInterface = "< 0.9.21"
 julia = "1"
 
 [extras]
