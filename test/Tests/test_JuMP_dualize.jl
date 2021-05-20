@@ -39,7 +39,7 @@ end
             @test isapprox(primal_csdp, dual_csdp; atol = 1e-6)
         end
     end
-    @testset "Aceess objects in the object_dictionary" begin
+    @testset "Access objects in the object_dictionary" begin
         model = Model()
         @variable(model, x)
         @variable(model, y)
