@@ -75,7 +75,7 @@ function dualize(model::JuMP.Model; dual_names::DualNames = EMPTY_DUAL_NAMES)
     end
     # Dualize and attach to the model
     dualize(backend(model), DualProblem(backend(JuMP_model)); dual_names = dual_names)
-    
+    fill_obj_dict_with_variables!(JuMP_model)
     return JuMP_model
 end
 
@@ -127,3 +127,11 @@ level model is represented as a KKT in the upper level model.
 
 """
 function dualize end
+
+function fill_obj_dict_with_variables!(model::JuMP.Model)
+    all_indices = MOI.get(model, JuMP.MOI.ListOfVariableIndices())::Vector{MOI.VariableIndex}
+    for vi in all_indices
+        model.obj_dict[Symbol(MOI.get(backend(model), MOI.VariableName(), vi))] = VariableRef(model, vi)
+    end
+    return model
+end

@@ -39,4 +39,17 @@ end
             @test isapprox(primal_csdp, dual_csdp; atol = 1e-6)
         end
     end
+    @testset "Access objects in the object_dictionary" begin
+        model = Model()
+        @variable(model, x)
+        @variable(model, y)
+        @variable(model, z)
+        @constraint(model, soccon, [x; y; z] in SecondOrderCone())
+        @constraint(model, eqcon, x == 1)
+        @objective(model, Min, y + z)
+
+        dual_model = dualize(model; dual_names = DualNames("dual", ""))
+
+        @test typeof(dual_model[:dualeqcon_1]) == VariableRef
+    end
 end

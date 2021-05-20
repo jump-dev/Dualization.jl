@@ -38,7 +38,9 @@
                 "dualpow", # Tested in exp and power cone test
                 "rootdet", # Dual not defined in MOI
                 "logdet", # Dual not defined in MOI
-                "relentr" # Dual not defined in MOI
+                "relentr", # Dual not defined in MOI
+                "psdt3", # atol should be 1e-2  
+                "psds3" # atol should be 1e-2
                 ])
         end
 
