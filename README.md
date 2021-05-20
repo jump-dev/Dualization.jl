@@ -18,6 +18,8 @@
 [gitter-img]: https://badges.gitter.im/jump-dev/JuMP-dev.svg
 [discourse-url]: https://discourse.julialang.org/c/domain/opt
 
+[![DOI](https://zenodo.org/badge/182854997.svg)](https://zenodo.org/badge/latestdoi/182854997)
+
 Repository with implementations of the automatic dualization feature for MathOptInterface.jl conic optimization problems
 
 Dualization.jl has two main features.
