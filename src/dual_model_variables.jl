@@ -1,4 +1,39 @@
 function add_dual_vars_in_dual_cones(
+    dual_obj_affine_terms::Dict{VI,T},
+    dual_model::MOI.ModelLike,
+    primal_model::MOI.ModelLike,
+    primal_dual_map::PrimalDualMap{T},
+    dual_names::DualNames,
+    ::Type{F},
+    ::Type{S},
+) where {T,F,S}
+    for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
+        # Add dual variable to dual cone
+        # Fill a dual objective dictionary
+        # Fill the primal_con_dual_var dictionary
+        ci_dual = add_dual_variable(
+            dual_model,
+            primal_model,
+            dual_names,
+            primal_dual_map.primal_con_dual_var,
+            dual_obj_affine_terms,
+            ci,
+        )
+        push_to_primal_con_dual_con!(
+            primal_dual_map.primal_con_dual_con,
+            ci,
+            ci_dual,
+        )
+        push_to_primal_con_constants!(
+            primal_model,
+            primal_dual_map.primal_con_constants,
+            ci,
+        )
+    end
+    return
+end
+
+function add_dual_vars_in_dual_cones(
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
     primal_dual_map::PrimalDualMap{T},
@@ -7,29 +42,15 @@ function add_dual_vars_in_dual_cones(
 ) where {T}
     dual_obj_affine_terms = Dict{VI,T}()
     for (F, S) in con_types
-        for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
-            # Add dual variable to dual cone
-            # Fill a dual objective dictionary
-            # Fill the primal_con_dual_var dictionary
-            ci_dual = add_dual_variable(
-                dual_model,
-                primal_model,
-                dual_names,
-                primal_dual_map.primal_con_dual_var,
-                dual_obj_affine_terms,
-                ci,
-            )
-            push_to_primal_con_dual_con!(
-                primal_dual_map.primal_con_dual_con,
-                ci,
-                ci_dual,
-            )
-            push_to_primal_con_constants!(
-                primal_model,
-                primal_dual_map.primal_con_constants,
-                ci,
-            )
-        end
+        add_dual_vars_in_dual_cones(
+            dual_obj_affine_terms,
+            dual_model,
+            primal_model,
+            primal_dual_map,
+            dual_names,
+            F,
+            S,
+        )
     end
     return dual_obj_affine_terms
 end
