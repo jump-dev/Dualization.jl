@@ -145,7 +145,7 @@ function fill_scalar_affine_terms!(
     ::Type{F},
     ::Type{S},
 ) where {T,F,S}
-    for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) 
+    for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
         fill_scalar_affine_terms!(
             scalar_affine_terms,
             primal_con_dual_var,

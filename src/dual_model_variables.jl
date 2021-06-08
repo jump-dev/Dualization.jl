@@ -1,6 +1,7 @@
 function add_dual_vars_in_dual_cones(
     dual_obj_affine_terms::Dict{VI,T},
-    dual_model::MOI.ModelLike, primal_model::MOI.ModelLike,
+    dual_model::MOI.ModelLike,
+    primal_model::MOI.ModelLike,
     primal_dual_map::PrimalDualMap{T},
     dual_names::DualNames,
     ::Type{F},
