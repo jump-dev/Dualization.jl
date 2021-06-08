@@ -12,7 +12,7 @@ mutable struct DualNames
     quadratic_slack_name_prefix::String
 end
 DualNames() = DualNames("", "", "", "")
-DualNames(var,ctr) = DualNames(var, ctr, "", "")
+DualNames(var, ctr) = DualNames(var, ctr, "", "")
 
 const EMPTY_DUAL_NAMES = DualNames()
 is_empty(dual_names::DualNames) = dual_names == EMPTY_DUAL_NAMES

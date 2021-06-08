@@ -1,12 +1,16 @@
 export DualOptimizer, dual_optimizer
 
-dual_optimizer(optimizer_constructor) = () -> DualOptimizer(MOI.instantiate(optimizer_constructor))
+function dual_optimizer(optimizer_constructor)
+    return () -> DualOptimizer(MOI.instantiate(optimizer_constructor))
+end
 
-struct DualOptimizer{T, OT <: MOI.ModelLike} <: MOI.AbstractOptimizer
-    dual_problem::DualProblem{T, OT}
+struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
+    dual_problem::DualProblem{T,OT}
 
-    function DualOptimizer{T, OT}(dual_problem::DualProblem{T, OT}) where {T, OT <: MOI.ModelLike}
-        return new{T, OT}(dual_problem)
+    function DualOptimizer{T,OT}(
+        dual_problem::DualProblem{T,OT},
+    ) where {T,OT<:MOI.ModelLike}
+        return new{T,OT}(dual_problem)
     end
 end
 
@@ -35,72 +39,103 @@ CachingOptimizer state: EMPTY_OPTIMIZER
 Solver name: Dual model with GLPK attached
 ```
 """
-function DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+function DualOptimizer(dual_optimizer::OT) where {OT<:MOI.ModelLike}
     return DualOptimizer{Float64}(dual_optimizer)
 end
 
-function DualOptimizer{T}(dual_optimizer::OT) where {T, OT <: MOI.ModelLike}
-    dual_problem = DualProblem{T}(MOIB.full_bridge_optimizer(MOIU.CachingOptimizer(MOIU.UniversalFallback(DualizableModel{T}()), dual_optimizer), T))
+function DualOptimizer{T}(dual_optimizer::OT) where {T,OT<:MOI.ModelLike}
+    dual_problem = DualProblem{T}(
+        MOIB.full_bridge_optimizer(
+            MOIU.CachingOptimizer(
+                MOIU.UniversalFallback(DualizableModel{T}()),
+                dual_optimizer,
+            ),
+            T,
+        ),
+    )
     # discover the type of MOIU.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
     OptimizerType = typeof(dual_problem.dual_model)
-    return DualOptimizer{T, OptimizerType}(dual_problem)
+    return DualOptimizer{T,OptimizerType}(dual_problem)
 end
 
 function DualOptimizer()
     return error("DualOptimizer must have a solver attached")
 end
 
-function MOI.supports(::DualOptimizer,
-                      ::MOI.ObjectiveSense)
+function MOI.supports(::DualOptimizer, ::MOI.ObjectiveSense)
     return true
 end
-function MOI.supports(optimizer::DualOptimizer{T},
-                      ::MOI.ObjectiveFunction{F}) where {T, F}
+function MOI.supports(
+    optimizer::DualOptimizer{T},
+    ::MOI.ObjectiveFunction{F},
+) where {T,F}
     # If the objective function is `MOI.SingleVariable` or `MOI.ScalarAffineFunction`,
     # a `MOI.ScalarAffineFunction` is set as objective function for the dual problem.
     # If it is `MOI.ScalarQuadraticFunction` , a `MOI.ScalarQuadraticFunction` is set as objective function for the dual problem.
-    G = F <: MOI.ScalarQuadraticFunction ? MOI.ScalarQuadraticFunction{T} : MOI.ScalarAffineFunction{T}
-    return supported_obj(F) && MOI.supports(optimizer.dual_problem.dual_model, MOI.ObjectiveFunction{G}())
+    G =
+        F <: MOI.ScalarQuadraticFunction ? MOI.ScalarQuadraticFunction{T} :
+        MOI.ScalarAffineFunction{T}
+    return supported_obj(F) && MOI.supports(
+        optimizer.dual_problem.dual_model,
+        MOI.ObjectiveFunction{G}(),
+    )
 end
 
 function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
-    F::Type{<:Union{MOI.SingleVariable, MOI.ScalarAffineFunction{T}}},
-    S::Type{<:MOI.AbstractScalarSet}) where T
+    F::Type{<:Union{MOI.SingleVariable,MOI.ScalarAffineFunction{T}}},
+    S::Type{<:MOI.AbstractScalarSet},
+) where {T}
     D = _dual_set_type(S)
     if D === nothing
         return false
     end
     if D <: MOI.AbstractVectorSet # The dual of `EqualTo` is `Reals`
-        return MOI.supports_add_constrained_variables(optimizer.dual_problem.dual_model, D)
+        return MOI.supports_add_constrained_variables(
+            optimizer.dual_problem.dual_model,
+            D,
+        )
     else
-        return MOI.supports_add_constrained_variable(optimizer.dual_problem.dual_model, D)
+        return MOI.supports_add_constrained_variable(
+            optimizer.dual_problem.dual_model,
+            D,
+        )
     end
 end
 
 function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
-    ::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction{T}}},
-    S::Type{<:MOI.AbstractVectorSet}) where T
+    ::Type{<:Union{MOI.VectorOfVariables,MOI.VectorAffineFunction{T}}},
+    S::Type{<:MOI.AbstractVectorSet},
+) where {T}
     D = _dual_set_type(S)
     if D === nothing
         return false
     end
-    return MOI.supports_add_constrained_variables(optimizer.dual_problem.dual_model, D)
+    return MOI.supports_add_constrained_variables(
+        optimizer.dual_problem.dual_model,
+        D,
+    )
 end
 
-function MOI.modify(optimizer::DualOptimizer{T},
-                    ::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
-                    obj_change::MOI.ScalarCoefficientChange{T}) where T
+function MOI.modify(
+    optimizer::DualOptimizer{T},
+    ::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
+    obj_change::MOI.ScalarCoefficientChange{T},
+) where {T}
     # We must find the constraint corresponding to the variable in the objective
     # function and change its coefficient on the constraint.
-    ci_to_change = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[obj_change.variable]
-    sense_change = MOI.get(optimizer.dual_problem.dual_model,
-                           MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
-    MOI.set(optimizer.dual_problem.dual_model,
-                MOI.ConstraintSet(),
-                ci_to_change,
-                MOI.EqualTo(sense_change * obj_change.new_coefficient))
+    ci_to_change =
+        optimizer.dual_problem.primal_dual_map.primal_var_dual_con[obj_change.variable]
+    sense_change =
+        MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveSense()) ==
+        MOI.MAX_SENSE ? one(T) : -one(T)
+    MOI.set(
+        optimizer.dual_problem.dual_model,
+        MOI.ConstraintSet(),
+        ci_to_change,
+        MOI.EqualTo(sense_change * obj_change.new_coefficient),
+    )
     return
 end
 
@@ -145,7 +180,8 @@ function MOI.optimize!(optimizer::DualOptimizer)
 end
 
 function MOI.is_empty(optimizer::DualOptimizer)
-    return (MOI.is_empty(optimizer.dual_problem.dual_model)) && is_empty(optimizer.dual_problem.primal_dual_map)
+    return (MOI.is_empty(optimizer.dual_problem.dual_model)) &&
+           is_empty(optimizer.dual_problem.primal_dual_map)
 end
 
 function MOI.empty!(optimizer::DualOptimizer)
@@ -180,39 +216,66 @@ function get_vis_dual_problem(optimizer::DualOptimizer, ci::CI)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolverName)
-    return "Dual model with "*MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName()) * " attached"
+    return "Dual model with " *
+           MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName()) *
+           " attached"
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.VariablePrimal, vi::VI)
-    return -MOI.get(optimizer.dual_problem.dual_model,
-                    MOI.ConstraintDual(), get_ci_dual_problem(optimizer, vi))
+    return -MOI.get(
+        optimizer.dual_problem.dual_model,
+        MOI.ConstraintDual(),
+        get_ci_dual_problem(optimizer, vi),
+    )
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual,
-                 ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
-    return MOI.get(optimizer.dual_problem.dual_model,
-                   MOI.VariablePrimal(), get_vi_dual_problem(optimizer, ci))
+function MOI.get(
+    optimizer::DualOptimizer,
+    ::MOI.ConstraintDual,
+    ci::CI{F,S},
+) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
+    return MOI.get(
+        optimizer.dual_problem.dual_model,
+        MOI.VariablePrimal(),
+        get_vi_dual_problem(optimizer, ci),
+    )
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintDual,
-                 ci::CI{F,S}) where {F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
-    return MOI.get.(optimizer.dual_problem.dual_model,
-                    MOI.VariablePrimal(), get_vis_dual_problem(optimizer, ci))
+function MOI.get(
+    optimizer::DualOptimizer,
+    ::MOI.ConstraintDual,
+    ci::CI{F,S},
+) where {F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
+    return MOI.get.(
+        optimizer.dual_problem.dual_model,
+        MOI.VariablePrimal(),
+        get_vis_dual_problem(optimizer, ci),
+    )
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.ConstraintPrimal,
-                 ci::CI{F,S}) where {F <: MOI.AbstractScalarFunction, S <: MOI.AbstractScalarSet}
+function MOI.get(
+    optimizer::DualOptimizer,
+    ::MOI.ConstraintPrimal,
+    ci::CI{F,S},
+) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     primal_ci_constant = get_primal_ci_constant(optimizer, ci)
     # If it has no key than there is no dual constraint
     if !haskey(optimizer.dual_problem.primal_dual_map.primal_con_dual_con, ci)
         return -primal_ci_constant
     end
     ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_problem) - primal_ci_constant
+    return MOI.get(
+        optimizer.dual_problem.dual_model,
+        MOI.ConstraintDual(),
+        ci_dual_problem,
+    ) - primal_ci_constant
 end
 
-function MOI.get(optimizer::DualOptimizer{T}, ::MOI.ConstraintPrimal,
-                 ci::CI{F,S}) where {T, F <: MOI.AbstractVectorFunction, S <: MOI.AbstractVectorSet}
+function MOI.get(
+    optimizer::DualOptimizer{T},
+    ::MOI.ConstraintPrimal,
+    ci::CI{F,S},
+) where {T,F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     # If it has no key than there is no dual constraint
     if !haskey(optimizer.dual_problem.primal_dual_map.primal_con_dual_con, ci)
         # The number of dual variable associated with the primal constraint is the ci dimension
@@ -220,11 +283,17 @@ function MOI.get(optimizer::DualOptimizer{T}, ::MOI.ConstraintPrimal,
         return zeros(T, ci_dimension)
     end
     ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintDual(), ci_dual_problem)
+    return MOI.get(
+        optimizer.dual_problem.dual_model,
+        MOI.ConstraintDual(),
+        ci_dual_problem,
+    )
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.TerminationStatus)
-    return dual_status(MOI.get(optimizer.dual_problem.dual_model, MOI.TerminationStatus()))
+    return dual_status(
+        MOI.get(optimizer.dual_problem.dual_model, MOI.TerminationStatus()),
+    )
 end
 
 function dual_status(term::MOI.TerminationStatusCode)
@@ -256,9 +325,16 @@ function MOI.get(optimizer::DualOptimizer, ::MOI.DualStatus)
     return MOI.get(optimizer.dual_problem.dual_model, MOI.PrimalStatus())
 end
 
-function MOI.set(optimizer::DualOptimizer, attr::MOI.AbstractOptimizerAttribute, value)
+function MOI.set(
+    optimizer::DualOptimizer,
+    attr::MOI.AbstractOptimizerAttribute,
+    value,
+)
     return MOI.set(optimizer.dual_problem.dual_model, attr, value)
 end
-function MOI.get(optimizer::DualOptimizer, attr::Union{MOI.AbstractModelAttribute, MOI.AbstractOptimizerAttribute})
+function MOI.get(
+    optimizer::DualOptimizer,
+    attr::Union{MOI.AbstractModelAttribute,MOI.AbstractOptimizerAttribute},
+)
     return MOI.get(optimizer.dual_problem.dual_model, attr)
 end

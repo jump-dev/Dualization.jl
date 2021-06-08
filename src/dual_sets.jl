@@ -8,22 +8,21 @@ function _dual_set_type(S::Type)
     end
 end
 
-
-function _dual_set(::MOI.GreaterThan{T}) where T
+function _dual_set(::MOI.GreaterThan{T}) where {T}
     return MOI.GreaterThan(zero(T))
 end
-function _dual_set_type(::Type{MOI.GreaterThan{T}}) where T
+function _dual_set_type(::Type{MOI.GreaterThan{T}}) where {T}
     return MOI.GreaterThan{T}
 end
 
-function _dual_set(::MOI.LessThan{T}) where T
+function _dual_set(::MOI.LessThan{T}) where {T}
     return MOI.LessThan(zero(T))
 end
-function _dual_set_type(::Type{MOI.LessThan{T}}) where T
+function _dual_set_type(::Type{MOI.LessThan{T}}) where {T}
     return MOI.GreaterThan{T}
 end
 
-function _dual_set(::MOI.EqualTo{T}) where T
+function _dual_set(::MOI.EqualTo{T}) where {T}
     return # Maybe return Reals in the future
 end
 function _dual_set_type(::Type{<:MOI.EqualTo})

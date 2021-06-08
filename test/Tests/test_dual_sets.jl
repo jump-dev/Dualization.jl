@@ -64,7 +64,8 @@
     @test Dualization._dual_set(rsoc3) == rsoc3
 
     #PSD
-    @test Dualization._dual_set_type(MOI.PositiveSemidefiniteConeTriangle) == MOI.PositiveSemidefiniteConeTriangle
+    @test Dualization._dual_set_type(MOI.PositiveSemidefiniteConeTriangle) ==
+          MOI.PositiveSemidefiniteConeTriangle
     psd = MOI.PositiveSemidefiniteConeTriangle(2)
     psd3 = MOI.PositiveSemidefiniteConeTriangle(3)
     @test Dualization._dual_set(psd) == psd
