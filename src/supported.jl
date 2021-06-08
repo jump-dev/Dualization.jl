@@ -9,7 +9,7 @@ function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
             error("Constraints of function ", F, " in the Set ", S," are not implemented")
         end
     end
-    return 
+    return
 end
 
 supported_constraint(::Type, ::Type) = false
@@ -26,7 +26,7 @@ function supported_objective(primal_model::MOI.ModelLike)
     if !supported_obj(obj_func_type)
         error("Objective functions of type $obj_func_type are not implemented")
     end
-    return 
+    return
 end
 
 # General case

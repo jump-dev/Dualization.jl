@@ -8,7 +8,7 @@ function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = EMPTY_DUAL
     return dualize(primal_model, dual_problem, dual_names, variable_parameters, ignore_objective)
 end
 
-function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T}; 
+function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T};
                  dual_names::DualNames = EMPTY_DUAL_NAMES,
                  variable_parameters::Vector{VI} = VI[],
                  ignore_objective::Bool = false) where T
@@ -20,12 +20,12 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
                  dual_names::DualNames, variable_parameters::Vector{VI},
                  ignore_objective::Bool) where T
     # Throws an error if objective function cannot be dualized
-    supported_objective(primal_model) 
+    supported_objective(primal_model)
 
     # Query all constraint types of the model
     con_types = MOI.get(primal_model, MOI.ListOfConstraints())
     supported_constraints(con_types) # Throws an error if constraint cannot be dualized
-    
+
     # Set the dual model objective sense
     set_dual_model_sense(dual_problem.dual_model, primal_model)
 
@@ -34,7 +34,7 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary from dual variables to primal constraints constants (obj coef of dual var)
-    dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_problem.dual_model, primal_model, 
+    dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_problem.dual_model, primal_model,
                                                         dual_problem.primal_dual_map,
                                                         dual_names, con_types)
 
@@ -56,7 +56,7 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
         # do not add objective
     else
         # Fill Dual Objective Coefficients Struct
-        dual_objective = get_dual_objective(dual_problem, 
+        dual_objective = get_dual_objective(dual_problem,
             dual_obj_affine_terms, primal_objective, con_types,
             scalar_affine_terms, variable_parameters)
         # Add dual objective to the model
@@ -108,12 +108,12 @@ The function will return a JuMP model with the dual representation of the proble
 
 * A `JuMP.Model` and an optimizer constructor
 
-The function will return a JuMP model with the dual representation of the problem with 
+The function will return a JuMP model with the dual representation of the problem with
 the optimizer constructor attached.
 
 On each of these methods, the user can provide the following keyword arguments:
 
-* `dual_names`: of type `DualNames` struct. It allows users to set more intuitive names 
+* `dual_names`: of type `DualNames` struct. It allows users to set more intuitive names
 for the dual variables and dual constraints created.
 
 * `variable_parameters`: A vector of MOI.VariableIndex containing the variables that

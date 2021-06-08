@@ -95,11 +95,11 @@ function MOI.modify(optimizer::DualOptimizer{T},
     # We must find the constraint corresponding to the variable in the objective
     # function and change its coefficient on the constraint.
     ci_to_change = optimizer.dual_problem.primal_dual_map.primal_var_dual_con[obj_change.variable]
-    sense_change = MOI.get(optimizer.dual_problem.dual_model, 
+    sense_change = MOI.get(optimizer.dual_problem.dual_model,
                            MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
-    MOI.set(optimizer.dual_problem.dual_model, 
-                MOI.ConstraintSet(), 
-                ci_to_change, 
+    MOI.set(optimizer.dual_problem.dual_model,
+                MOI.ConstraintSet(),
+                ci_to_change,
                 MOI.EqualTo(sense_change * obj_change.new_coefficient))
     return
 end
