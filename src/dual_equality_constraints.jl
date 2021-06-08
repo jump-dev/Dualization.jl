@@ -84,7 +84,6 @@ function set_dual_constraint_name(dual_model::MOI.ModelLike, primal_model::MOI.M
 end
 
 function get_scalar_terms(primal_objective::PrimalObjective{T}) where T
-
     scalar_terms = Dict{VI,T}()
     for term in get_affine_terms(primal_objective)
         if haskey(scalar_terms, term.variable_index)
@@ -94,6 +93,19 @@ function get_scalar_terms(primal_objective::PrimalObjective{T}) where T
         end
     end
     return scalar_terms
+end
+
+function fill_scalar_affine_terms!(scalar_affine_terms::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}, 
+                                   primal_con_dual_var::Dict{CI, Vector{VI}},
+                                   primal_model::MOI.ModelLike,
+                                   F::DataType,
+                                   S::DataType) where {T}
+    primal_cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
+    for ci in primal_cis
+        fill_scalar_affine_terms!(scalar_affine_terms, primal_con_dual_var,
+                                    primal_model, ci)
+    end
+    return
 end
 
 function get_scalar_affine_terms(primal_model::MOI.ModelLike,
@@ -107,11 +119,13 @@ function get_scalar_affine_terms(primal_model::MOI.ModelLike,
         scalar_affine_terms[vi] = MOI.ScalarAffineTerm{T}[]
     end
     for (F, S) in con_types
-        primal_cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
-        for ci in primal_cis
-            fill_scalar_affine_terms!(scalar_affine_terms, primal_con_dual_var,
-                                      primal_model, ci)
-        end
+        fill_scalar_affine_terms!(
+                            scalar_affine_terms,
+                            primal_con_dual_var, 
+                            primal_model, 
+                            F, 
+                            S
+                        )
     end
     return scalar_affine_terms
 end
