@@ -14,12 +14,24 @@ function pow1_test()
 
     vov = MOI.VectorOfVariables(v)
 
-    vc = MOI.add_constraint(model, vov, MOI.PowerCone(a));
-   
-    cx = MOI.add_constraint(model, MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[1])], 0.), MOI.EqualTo(2.))
-    cy = MOI.add_constraint(model, MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[2])], 0.), MOI.EqualTo(1.))
+    vc = MOI.add_constraint(model, vov, MOI.PowerCone(a))
 
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[3])], 0.0))
+    cx = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[1])], 0.0),
+        MOI.EqualTo(2.0),
+    )
+    cy = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[2])], 0.0),
+        MOI.EqualTo(1.0),
+    )
+
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[3])], 0.0),
+    )
     MOI.set(model, MOI.ObjectiveSense(), MOI.MAX_SENSE)
 
     return model
@@ -40,14 +52,29 @@ function pow2_test()
 
     vov = MOI.VectorOfVariables(v)
 
-    vc = MOI.add_constraint(model, MOI.VectorAffineFunction{Float64}(vov), MOI.PowerCone(a))
+    vc = MOI.add_constraint(
+        model,
+        MOI.VectorAffineFunction{Float64}(vov),
+        MOI.PowerCone(a),
+    )
 
-    cx = MOI.add_constraint(model, MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[1])], 0.), MOI.EqualTo(2.))
-    cy = MOI.add_constraint(model, MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[2])], 0.), MOI.EqualTo(1.))
+    cx = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[1])], 0.0),
+        MOI.EqualTo(2.0),
+    )
+    cy = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[2])], 0.0),
+        MOI.EqualTo(1.0),
+    )
 
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[3])], 0.0))
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, v[3])], 0.0),
+    )
     MOI.set(model, MOI.ObjectiveSense(), MOI.MAX_SENSE)
 
     return model
 end
-    

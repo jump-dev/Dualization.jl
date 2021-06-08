@@ -13,19 +13,30 @@ function sdpt1_test()
     X = MOI.add_variables(model, 3)
 
     vov = MOI.VectorOfVariables(X)
-    
+
     cX = MOI.add_constraint(model, vov, MOI.PositiveSemidefiniteConeTriangle(2))
 
-    c = MOI.add_constraint(model, MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, X[2])], 0.0), MOI.EqualTo(1.0))
+    c = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
+        MOI.EqualTo(1.0),
+    )
 
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(1.0, [X[1], X[end]]), 0.0))
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.(1.0, [X[1], X[end]]),
+            0.0,
+        ),
+    )
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
-    return  model
+    return model
 end
 
 function sdpt2_test()
-    #= 
+    #=
         min TR(X)
     s.t.
         X[2,1] = 1
@@ -38,14 +49,29 @@ function sdpt2_test()
 
     vov = MOI.VectorOfVariables(X)
 
-    cX = MOI.add_constraint(model, MOI.VectorAffineFunction{Float64}(vov), MOI.PositiveSemidefiniteConeTriangle(2))
+    cX = MOI.add_constraint(
+        model,
+        MOI.VectorAffineFunction{Float64}(vov),
+        MOI.PositiveSemidefiniteConeTriangle(2),
+    )
 
-    c = MOI.add_constraint(model, MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, X[2])], 0.0), MOI.EqualTo(1.0))
+    c = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction([MOI.ScalarAffineTerm(1.0, X[2])], 0.0),
+        MOI.EqualTo(1.0),
+    )
 
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.(1.0, [X[1], X[end]]), 0.0))
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.(1.0, [X[1], X[end]]),
+            0.0,
+        ),
+    )
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
-    return  model
+    return model
 end
 
 function sdpt3_test()
@@ -119,22 +145,47 @@ function sdpt3_test()
     # α = √(3-2obj-4x2)/2
     # β = k*α
 
-   model = TestModel{Float64}()
+    model = TestModel{Float64}()
 
     X = MOI.add_variables(model, 6)
     x = MOI.add_variables(model, 3)
 
     vov = MOI.VectorOfVariables(X)
-    
-    cX = MOI.add_constraint(model, vov, MOI.PositiveSemidefiniteConeTriangle(3))
-    cx = MOI.add_constraint(model, MOI.VectorOfVariables(x), MOI.SecondOrderCone(3))
 
-    c1 = MOI.add_constraint(model, MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([1., 1, 1, 1], [X[1], X[3], X[end], x[1]]), 0.), MOI.EqualTo(1.))
-    c2 = MOI.add_constraint(model, MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([1., 2, 1, 2, 2, 1, 1, 1], [X; x[2]; x[3]]), 0.), MOI.EqualTo(1/2))
+    cX = MOI.add_constraint(model, vov, MOI.PositiveSemidefiniteConeTriangle(3))
+    cx = MOI.add_constraint(
+        model,
+        MOI.VectorOfVariables(x),
+        MOI.SecondOrderCone(3),
+    )
+
+    c1 = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([1.0, 1, 1, 1], [X[1], X[3], X[end], x[1]]),
+            0.0,
+        ),
+        MOI.EqualTo(1.0),
+    )
+    c2 = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([1.0, 2, 1, 2, 2, 1, 1, 1], [X; x[2]; x[3]]),
+            0.0,
+        ),
+        MOI.EqualTo(1 / 2),
+    )
 
     objXidx = [1:3; 5:6]
-    objXcoefs = 2*ones(5)
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([objXcoefs; 1.0], [X[objXidx]; x[1]]), 0.0))
+    objXcoefs = 2 * ones(5)
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([objXcoefs; 1.0], [X[objXidx]; x[1]]),
+            0.0,
+        ),
+    )
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
     return model
@@ -217,15 +268,44 @@ function sdpt4_test()
     x = MOI.add_variables(model, 3)
 
     vov = MOI.VectorOfVariables(X)
-    cX = MOI.add_constraint(model, MOI.VectorAffineFunction{Float64}(vov), MOI.PositiveSemidefiniteConeTriangle(3))
-    cx = MOI.add_constraint(model, MOI.VectorOfVariables(x), MOI.SecondOrderCone(3))
+    cX = MOI.add_constraint(
+        model,
+        MOI.VectorAffineFunction{Float64}(vov),
+        MOI.PositiveSemidefiniteConeTriangle(3),
+    )
+    cx = MOI.add_constraint(
+        model,
+        MOI.VectorOfVariables(x),
+        MOI.SecondOrderCone(3),
+    )
 
-    c1 = MOI.add_constraint(model, MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([1., 1, 1, 1], [X[1], X[3], X[end], x[1]]), 0.), MOI.EqualTo(1.))
-    c2 = MOI.add_constraint(model, MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([1., 2, 1, 2, 2, 1, 1, 1], [X; x[2]; x[3]]), 0.), MOI.EqualTo(1/2))
+    c1 = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([1.0, 1, 1, 1], [X[1], X[3], X[end], x[1]]),
+            0.0,
+        ),
+        MOI.EqualTo(1.0),
+    )
+    c2 = MOI.add_constraint(
+        model,
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([1.0, 2, 1, 2, 2, 1, 1, 1], [X; x[2]; x[3]]),
+            0.0,
+        ),
+        MOI.EqualTo(1 / 2),
+    )
 
     objXidx = [1:3; 5:6]
-    objXcoefs = 2*ones(5)
-    MOI.set(model, MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(), MOI.ScalarAffineFunction(MOI.ScalarAffineTerm.([objXcoefs; 1.0], [X[objXidx]; x[1]]), 0.0))
+    objXcoefs = 2 * ones(5)
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        MOI.ScalarAffineFunction(
+            MOI.ScalarAffineTerm.([objXcoefs; 1.0], [X[objXidx]; x[1]]),
+            0.0,
+        ),
+    )
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
     return model

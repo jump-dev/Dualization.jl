@@ -1,6 +1,6 @@
 using MathOptInterface, JuMP, Dualization, Test
 
-const MOI  = MathOptInterface
+const MOI = MathOptInterface
 const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 const MOIT = MathOptInterface.Test
@@ -14,21 +14,40 @@ const SQF{T} = MOI.ScalarQuadraticFunction{T}
 const VI = MOI.VariableIndex
 const CI = MOI.ConstraintIndex
 
-MOIU.@model(TestModel,
-            (MOI.ZeroOne, MOI.Integer),
-            (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan, MOI.Interval,
-             MOI.Semicontinuous, MOI.Semiinteger),
-            (MOI.Reals, MOI.Zeros, MOI.Nonnegatives, MOI.Nonpositives,
-             MOI.SecondOrderCone, MOI.RotatedSecondOrderCone,
-             MOI.GeometricMeanCone, MOI.ExponentialCone, MOI.DualExponentialCone,
-             MOI.PositiveSemidefiniteConeTriangle, MOI.PositiveSemidefiniteConeSquare,
-             MOI.RootDetConeTriangle, MOI.RootDetConeSquare, MOI.LogDetConeTriangle,
-             MOI.LogDetConeSquare),
-            (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2),
-            (),
-            (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction),
-            (MOI.VectorOfVariables,),
-            (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction))
+MOIU.@model(
+    TestModel,
+    (MOI.ZeroOne, MOI.Integer),
+    (
+        MOI.EqualTo,
+        MOI.GreaterThan,
+        MOI.LessThan,
+        MOI.Interval,
+        MOI.Semicontinuous,
+        MOI.Semiinteger,
+    ),
+    (
+        MOI.Reals,
+        MOI.Zeros,
+        MOI.Nonnegatives,
+        MOI.Nonpositives,
+        MOI.SecondOrderCone,
+        MOI.RotatedSecondOrderCone,
+        MOI.GeometricMeanCone,
+        MOI.ExponentialCone,
+        MOI.DualExponentialCone,
+        MOI.PositiveSemidefiniteConeTriangle,
+        MOI.PositiveSemidefiniteConeSquare,
+        MOI.RootDetConeTriangle,
+        MOI.RootDetConeSquare,
+        MOI.LogDetConeTriangle,
+        MOI.LogDetConeSquare,
+    ),
+    (MOI.PowerCone, MOI.DualPowerCone, MOI.SOS1, MOI.SOS2),
+    (),
+    (MOI.ScalarAffineFunction, MOI.ScalarQuadraticFunction),
+    (MOI.VectorOfVariables,),
+    (MOI.VectorAffineFunction, MOI.VectorQuadraticFunction)
+)
 
 # Functions that are used inside tests
 include("utils.jl")
