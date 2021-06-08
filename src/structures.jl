@@ -21,6 +21,8 @@ MOIU.@model(
 )
 
 mutable struct PrimalDualMap{T}
+    constrained_var_idx::Dict{VI,Tuple{CI,Int}}
+    constrained_var_dual::Dict{CI,CI}
     primal_var_dual_con::Dict{VI,CI}
     primal_con_dual_var::Dict{CI,Vector{VI}}
     primal_con_dual_con::Dict{CI,CI}
@@ -31,6 +33,8 @@ mutable struct PrimalDualMap{T}
 
     function PrimalDualMap{T}() where {T}
         return new(
+            Dict{VI,Tuple{CI,Int}}(),
+            Dict{CI,CI}(),
             Dict{VI,CI}(),
             Dict{CI,Vector{VI}}(),
             Dict{CI,CI}(),
