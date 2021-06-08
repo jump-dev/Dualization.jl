@@ -1,24 +1,47 @@
 export dualize
 
 # MOI dualize
-function dualize(primal_model::MOI.ModelLike; dual_names::DualNames = EMPTY_DUAL_NAMES,
-                 variable_parameters::Vector{VI} = VI[], ignore_objective::Bool = false)
+function dualize(
+    primal_model::MOI.ModelLike;
+    dual_names::DualNames = EMPTY_DUAL_NAMES,
+    variable_parameters::Vector{VI} = VI[],
+    ignore_objective::Bool = false,
+)
     # Creates an empty dual problem
     dual_problem = DualProblem{Float64}()
-    return dualize(primal_model, dual_problem, dual_names, variable_parameters, ignore_objective)
+    return dualize(
+        primal_model,
+        dual_problem,
+        dual_names,
+        variable_parameters,
+        ignore_objective,
+    )
 end
 
-function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T};
-                 dual_names::DualNames = EMPTY_DUAL_NAMES,
-                 variable_parameters::Vector{VI} = VI[],
-                 ignore_objective::Bool = false) where T
+function dualize(
+    primal_model::MOI.ModelLike,
+    dual_problem::DualProblem{T};
+    dual_names::DualNames = EMPTY_DUAL_NAMES,
+    variable_parameters::Vector{VI} = VI[],
+    ignore_objective::Bool = false,
+) where {T}
     # Dualize with the optimizer already attached
-    return dualize(primal_model, dual_problem, dual_names, variable_parameters, ignore_objective)
+    return dualize(
+        primal_model,
+        dual_problem,
+        dual_names,
+        variable_parameters,
+        ignore_objective,
+    )
 end
 
-function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
-                 dual_names::DualNames, variable_parameters::Vector{VI},
-                 ignore_objective::Bool) where T
+function dualize(
+    primal_model::MOI.ModelLike,
+    dual_problem::DualProblem{T},
+    dual_names::DualNames,
+    variable_parameters::Vector{VI},
+    ignore_objective::Bool,
+) where {T}
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model)
 
@@ -30,35 +53,61 @@ function dualize(primal_model::MOI.ModelLike, dual_problem::DualProblem{T},
     set_dual_model_sense(dual_problem.dual_model, primal_model)
 
     # Get Primal Objective Coefficients
-    primal_objective = get_primal_objective(primal_model, variable_parameters, T)
+    primal_objective =
+        get_primal_objective(primal_model, variable_parameters, T)
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary from dual variables to primal constraints constants (obj coef of dual var)
-    dual_obj_affine_terms = add_dual_vars_in_dual_cones(dual_problem.dual_model, primal_model,
-                                                        dual_problem.primal_dual_map,
-                                                        dual_names, con_types)
+    dual_obj_affine_terms = add_dual_vars_in_dual_cones(
+        dual_problem.dual_model,
+        primal_model,
+        dual_problem.primal_dual_map,
+        dual_names,
+        con_types,
+    )
 
-    add_primal_parameter_vars(dual_problem.dual_model,
-        primal_model, dual_problem.primal_dual_map,
-        dual_names, variable_parameters,
-        primal_objective, ignore_objective)
-    add_quadratic_slack_vars(dual_problem.dual_model,
-        primal_model, dual_problem.primal_dual_map,
-        dual_names, variable_parameters,
-        primal_objective, ignore_objective)
+    add_primal_parameter_vars(
+        dual_problem.dual_model,
+        primal_model,
+        dual_problem.primal_dual_map,
+        dual_names,
+        variable_parameters,
+        primal_objective,
+        ignore_objective,
+    )
+    add_quadratic_slack_vars(
+        dual_problem.dual_model,
+        primal_model,
+        dual_problem.primal_dual_map,
+        dual_names,
+        variable_parameters,
+        primal_objective,
+        ignore_objective,
+    )
 
     # Add dual equality constraint and get the link dictionary
-    scalar_affine_terms = add_dual_equality_constraints(dual_problem.dual_model, primal_model,
-                                  dual_problem.primal_dual_map, dual_names,
-                                  primal_objective, con_types, variable_parameters)
+    scalar_affine_terms = add_dual_equality_constraints(
+        dual_problem.dual_model,
+        primal_model,
+        dual_problem.primal_dual_map,
+        dual_names,
+        primal_objective,
+        con_types,
+        variable_parameters,
+    )
 
     if ignore_objective
         # do not add objective
     else
         # Fill Dual Objective Coefficients Struct
-        dual_objective = get_dual_objective(dual_problem,
-            dual_obj_affine_terms, primal_objective, con_types,
-            scalar_affine_terms, variable_parameters)
+        dual_objective = get_dual_objective(
+            dual_problem,
+            dual_obj_affine_terms,
+            primal_objective,
+            con_types,
+            scalar_affine_terms,
+            variable_parameters,
+        )
         # Add dual objective to the model
         set_dual_objective(dual_problem.dual_model, dual_objective)
     end
@@ -71,15 +120,25 @@ function dualize(model::JuMP.Model; dual_names::DualNames = EMPTY_DUAL_NAMES)
     JuMP_model = JuMP.Model()
 
     if JuMP.mode(model) != JuMP.AUTOMATIC # Only works in AUTOMATIC mode
-        error("Dualization does not support solvers in $(model.moi_backend.mode) mode")
+        error(
+            "Dualization does not support solvers in $(model.moi_backend.mode) mode",
+        )
     end
     # Dualize and attach to the model
-    dualize(backend(model), DualProblem(backend(JuMP_model)); dual_names = dual_names)
+    dualize(
+        backend(model),
+        DualProblem(backend(JuMP_model));
+        dual_names = dual_names,
+    )
     fill_obj_dict_with_variables!(JuMP_model)
     return JuMP_model
 end
 
-function dualize(model::JuMP.Model, optimizer_constructor; dual_names::DualNames = EMPTY_DUAL_NAMES)
+function dualize(
+    model::JuMP.Model,
+    optimizer_constructor;
+    dual_names::DualNames = EMPTY_DUAL_NAMES,
+)
     # Dualize the JuMP model
     dual_JuMP_model = dualize(model; dual_names = dual_names)
     # Set the optimizer
@@ -129,9 +188,14 @@ level model is represented as a KKT in the upper level model.
 function dualize end
 
 function fill_obj_dict_with_variables!(model::JuMP.Model)
-    all_indices = MOI.get(model, JuMP.MOI.ListOfVariableIndices())::Vector{MOI.VariableIndex}
+    all_indices = MOI.get(
+        model,
+        JuMP.MOI.ListOfVariableIndices(),
+    )::Vector{MOI.VariableIndex}
     for vi in all_indices
-        model.obj_dict[Symbol(MOI.get(backend(model), MOI.VariableName(), vi))] = VariableRef(model, vi)
+        model.obj_dict[Symbol(
+            MOI.get(backend(model), MOI.VariableName(), vi),
+        )] = VariableRef(model, vi)
     end
     return model
 end

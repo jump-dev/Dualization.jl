@@ -3,18 +3,34 @@
 
 Returns `true` if `Function-in-Set` is supported for Dualization and throws an error if it is not.
 """
-function supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
+function supported_constraints(con_types::Vector{Tuple{DataType,DataType}})
     for (F, S) in con_types
         if !supported_constraint(F, S)
-            error("Constraints of function ", F, " in the Set ", S," are not implemented")
+            error(
+                "Constraints of function ",
+                F,
+                " in the Set ",
+                S,
+                " are not implemented",
+            )
         end
     end
     return
 end
 
 supported_constraint(::Type, ::Type) = false
-supported_constraint(::Type{<:Union{MOI.SingleVariable, MOI.ScalarAffineFunction}}, S::Type{<:MOI.AbstractScalarSet}) = _dual_set_type(S) !== nothing
-supported_constraint(::Type{<:Union{MOI.VectorOfVariables, MOI.VectorAffineFunction}}, S::Type{<:MOI.AbstractVectorSet}) = _dual_set_type(S) !== nothing
+function supported_constraint(
+    ::Type{<:Union{MOI.SingleVariable,MOI.ScalarAffineFunction}},
+    S::Type{<:MOI.AbstractScalarSet},
+)
+    return _dual_set_type(S) !== nothing
+end
+function supported_constraint(
+    ::Type{<:Union{MOI.VectorOfVariables,MOI.VectorAffineFunction}},
+    S::Type{<:MOI.AbstractVectorSet},
+)
+    return _dual_set_type(S) !== nothing
+end
 
 """
     supported_objective(primal_model::MOI.ModelLike)

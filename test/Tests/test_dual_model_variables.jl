@@ -1,11 +1,16 @@
 # Tests of this file not covered in other tests
 @testset "dual_model_variables.jl" begin
-
     @testset "push_to_dual_obj_aff_terms!" begin
         primal_model = soc1_test()
-        dual_obj_affine_terms = Dict{VI, Float64}()
-        ci = CI{VVF, MOI.SecondOrderCone}(2)
-        Dualization.push_to_dual_obj_aff_terms!(primal_model, dual_obj_affine_terms, VI(1), ci, 1)
+        dual_obj_affine_terms = Dict{VI,Float64}()
+        ci = CI{VVF,MOI.SecondOrderCone}(2)
+        Dualization.push_to_dual_obj_aff_terms!(
+            primal_model,
+            dual_obj_affine_terms,
+            VI(1),
+            ci,
+            1,
+        )
         @test isempty(dual_obj_affine_terms)
     end
 
