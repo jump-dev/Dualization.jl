@@ -82,7 +82,7 @@ function soc3_test()
     s.t.
         y ≥ 1/√2
         x² + y² ≤ 1
-
+        
     in conic form:
         min  x
     s.t.
@@ -138,7 +138,7 @@ function soc4_test()
     s.t.
         y ≥ 1/√2
         x² + y² ≤ 1
-
+        
     in conic form:
         min  x
     s.t.
@@ -196,7 +196,7 @@ function soc5_test()
         y ≥ 2
         x ≤ 1
         |y| ≤ x
-
+        
     in conic form:
         min x
     s.t.
@@ -251,7 +251,7 @@ function soc6_test()
             x[2]   - x[4]       == 0
                x[3]      - x[5] == 0
         x[1] >= ||(x[4],x[5])||
-
+        
     in conic form:
         min  c^Tx
     s.t.

@@ -6,7 +6,7 @@
             x + 2y + 3z >= 4 (a)
             x +  y      >= 1 (b)
             x,y,z \in R
-
+                
         dual
             max 4a - 3z a +  b - w1^2 - w1 w2 - w2^2 + z^2
         s.t.
@@ -101,7 +101,7 @@
             x + y = 1 (a)
             x    >= 0 (b)
                y >= 0 (c)
-
+                
         dual
             max 1 + y + a - y a - y c - 2 w1^2 + y^2
         s.t.
@@ -178,7 +178,7 @@
             x + y = 1 (a)
             x    >= 0 (b)
             y >= 0 (c)
-
+                
         dual
             max # ignored # 1 + y + a - y a - y c - 2 w1^2 + y^2
         s.t.
