@@ -83,15 +83,17 @@
         @test MOI.constant(obj) == 0.0
         @test MOI.coefficient.(obj.terms) == [-1.0; -0.5]
 
+        eq_con1, eq_con2 = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}())
+
         eq_con1_fun = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(2),
+            eq_con1,
         )
         eq_con1_set = MOI.get(
             dual_model,
             MOI.ConstraintSet(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(2),
+            eq_con1,
         )
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
@@ -99,12 +101,12 @@
         eq_con2_fun = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(3),
+            eq_con2,
         )
         eq_con2_set = MOI.get(
             dual_model,
             MOI.ConstraintSet(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(3),
+            eq_con2,
         )
         @test MOI.coefficient.(eq_con2_fun.terms) == [1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
@@ -123,9 +125,7 @@
         )] == VI.(1:4)
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[VI(1)] ==
-              CI{SAF{Float64},MOI.EqualTo{Float64}}(2)
-        @test primal_var_dual_con[VI(2)] ==
-              CI{SAF{Float64},MOI.EqualTo{Float64}}(3)
+        @test primal_var_dual_con[VI(1)] == eq_con1
+        @test primal_var_dual_con[VI(2)] == eq_con2
     end
 end
