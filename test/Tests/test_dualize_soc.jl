@@ -77,15 +77,17 @@
         @test MOI.constant(obj) == 0.0
         @test MOI.coefficient.(obj.terms) == [-1.0]
 
+        eq_con1, eq_con2, eq_con3 = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}())
+
         eq_con1_fun = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(2),
+            eq_con1,
         )
         eq_con1_set = MOI.get(
             dual_model,
             MOI.ConstraintSet(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(2),
+            eq_con1,
         )
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
@@ -93,12 +95,12 @@
         eq_con2_fun = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(3),
+            eq_con2,
         )
         eq_con2_set = MOI.get(
             dual_model,
             MOI.ConstraintSet(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(3),
+            eq_con2,
         )
         @test MOI.coefficient.(eq_con2_fun.terms) == [1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
@@ -106,12 +108,12 @@
         eq_con3_fun = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(4),
+            eq_con3,
         )
         eq_con3_set = MOI.get(
             dual_model,
             MOI.ConstraintSet(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(4),
+            eq_con3,
         )
         @test MOI.coefficient.(eq_con3_fun.terms) == [1.0]
         @test MOI.constant.(eq_con3_fun) == 0.0
@@ -126,15 +128,12 @@
 
         primal_con_dual_var = primal_dual_map.primal_con_dual_var
         @test primal_con_dual_var[CI{VAF{Float64},MOI.Zeros}(1)] == [VI(1)]
-        @test primal_con_dual_var[CI{VAF{Float64},MOI.SecondOrderCone}(2)] ==
-              [VI(2); VI(3); VI(4)]
+        primal_soc_con = first(MOI.get(primal_model, MOI.ListOfConstraintIndices{VAF{Float64},MOI.SecondOrderCone}()))
+        @test primal_con_dual_var[primal_soc_con] == [VI(2); VI(3); VI(4)]
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[VI(1)] ==
-              CI{SAF{Float64},MOI.EqualTo{Float64}}(2)
-        @test primal_var_dual_con[VI(2)] ==
-              CI{SAF{Float64},MOI.EqualTo{Float64}}(3)
-        @test primal_var_dual_con[VI(3)] ==
-              CI{SAF{Float64},MOI.EqualTo{Float64}}(4)
+        @test primal_var_dual_con[VI(1)] == eq_con1
+        @test primal_var_dual_con[VI(2)] == eq_con2
+        @test primal_var_dual_con[VI(3)] == eq_con3
     end
 end
