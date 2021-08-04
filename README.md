@@ -54,7 +54,7 @@ Solving an optimization problem via its dual representation can be useful becaus
 | SDPA | SeDuMi |
 | Mosek | MOI.FileFormats.SDPA |
 
-For more informations please read the [documentation][docs-stable-url]
+For more informations please read the [documentation][docs-stable-url].
 
 ### Bilevel optimization
 
