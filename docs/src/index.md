@@ -5,7 +5,7 @@ This package has two main features: the `dualize` function, which enables users 
 
 ## Installation
 
-To install the package you can use `Pkg.add` it as follows:
+To install the package you can use `Pkg.add` as follows:
 ```julia
 pkg> add Dualization
 ```
