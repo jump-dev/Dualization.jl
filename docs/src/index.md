@@ -14,4 +14,4 @@ pkg> add Dualization
 
 Contributions to this package are more than welcome, if you find a bug or have any suggestions for the documentation please post it on the [github issue tracker](https://github.com/jump-dev/Dualization.jl/issues).
 
-When contributing please note that the package follows the [JuMP style guide](https://jump.dev/JuMP.jl/stable/style/)
+When contributing please note that the package follows the [JuMP style guide](https://jump.dev/JuMP.jl/stable/developers/style/).
