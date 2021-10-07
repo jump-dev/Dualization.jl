@@ -7,7 +7,7 @@
             x^0.9 * y^(0.1) >= |z| (i.e (x, y, z) are in the 3d power cone with a=0.9) :w_3, w_4, w_5
             x == 2 :w_2
             y == 1 :w_2
-
+                
         dual
             min -w_2 - 2w_1
         s.t.
@@ -113,7 +113,7 @@
             x^0.9 * y^(0.1) >= |z| (i.e (x, y, z) are in the 3d power cone with a=0.9) :w_3, w_4, w_5
             x == 2 :w_2
             y == 1 :w_2
-
+                
         dual
             min -w_2 - 2w_1
         s.t.

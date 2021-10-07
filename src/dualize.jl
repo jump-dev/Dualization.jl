@@ -131,6 +131,7 @@ function dualize(model::JuMP.Model; dual_names::DualNames = EMPTY_DUAL_NAMES)
         dual_names = dual_names,
     )
     fill_obj_dict_with_variables!(JuMP_model)
+    fill_obj_dict_with_constraints!(JuMP_model)
     return JuMP_model
 end
 
@@ -198,4 +199,27 @@ function fill_obj_dict_with_variables!(model::JuMP.Model)
         )] = VariableRef(model, vi)
     end
     return model
+end
+
+function fill_obj_dict_with_constraints!(model::JuMP.Model)
+    con_types = MOI.get(model, JuMP.MOI.ListOfConstraints())
+    for (F, S) in con_types
+        fill_obj_dict_with_constraints!(model, F, S)
+    end
+    return model
+end
+
+function fill_obj_dict_with_constraints!(model::JuMP.Model, F::Type, S::Type)
+    for ci in MOI.get(backend(model), MOI.ListOfConstraintIndices{F,S}())
+        name = MOI.get(backend(model), MOI.ConstraintName(), ci)
+        if F <: MOI.AbstractScalarFunction
+            model.obj_dict[Symbol(name)] =
+                ConstraintRef(model, ci, JuMP.ScalarShape())
+        elseif S <: MOI.AbstractVectorFunction
+            model.obj_dict[Symbol(name)] =
+                ConstraintRef(model, ci, JuMP.VectorShape())
+        else
+            continue
+        end
+    end
 end

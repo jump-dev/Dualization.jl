@@ -7,7 +7,7 @@
             x +  y +  z == 3 :w_4
             y +  z == 2      :w_5
             x>=0 y>=0 z>=0   :w_1, w_2, w_3
-
+                
         dual
             max 3w_4 + 2w_5
         s.t.
@@ -106,7 +106,7 @@
             y <= 0 :w_3
             z >= 0 :w_2
             s zero :w_1
-
+                
         dual
             max -4w_4 - 3w_5 + 12w_6
         s.t
