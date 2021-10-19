@@ -6,7 +6,7 @@
         s.t.
            x == 1          :w_4
            x >= ||(y,z)||  :w_1, w_2, w_3
-                
+
         dual
            min -w_4
         s.t.
@@ -43,7 +43,7 @@
         s.t.
            x == 1          :w_4
            x >= ||(y,z)||  :w_1, w_2, w_3
-                
+
         dual
            min -w_4
         s.t.

@@ -6,9 +6,9 @@
         s.t.
             x_1 >= 3         :y_2
             x_1 + 2x_2 <= 3  :y_3
-                
+
         ignore x_2 during dualization
-                
+
         dual
             obj ignored
         s.t.
@@ -76,21 +76,20 @@
         primal
             min -4x1 -3x2 -1
         s.t.
-            2x1 + x2 - 3 <= 0  :y_3
-            x1 + 2x2 - 3 <= 0  :y_4
+            2x1 + x2 - 3 <= 0  :y_2
+            x1 + 2x2 - 3 <= 0  :y_3
             x1 >= 1            :y_1
-            x2 >= 0            :y_2
-                
+            x2 >= 0
+
             ignore x_1 during dualization
-                
+
         dual
             obj ignored
-        s.a.
-            y_2 + y_3 + 2y_4 = -3 :x_2
+        s.t.
+            -y_2 - 2y_3 >= 3 :x_2
             y_1 >= 0
-            y_2 >= 0
+            y_2 <= 0
             y_3 <= 0
-            y_4 <= 0
         =#
         primal_model = lp7_test()
         dual = Dualization.dualize(
@@ -101,54 +100,53 @@
         dual_model = dual.dual_model
         primal_dual_map = dual.primal_dual_map
 
-        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
+        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
         @test Set(list_of_cons) == Set(
             [
                 (SVF, MOI.GreaterThan{Float64})
-                (SAF{Float64}, MOI.EqualTo{Float64})
+                (SAF{Float64}, MOI.GreaterThan{Float64})
                 (VVF, MOI.Nonpositives)
             ],
         )
         @test MOI.get(
             dual_model,
             MOI.NumberOfConstraints{SVF,MOI.GreaterThan{Float64}}(),
-        ) == 2
+        ) == 1
         @test MOI.get(
             dual_model,
             MOI.NumberOfConstraints{VVF,MOI.Nonpositives}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{SAF{Float64},MOI.GreaterThan{Float64}}(),
         ) == 1
         # @show obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
+        eq, = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+        )
 
-        eq_con2_fun = MOI.get(
-            dual_model,
-            MOI.ConstraintFunction(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(2),
-        )
-        eq_con2_set = MOI.get(
-            dual_model,
-            MOI.ConstraintSet(),
-            CI{SAF{Float64},MOI.EqualTo{Float64}}(2),
-        )
-        @test MOI.coefficient.(eq_con2_fun.terms) == [1.0; 2.0; 1.0]
+        eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq)
+        eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), eq)
+        @test MOI.coefficient.(eq_con2_fun.terms) == [-1.0; -2.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
-        @test MOI.constant(eq_con2_set) == -3.0
+        @test MOI.constant(eq_con2_set) == 3.0
 
         primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[CI{VAF{Float64},MOI.Nonpositives}(1)] ==
-              [VI(1); VI(2)]
-        @test primal_con_dual_var[CI{SVF,MOI.GreaterThan{Float64}}(1)] ==
-              [VI(3)]
-        @test primal_con_dual_var[CI{SVF,MOI.GreaterThan{Float64}}(2)] ==
-              [VI(4)]
+        vaf_npos, = MOI.get(
+            primal_model,
+            MOI.ListOfConstraintIndices{VAF{Float64},MOI.Nonpositives}(),
+        )
+        @test primal_con_dual_var[vaf_npos] == [VI(1); VI(2)]
+        vgt, = MOI.get(
+            primal_model,
+            MOI.ListOfConstraintIndices{SVF,MOI.GreaterThan{Float64}}(),
+        )
+        @test primal_con_dual_var[vgt] == [VI(3)]
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[VI(2)] ==
-              CI{SAF{Float64},MOI.EqualTo{Float64}}(2)
+        @test isempty(primal_var_dual_con)
     end
 
     @testset "lp12_test - x_1 and x_3 ignored" begin
@@ -159,9 +157,9 @@
             x_1 + 2x_2 + x_3 <= 20 :y_3
             x_1 <= 1               :y_1
             x_2 <= 3               :y_2
-                
+
         ignoring x_1 and x_3
-                
+
         dual
             obj ignored
         s.t.
