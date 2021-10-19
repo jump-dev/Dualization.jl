@@ -8,9 +8,6 @@ function add_dual_equality_constraints(
     variable_parameters::Vector{VI},
 ) where {T}
     sense_change =
-        MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) :
-        -one(T)
-    sense_change =
         MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
 
     all_variables = MOI.get(primal_model, MOI.ListOfVariableIndices())
@@ -47,6 +44,7 @@ function add_dual_equality_constraints(
         _add_constrained_variable_constraint(
             dual_model,
             primal_model,
+            primal_dual_map.constrained_var_zero,
             primal_dual_map.constrained_var_dual,
             ci,
             scalar_affine_terms,
@@ -89,19 +87,28 @@ end
 function _add_constrained_variable_constraint(
     dual_model,
     primal_model,
+    zero_map,
     ci_map,
     ci::MOI.ConstraintIndex{MOI.VectorOfVariables,MOI.Zeros},
     scalar_affine_terms,
     scalar_terms,
     sense_change,
-    ::Type,
-)
+    ::Type{T},
+) where {T}
     # The dual is `Reals`, adding a constraint `func`-in-`Reals` is equivalent
     # to not adding any constraint.
+    func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    zero_map[ci] = MOIU.vectorize([
+        MOI.ScalarAffineFunction(
+            MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
+            sense_change * get(scalar_terms, primal_vi, zero(T)),
+        ) for primal_vi in func_primal.variables
+    ])
 end
 function _add_constrained_variable_constraint(
     dual_model,
     primal_model,
+    zero_map,
     ci_map,
     ci::MOI.ConstraintIndex{MOI.VectorOfVariables},
     scalar_affine_terms,
@@ -125,18 +132,26 @@ end
 function _add_constrained_variable_constraint(
     dual_model,
     primal_model,
+    zero_map,
     ci_map,
     ci::MOI.ConstraintIndex{MOI.SingleVariable,<:MOI.EqualTo},
     scalar_affine_terms,
     scalar_terms,
     sense_change,
-    ::Type,
-)
+    ::Type{T},
+) where {T}
     # Nothing to add as the set is `EqualTo`.
+    func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    primal_vi = func_primal.variable
+    zero_map[ci] = MOI.ScalarAffineFunction(
+        MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
+        sense_change * get(scalar_terms, primal_vi, zero(T)),
+    )
 end
 function _add_constrained_variable_constraint(
     dual_model,
     primal_model,
+    zero_map,
     ci_map,
     ci::MOI.ConstraintIndex{MOI.SingleVariable},
     scalar_affine_terms,
