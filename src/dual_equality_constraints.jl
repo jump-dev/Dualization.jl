@@ -116,15 +116,15 @@ function _add_constrained_variable_constraint(
     sense_change,
     ::Type{T},
 ) where {T}
+    set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
+    set_dual = MOI.dual_set(set_primal)
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     func_dual = MOIU.vectorize([
         MOI.ScalarAffineFunction(
-            MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
-            sense_change * get(scalar_terms, primal_vi, zero(T)),
-        ) for primal_vi in func_primal.variables
+            MOIU.operate_term.(*, -inv(set_dot(i, set_primal, T)), scalar_affine_terms[primal_vi]),
+            sense_change * inv(set_dot(i, set_primal, T)) * get(scalar_terms, primal_vi, zero(T)),
+        ) for (i, primal_vi) in enumerate(func_primal.variables)
     ])
-    set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
-    set_dual = MOI.dual_set(set_primal)
     ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
     return
 end

@@ -107,7 +107,7 @@ primal_power_cone_optimizer = []
 # Comment the solver that are not available for development
 include("Solvers/glpk_test.jl")
 include("Solvers/ecos_test.jl")
-# include("Solvers/csdp_test.jl")
+include("Solvers/csdp_test.jl")
 include("Solvers/scs_test.jl")
 
 include("Tests/test_JuMP_dualize.jl")
