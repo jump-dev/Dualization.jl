@@ -162,22 +162,22 @@ function MOI.modify(
     return
 end
 
-# TODO add this when constrained variables are implemented
-#function MOI.supports_add_constrained_variables(
-#    optimizer::DualOptimizer{T}, S::Type{MOI.Reals}) where T
-#    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
-#                                   MOI.ScalarAffineFunction{T},
-#                                   MOI.EqualTo{T}) # If it was `MOI.Zeros`, we would not need this method as special case of the one below
-#end
-#function MOI.supports_add_constrained_variables(
-#    optimizer::DualOptimizer{T}, S::Type{<:MOI.AbstractVectorSet}) where T
-#    D = _dual_set_type(S)
-#    if D === nothing
-#        return false
-#    end
-#    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
-#                                   MOI.VectorAffineFunction{T}, D)
-#end
+function MOI.supports_add_constrained_variables(
+    optimizer::DualOptimizer{T}, S::Type{MOI.Reals}) where T
+    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
+                                   MOI.ScalarAffineFunction{T},
+                                   MOI.EqualTo{T})
+    # If `_dual_set_type(MOI.Reals)` was `MOI.Zeros`, we would not need this method as special case of the one below
+end
+function MOI.supports_add_constrained_variables(
+    optimizer::DualOptimizer{T}, S::Type{<:MOI.AbstractVectorSet}) where T
+    D = _dual_set_type(S)
+    if D === nothing
+        return false
+    end
+    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
+                                   MOI.VectorAffineFunction{T}, D)
+end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
     # Dualize the original problem
