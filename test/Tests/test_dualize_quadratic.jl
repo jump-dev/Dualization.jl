@@ -6,7 +6,7 @@
             x + 2y + 3z >= 4 (a)
             x +  y      >= 1 (b)
             x,y \in R
-                
+
         dual
             max 4a +  b - w1^2 - w1 w2 - w2^2 - w2 w3 - w3^2
         s.t.
@@ -112,7 +112,7 @@
             x + y = 1 (a)
             x    >= 0 (b)
                y >= 0 (c)
-                
+
         dual
             max a + 1 - 2 w1^2 - w2^2 - w1 w2
         s.t.
@@ -127,16 +127,14 @@
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
-        @test Set(list_of_cons) == Set(
-            [
-                (SAF{Float64}, MOI.GreaterThan{Float64})
-            ],
-        )
+        @test Set(list_of_cons) ==
+              Set([(SAF{Float64}, MOI.GreaterThan{Float64})],)
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
         @test obj_type == SQF{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 1.0
         @test MOI.coefficient.(obj.affine_terms) == [1.0]
-        @test Set(MOI.coefficient.(obj.quadratic_terms)) == Set([-4.0; -1.0; -2.0])
+        @test Set(MOI.coefficient.(obj.quadratic_terms)) ==
+              Set([-4.0; -1.0; -2.0])
     end
 end

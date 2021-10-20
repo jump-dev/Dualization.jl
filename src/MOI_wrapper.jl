@@ -118,16 +118,21 @@ function MOI.supports_constraint(
     )
 end
 
-function _change_constant(model, ci::MOI.ConstraintIndex{<:MOI.ScalarAffineFunction, S}, constant, idx) where {S}
-    MOI.set(
-        model,
-        MOI.ConstraintSet(),
-        ci,
-        S(constant),
-    )
+function _change_constant(
+    model,
+    ci::MOI.ConstraintIndex{<:MOI.ScalarAffineFunction,S},
+    constant,
+    idx,
+) where {S}
+    MOI.set(model, MOI.ConstraintSet(), ci, S(constant))
     return
 end
-function _change_constant(model, ci::MOI.ConstraintIndex{<:MOI.VectorAffineFunction}, constant, idx)
+function _change_constant(
+    model,
+    ci::MOI.ConstraintIndex{<:MOI.VectorAffineFunction},
+    constant,
+    idx,
+)
     func = MOI.get(model, MOI.ConstraintFunction(), ci)
     constants = copy(func.constant)
     constants[idx] = -constant
@@ -143,7 +148,8 @@ function MOI.modify(
     # We must find the constraint corresponding to the variable in the objective
     # function and change its coefficient on the constraint.
     constant = obj_change.new_coefficient
-    if MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveSense()) == MOI.MIN_SENSE
+    if MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveSense()) ==
+       MOI.MIN_SENSE
         constant = -constant
     end
     vi = obj_change.variable
@@ -158,25 +164,39 @@ function MOI.modify(
         ci_dual = primal_dual_map.primal_var_dual_con[vi]
         index = 1
     end
-    _change_constant(optimizer.dual_problem.dual_model, ci_dual, constant, index)
+    _change_constant(
+        optimizer.dual_problem.dual_model,
+        ci_dual,
+        constant,
+        index,
+    )
     return
 end
 
 function MOI.supports_add_constrained_variables(
-    optimizer::DualOptimizer{T}, S::Type{MOI.Reals}) where T
-    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
-                                   MOI.ScalarAffineFunction{T},
-                                   MOI.EqualTo{T})
+    optimizer::DualOptimizer{T},
+    S::Type{MOI.Reals},
+) where {T}
+    return MOI.supports_constraint(
+        optimizer.dual_problem.dual_model,
+        MOI.ScalarAffineFunction{T},
+        MOI.EqualTo{T},
+    )
     # If `_dual_set_type(MOI.Reals)` was `MOI.Zeros`, we would not need this method as special case of the one below
 end
 function MOI.supports_add_constrained_variables(
-    optimizer::DualOptimizer{T}, S::Type{<:MOI.AbstractVectorSet}) where T
+    optimizer::DualOptimizer{T},
+    S::Type{<:MOI.AbstractVectorSet},
+) where {T}
     D = _dual_set_type(S)
     if D === nothing
         return false
     end
-    return MOI.supports_constraint(optimizer.dual_problem.dual_model,
-                                   MOI.VectorAffineFunction{T}, D)
+    return MOI.supports_constraint(
+        optimizer.dual_problem.dual_model,
+        MOI.VectorAffineFunction{T},
+        D,
+    )
 end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
@@ -266,7 +286,9 @@ function _get(
     ci_primal::MOI.ConstraintIndex{MOI.VectorOfVariables,MOI.Zeros},
     ::MOI.ConstraintIndex{Nothing,Nothing},
 ) where {T}
-    n = MOI.output_dimension(optimizer.dual_problem.primal_dual_map.constrained_var_zero[ci_primal])
+    n = MOI.output_dimension(
+        optimizer.dual_problem.primal_dual_map.constrained_var_zero[ci_primal],
+    )
     return zeros(T, n)
 end
 
@@ -320,7 +342,9 @@ function MOI.get(
     if ci in keys(primal_dual_map.constrained_var_dual)
         ci_dual = primal_dual_map.constrained_var_dual[ci]
         if ci_dual === NO_CONSTRAINT
-            return MOI.Utilities.eval_variables(primal_dual_map.constrained_var_zero[ci]) do vi
+            return MOI.Utilities.eval_variables(
+                primal_dual_map.constrained_var_zero[ci],
+            ) do vi
                 return MOI.get(
                     optimizer.dual_problem.dual_model,
                     MOI.VariablePrimal(),
@@ -337,7 +361,7 @@ function MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.ConstraintPrimal(),
             ci_dual,
-           ) - MOI.constant(set)
+        ) - MOI.constant(set)
     else
         return MOI.get(
             optimizer.dual_problem.dual_model,
@@ -356,7 +380,9 @@ function MOI.get(
     if ci in keys(primal_dual_map.constrained_var_dual)
         ci_dual = primal_dual_map.constrained_var_dual[ci]
         if ci_dual === NO_CONSTRAINT
-            return MOI.Utilities.eval_variables(primal_dual_map.constrained_var_zero[ci]) do vi
+            return MOI.Utilities.eval_variables(
+                primal_dual_map.constrained_var_zero[ci],
+            ) do vi
                 return MOI.get(
                     optimizer.dual_problem.dual_model,
                     MOI.VariablePrimal(),

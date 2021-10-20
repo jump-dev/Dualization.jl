@@ -8,7 +8,8 @@ function add_dual_equality_constraints(
     variable_parameters::Vector{VI},
 ) where {T}
     sense_change =
-        MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) : -one(T)
+        MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? one(T) :
+        -one(T)
 
     all_variables = MOI.get(primal_model, MOI.ListOfVariableIndices())
     restricted_variables = setdiff(all_variables, variable_parameters)
@@ -98,7 +99,7 @@ function _add_constrained_variable_constraint(
     # The dual is `Reals`, adding a constraint `func`-in-`Reals` is equivalent
     # to not adding any constraint.
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
-    zero_map[ci] = MOIU.vectorize([
+    return zero_map[ci] = MOIU.vectorize([
         MOI.ScalarAffineFunction(
             MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
             sense_change * get(scalar_terms, primal_vi, zero(T)),
@@ -121,8 +122,14 @@ function _add_constrained_variable_constraint(
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     func_dual = MOIU.vectorize([
         MOI.ScalarAffineFunction(
-            MOIU.operate_term.(*, -inv(set_dot(i, set_primal, T)), scalar_affine_terms[primal_vi]),
-            sense_change * inv(set_dot(i, set_primal, T)) * get(scalar_terms, primal_vi, zero(T)),
+            MOIU.operate_term.(
+                *,
+                -inv(set_dot(i, set_primal, T)),
+                scalar_affine_terms[primal_vi],
+            ),
+            sense_change *
+            inv(set_dot(i, set_primal, T)) *
+            get(scalar_terms, primal_vi, zero(T)),
         ) for (i, primal_vi) in enumerate(func_primal.variables)
     ])
     ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
@@ -143,7 +150,7 @@ function _add_constrained_variable_constraint(
     # Nothing to add as the set is `EqualTo`.
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     primal_vi = func_primal.variable
-    zero_map[ci] = MOI.ScalarAffineFunction(
+    return zero_map[ci] = MOI.ScalarAffineFunction(
         MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
         sense_change * get(scalar_terms, primal_vi, zero(T)),
     )
@@ -167,7 +174,8 @@ function _add_constrained_variable_constraint(
     )
     set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     set_dual = _dual_set(set_primal)
-    ci_map[ci] = MOIU.normalize_and_add_constraint(dual_model, func_dual, set_dual)
+    ci_map[ci] =
+        MOIU.normalize_and_add_constraint(dual_model, func_dual, set_dual)
     return
 end
 

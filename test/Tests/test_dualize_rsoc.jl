@@ -7,7 +7,7 @@
             a    == 1/2 :w_2
             b    == 1   :w_1
             2a*b >= x^2+y^2  :w_3, w_4, w_5, w_6
-                
+
         dual
             max w_2 + (1/2)w_1
         s.t.
@@ -22,11 +22,8 @@
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
-        @test Set(list_of_cons) == Set(
-            [
-                (VAF{Float64}, MOI.RotatedSecondOrderCone)
-            ],
-        )
+        @test Set(list_of_cons) ==
+              Set([(VAF{Float64}, MOI.RotatedSecondOrderCone)],)
         @test MOI.get(
             dual_model,
             MOI.NumberOfConstraints{VAF{Float64},MOI.RotatedSecondOrderCone}(),
@@ -47,7 +44,7 @@
             a    == 1/2
             b    == 1
             2a*b >= x^2+y^2
-                
+
         dual
             max w_2 + (1/2)w_1
         s.t.
@@ -83,31 +80,18 @@
         @test MOI.constant(obj) == 0.0
         @test MOI.coefficient.(obj.terms) == [-1.0; -0.5]
 
-        eq_con1, eq_con2 = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}())
+        eq_con1, eq_con2 = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+        )
 
-        eq_con1_fun = MOI.get(
-            dual_model,
-            MOI.ConstraintFunction(),
-            eq_con1,
-        )
-        eq_con1_set = MOI.get(
-            dual_model,
-            MOI.ConstraintSet(),
-            eq_con1,
-        )
+        eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con1)
+        eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con1)
         @test MOI.coefficient.(eq_con1_fun.terms) == [1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == -1.0
-        eq_con2_fun = MOI.get(
-            dual_model,
-            MOI.ConstraintFunction(),
-            eq_con2,
-        )
-        eq_con2_set = MOI.get(
-            dual_model,
-            MOI.ConstraintSet(),
-            eq_con2,
-        )
+        eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con2)
+        eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con2)
         @test MOI.coefficient.(eq_con2_fun.terms) == [1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == -1.0
