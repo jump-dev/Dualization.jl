@@ -40,7 +40,26 @@ function add_dual_equality_constraints(
         primal_objective,
     )
 
+    # Constrained variables
+    for ci in keys(primal_dual_map.constrained_var_dual)
+        _add_constrained_variable_constraint(
+            dual_model,
+            primal_model,
+            primal_dual_map.constrained_var_zero,
+            primal_dual_map.constrained_var_dual,
+            ci,
+            scalar_affine_terms,
+            scalar_terms,
+            sense_change,
+            T,
+        )
+    end
+
+    # Free variables
     for primal_vi in restricted_variables
+        if primal_vi in keys(primal_dual_map.constrained_var_idx)
+            continue # constrained variable
+        end
         # Add equality constraint
         dual_ci = MOIU.normalize_and_add_constraint(
             dual_model,
@@ -61,6 +80,103 @@ function add_dual_equality_constraints(
         push!(primal_dual_map.primal_var_dual_con, primal_vi => dual_ci)
     end
     return scalar_affine_terms
+end
+
+# `_add_constrained_variable_constraint` is a function barrier to avoid type
+# unstability.
+
+function _add_constrained_variable_constraint(
+    dual_model,
+    primal_model,
+    zero_map,
+    ci_map,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables,MOI.Zeros},
+    scalar_affine_terms,
+    scalar_terms,
+    sense_change,
+    ::Type{T},
+) where {T}
+    # The dual is `Reals`, adding a constraint `func`-in-`Reals` is equivalent
+    # to not adding any constraint.
+    func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    return zero_map[ci] = MOIU.vectorize([
+        MOI.ScalarAffineFunction(
+            MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
+            sense_change * get(scalar_terms, primal_vi, zero(T)),
+        ) for primal_vi in func_primal.variables
+    ])
+end
+function _add_constrained_variable_constraint(
+    dual_model,
+    primal_model,
+    zero_map,
+    ci_map,
+    ci::MOI.ConstraintIndex{MOI.VectorOfVariables},
+    scalar_affine_terms,
+    scalar_terms,
+    sense_change,
+    ::Type{T},
+) where {T}
+    set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
+    set_dual = MOI.dual_set(set_primal)
+    func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    func_dual = MOIU.vectorize([
+        MOI.ScalarAffineFunction(
+            MOIU.operate_term.(
+                *,
+                -inv(set_dot(i, set_primal, T)),
+                scalar_affine_terms[primal_vi],
+            ),
+            sense_change *
+            inv(set_dot(i, set_primal, T)) *
+            get(scalar_terms, primal_vi, zero(T)),
+        ) for (i, primal_vi) in enumerate(func_primal.variables)
+    ])
+    ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
+    return
+end
+
+function _add_constrained_variable_constraint(
+    dual_model,
+    primal_model,
+    zero_map,
+    ci_map,
+    ci::MOI.ConstraintIndex{MOI.SingleVariable,<:MOI.EqualTo},
+    scalar_affine_terms,
+    scalar_terms,
+    sense_change,
+    ::Type{T},
+) where {T}
+    # Nothing to add as the set is `EqualTo`.
+    func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    primal_vi = func_primal.variable
+    return zero_map[ci] = MOI.ScalarAffineFunction(
+        MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
+        sense_change * get(scalar_terms, primal_vi, zero(T)),
+    )
+end
+function _add_constrained_variable_constraint(
+    dual_model,
+    primal_model,
+    zero_map,
+    ci_map,
+    ci::MOI.ConstraintIndex{MOI.SingleVariable},
+    scalar_affine_terms,
+    scalar_terms,
+    sense_change,
+    ::Type{T},
+) where {T}
+    func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    primal_vi = func_primal.variable
+    func_dual = MOI.ScalarAffineFunction(
+        MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
+        sense_change * get(scalar_terms, primal_vi, zero(T)),
+    )
+    set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
+    set_dual = _dual_set(set_primal)
+    ci_map[ci] =
+        MOIU.normalize_and_add_constraint(dual_model, func_dual, set_dual)
+    return
 end
 
 function add_scalar_affine_terms_from_quad_obj(
@@ -213,8 +329,12 @@ function fill_scalar_affine_terms!(
     primal_model::MOI.ModelLike,
     ci::CI{SVF,S},
 ) where {T,S<:Union{MOI.GreaterThan{T},MOI.LessThan{T},MOI.EqualTo{T}}}
+    dual_var = get(primal_con_dual_var, ci, nothing)
+    if dual_var === nothing
+        return # No variables created as it's a constrained variable
+    end
     moi_function = get_function(primal_model, ci)
-    dual_vi = primal_con_dual_var[ci][1] # In this case we only have one vi
+    dual_vi = dual_var[1] # In this case we only have one vi
     push_to_scalar_affine_terms!(
         scalar_affine_terms[moi_function.variable],
         one(T),
@@ -250,10 +370,14 @@ function fill_scalar_affine_terms!(
     primal_model::MOI.ModelLike,
     ci::CI{VVF,S},
 ) where {T,S<:MOI.AbstractVectorSet}
+    dual_vars = get(primal_con_dual_var, ci, nothing)
+    if dual_vars === nothing
+        return # No variables created as it's part of constrained variables
+    end
     moi_function = get_function(primal_model, ci)
     set = get_set(primal_model, ci)
     for (i, variable) in enumerate(moi_function.variables)
-        dual_vi = primal_con_dual_var[ci][i]
+        dual_vi = dual_vars[i]
         push_to_scalar_affine_terms!(
             scalar_affine_terms[variable],
             set_dot(i, set, T) * one(T),

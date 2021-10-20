@@ -21,6 +21,12 @@ MOIU.@model(
 )
 
 mutable struct PrimalDualMap{T}
+    constrained_var_idx::Dict{VI,Tuple{CI,Int}}
+    constrained_var_dual::Dict{CI,CI}
+    constrained_var_zero::Dict{
+        CI,
+        Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
+    }
     primal_var_dual_con::Dict{VI,CI}
     primal_con_dual_var::Dict{CI,Vector{VI}}
     primal_con_dual_con::Dict{CI,CI}
@@ -31,6 +37,12 @@ mutable struct PrimalDualMap{T}
 
     function PrimalDualMap{T}() where {T}
         return new(
+            Dict{VI,Tuple{CI,Int}}(),
+            Dict{CI,CI}(),
+            Dict{
+                CI,
+                Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
+            }(),
             Dict{VI,CI}(),
             Dict{CI,Vector{VI}}(),
             Dict{CI,CI}(),
@@ -50,13 +62,17 @@ function is_empty(primal_dual_map::PrimalDualMap{T}) where {T}
            isempty(primal_dual_map.primal_var_dual_quad_slack)
 end
 
-function empty!(primal_dual_map::PrimalDualMap{T}) where {T}
-    primal_dual_map.primal_var_dual_con = Dict{VI,CI}()
-    primal_dual_map.primal_con_dual_var = Dict{CI,Vector{VI}}()
-    primal_dual_map.primal_con_dual_con = Dict{CI,CI}()
-    primal_dual_map.primal_con_constants = Dict{CI,Vector{T}}()
-    primal_dual_map.primal_parameter = Dict{VI,VI}()
-    return primal_dual_map.primal_var_dual_quad_slack = Dict{VI,VI}()
+function empty!(primal_dual_map::PrimalDualMap)
+    Base.empty!(primal_dual_map.constrained_var_idx)
+    Base.empty!(primal_dual_map.constrained_var_dual)
+    Base.empty!(primal_dual_map.constrained_var_zero)
+    Base.empty!(primal_dual_map.primal_var_dual_con)
+    Base.empty!(primal_dual_map.primal_con_dual_var)
+    Base.empty!(primal_dual_map.primal_con_dual_con)
+    Base.empty!(primal_dual_map.primal_con_constants)
+    Base.empty!(primal_dual_map.primal_parameter)
+    Base.empty!(primal_dual_map.primal_var_dual_quad_slack)
+    return
 end
 
 struct DualProblem{T,OT<:MOI.ModelLike}

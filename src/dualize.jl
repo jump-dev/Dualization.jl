@@ -56,6 +56,8 @@ function dualize(
     primal_objective =
         get_primal_objective(primal_model, variable_parameters, T)
 
+    add_constrained_variables(dual_problem, primal_model, variable_parameters)
+
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary from dual variables to primal constraints constants (obj coef of dual var)
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(

@@ -3,6 +3,7 @@
         linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
         linear_cache =
             MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
+        MOI.empty!(opt)
         linear_cached = MOIU.CachingOptimizer(linear_cache, opt)
         linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
 
