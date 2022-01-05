@@ -5,14 +5,13 @@ const MOIU = MathOptInterface.Utilities
 const MOIB = MathOptInterface.Bridges
 const MOIT = MathOptInterface.Test
 
-const SVF = MOI.SingleVariable
+const CI = MOI.ConstraintIndex
+const VI = MOI.VariableIndex
 const VVF = MOI.VectorOfVariables
 const SAF{T} = MOI.ScalarAffineFunction{T}
 const VAF{T} = MOI.VectorAffineFunction{T}
 const SQF{T} = MOI.ScalarQuadraticFunction{T}
 
-const VI = MOI.VariableIndex
-const CI = MOI.ConstraintIndex
 
 MOIU.@model(
     TestModel,

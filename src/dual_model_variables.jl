@@ -9,8 +9,8 @@ function add_dual_vars_in_dual_cones(
 ) where {T,F,S}
     for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
         # If `F` not one of these two, we can skip the `in` check.
-        if (F === MOI.VectorOfVariables || F === MOI.SingleVariable) &&
-           haskey(primal_dual_map.constrained_var_dual, ci)
+        if (F === MOI.VectorOfVariables || F === MOI.VariableIndex) &&
+            haskey(primal_dual_map.constrained_var_dual, ci)
             continue
         end
         # Add dual variable to dual cone
@@ -43,7 +43,7 @@ function add_dual_vars_in_dual_cones(
     primal_model::MOI.ModelLike,
     primal_dual_map::PrimalDualMap{T},
     dual_names::DualNames,
-    con_types::Vector{Tuple{DataType,DataType}},
+    con_types::Vector{Tuple{Type,Type}},
 ) where {T}
     dual_obj_affine_terms = Dict{VI,T}()
     for (F, S) in con_types
@@ -184,7 +184,7 @@ function add_primal_parameter_vars(
         added = Set{VI}()
         for vec in values(primal_objective.quad_cross_parameters)
             for term in vec
-                ind = term.variable_index
+                ind = term.variable
                 if ind in added
                     # do nothing
                 else
@@ -271,7 +271,7 @@ function add_quadratic_slack_vars(
     # are required
     added = Set{VI}()
     for term in primal_objective.obj.quadratic_terms
-        for ind in [term.variable_index_1, term.variable_index_2]
+        for ind in [term.variable_1, term.variable_2]
             if ind in added
                 #do nothing
             else

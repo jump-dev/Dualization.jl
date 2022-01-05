@@ -14,13 +14,3 @@ push!(primal_power_cone_optimizer, SCS_PRIMAL_OPT)
     list_of_exp_problems = [exp1_test, exp2_test]
     test_strong_duality(list_of_exp_problems, SCS_PRIMAL_FACTORY)
 end
-
-@testset "SCS Power Cone Problems" begin
-    list_of_pow_problems = [pow1_test, pow2_test]
-    test_strong_duality(
-        list_of_pow_problems,
-        SCS_PRIMAL_FACTORY;
-        atol = 1e-3,
-        rtol = 1e-3,
-    )
-end

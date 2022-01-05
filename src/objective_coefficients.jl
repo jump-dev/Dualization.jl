@@ -29,12 +29,12 @@ function _scalar_quadratic_function(
     ::Type{T},
 ) where {T}
     return _scalar_quadratic_function(
-        SQF{T}(func.terms, MOI.ScalarQuadraticTerm{T}[], func.constant),
+        SQF{T}(MOI.ScalarQuadraticTerm{T}[], func.terms, func.constant),
         T,
     )
 end
-function _scalar_quadratic_function(func::MOI.SingleVariable, T::Type)
-    return _scalar_quadratic_function(SAF{T}(func), T)
+function _scalar_quadratic_function(func::MOI.VariableIndex, T::Type)
+    return _scalar_quadratic_function(SAF{T}([MOI.ScalarAffineTerm(1.0, func)], 0), T)
 end
 
 # Primals
@@ -123,7 +123,7 @@ function split_variables(
     lin_params = MOI.ScalarAffineTerm{T}[]
     lin_vars = MOI.ScalarAffineTerm{T}[]
     for term in func.affine_terms
-        if term.variable_index in variable_parameters
+        if term.variable in variable_parameters
             push!(lin_params, term)
         else
             push!(lin_vars, term)
@@ -135,8 +135,8 @@ function split_variables(
     quad_vars = MOI.ScalarQuadraticTerm{T}[]
     quad_cross_params = Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}()
     for term in func.quadratic_terms
-        is_param_1 = term.variable_index_1 in variable_parameters
-        is_param_2 = term.variable_index_2 in variable_parameters
+        is_param_1 = term.variable_1 in variable_parameters
+        is_param_2 = term.variable_2 in variable_parameters
         if is_param_1 && is_param_2
             push!(quad_params, term)
         elseif is_param_1
@@ -149,9 +149,9 @@ function split_variables(
     end
 
     variables_func =
-        MOI.ScalarQuadraticFunction{T}(lin_vars, quad_vars, func.constant)
+        MOI.ScalarQuadraticFunction{T}(quad_vars, lin_vars, func.constant)
     parameters_func =
-        MOI.ScalarQuadraticFunction{T}(lin_params, quad_params, zero(T))
+        MOI.ScalarQuadraticFunction{T}(quad_params, lin_params, zero(T))
 
     return variables_func, quad_cross_params, parameters_func
 end
@@ -161,8 +161,8 @@ function push_affine_term(
     term::MOI.ScalarQuadraticTerm{T},
     var_is_first::Bool,
 ) where {T}
-    variable = var_is_first ? term.variable_index_1 : term.variable_index_2
-    parameter = var_is_first ? term.variable_index_2 : term.variable_index_1
+    variable = var_is_first ? term.variable_1 : term.variable_2
+    parameter = var_is_first ? term.variable_2 : term.variable_1
     if haskey(dic, variable)
         push!(
             dic[variable],
@@ -238,8 +238,8 @@ function get_dual_objective(
             quad_terms,
             MOI.ScalarQuadraticTerm{T}(
                 -MOI.coefficient(term),
-                map.primal_var_dual_quad_slack[term.variable_index_1],
-                map.primal_var_dual_quad_slack[term.variable_index_2],
+                map.primal_var_dual_quad_slack[term.variable_1],
+                map.primal_var_dual_quad_slack[term.variable_2],
             ),
         )
     end
@@ -254,7 +254,7 @@ function get_dual_objective(
                 lin_terms,
                 MOI.ScalarAffineTerm{T}(
                     MOI.coefficient(term),
-                    map.primal_parameter[term.variable_index],
+                    map.primal_parameter[term.variable],
                 ),
             )
         end
@@ -265,8 +265,8 @@ function get_dual_objective(
                 quad_terms,
                 MOI.ScalarQuadraticTerm{T}(
                     MOI.coefficient(term),
-                    map.primal_parameter[term.variable_index_1],
-                    map.primal_parameter[term.variable_index_2],
+                    map.primal_parameter[term.variable_1],
+                    map.primal_parameter[term.variable_2],
                 ),
             )
         end
@@ -281,7 +281,7 @@ function get_dual_objective(
                     MOI.ScalarQuadraticTerm{T}(
                         sense_change * MOI.coefficient(term),
                         param,
-                        term.variable_index,
+                        term.variable,
                     ),
                 )
             end
@@ -289,8 +289,8 @@ function get_dual_objective(
     end
 
     saf_dual_objective = MOI.ScalarQuadraticFunction{T}(
-        lin_terms,
         quad_terms,
+        lin_terms,
         MOI.constant(get_raw_obj(primal_objective)),
     )
     return DualObjective{T}(saf_dual_objective)

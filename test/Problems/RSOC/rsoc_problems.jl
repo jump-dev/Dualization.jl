@@ -12,10 +12,10 @@ function rsoc1_test()
 
     a = MOI.add_variable(model)
     b = MOI.add_variable(model)
-    vc1 = MOI.add_constraint(model, MOI.SingleVariable(a), MOI.EqualTo(0.5))
-    # We test this after the creation of every `SingleVariable` constraint
+    vc1 = MOI.add_constraint(model, a, MOI.EqualTo(0.5))
+    # We test this after the creation of every `VariableIndex` constraint
     # to ensure a good coverage of corner cases.
-    vc2 = MOI.add_constraint(model, MOI.SingleVariable(b), MOI.EqualTo(1.0))
+    vc2 = MOI.add_constraint(model, b, MOI.EqualTo(1.0))
     rsoc = MOI.add_constraint(
         model,
         MOI.VectorOfVariables([a; b; x]),
@@ -80,11 +80,11 @@ function rsoc3_test()
 
     x = MOI.add_variables(model, 3)
 
-    vc1 = MOI.add_constraint(model, MOI.SingleVariable(x[1]), MOI.LessThan(1.0))
-    vc2 = MOI.add_constraint(model, MOI.SingleVariable(x[2]), MOI.EqualTo(0.5))
+    vc1 = MOI.add_constraint(model, x[1], MOI.LessThan(1.0))
+    vc2 = MOI.add_constraint(model, x[2], MOI.EqualTo(0.5))
     vc3 = MOI.add_constraint(
         model,
-        MOI.SingleVariable(x[3]),
+        x[3],
         MOI.GreaterThan(2.0),
     )
 
@@ -123,12 +123,12 @@ function rsoc4_test()
     v = MOI.add_variable(model)
     t = MOI.add_variables(model, 2)
 
-    ct1 = MOI.add_constraint(model, MOI.SingleVariable(t[1]), MOI.EqualTo(1.0))
-    ct2 = MOI.add_constraint(model, MOI.SingleVariable(t[2]), MOI.EqualTo(1.0))
+    ct1 = MOI.add_constraint(model, t[1], MOI.EqualTo(1.0))
+    ct2 = MOI.add_constraint(model, t[2], MOI.EqualTo(1.0))
     cx =
         MOI.add_constraint(model, MOI.VectorOfVariables(x), MOI.Nonnegatives(2))
-    cu1 = MOI.add_constraint(model, MOI.SingleVariable(u), MOI.GreaterThan(0.0))
-    cu2 = MOI.add_constraint(model, MOI.SingleVariable(u), MOI.LessThan(3.0))
+    cu1 = MOI.add_constraint(model, u, MOI.GreaterThan(0.0))
+    cu2 = MOI.add_constraint(model, u, MOI.LessThan(3.0))
 
     c1 = MOI.add_constraint(
         model,
@@ -182,15 +182,15 @@ function rsoc5_test()
     v = MOI.add_variable(model)
     t = MOI.add_variables(model, 2)
 
-    ct1 = MOI.add_constraint(model, MOI.SingleVariable(t[1]), MOI.EqualTo(1.0))
-    ct2 = MOI.add_constraint(model, MOI.SingleVariable(t[2]), MOI.EqualTo(1.0))
+    ct1 = MOI.add_constraint(model, t[1], MOI.EqualTo(1.0))
+    ct2 = MOI.add_constraint(model, t[2], MOI.EqualTo(1.0))
     cx = MOI.add_constraint(
         model,
         MOI.VectorOfVariables(x),
         MOI.Nonnegatives(10),
     )
-    cu1 = MOI.add_constraint(model, MOI.SingleVariable(u), MOI.GreaterThan(0.0))
-    cu2 = MOI.add_constraint(model, MOI.SingleVariable(u), MOI.LessThan(3.0))
+    cu1 = MOI.add_constraint(model, u, MOI.GreaterThan(0.0))
+    cu2 = MOI.add_constraint(model, u, MOI.LessThan(3.0))
 
     c1 = MOI.add_constraint(
         model,

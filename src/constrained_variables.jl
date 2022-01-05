@@ -6,21 +6,21 @@ function add_constrained_variables(
     single_or_vector_variables_types =
         MOIU.sorted_variable_sets_by_cost(dual_problem.dual_model, primal_model)
     params = Set(variable_parameters)
-    for (F, S) in single_or_vector_variables_types
-        if F === MOI.VectorOfVariables
+    for S in single_or_vector_variables_types
+        if S <: MOI.AbstractVectorSet
             _add_constrained_variables(
                 dual_problem.primal_dual_map,
                 primal_model,
                 S,
                 params,
             )
-        elseif F === MOI.SingleVariable
-            _add_constrained_variable(
+        elseif S <: MOI.AbstractScalarSet 
+            Dualization._add_constrained_variable(
                 dual_problem.primal_dual_map,
                 primal_model,
                 S,
                 params,
-            )
+            ) 
         end
     end
 end
@@ -59,16 +59,16 @@ function _add_constrained_variable(
 ) where {S<:MOI.AbstractScalarSet}
     cis = MOI.get(
         primal_model,
-        MOI.ListOfConstraintIndices{MOI.SingleVariable,S}(),
+        MOI.ListOfConstraintIndices{MOI.VariableIndex,S}(),
     )
     for ci in cis
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
-        if !haskey(m.constrained_var_idx, f.variable) && !(f.variable in params)
+        if !haskey(m.constrained_var_idx, f) && !(f in params)
             set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
             if !iszero(MOI.constant(set))
                 continue
             end
-            m.constrained_var_idx[f.variable] = (ci, 1)
+            m.constrained_var_idx[f] = (ci, 1)
             # Placeholder to indicate this constraint is part of constrained variables,
             # it will be replaced later with a dual constraints
             m.constrained_var_dual[ci] = CI{Nothing,Nothing}(0)

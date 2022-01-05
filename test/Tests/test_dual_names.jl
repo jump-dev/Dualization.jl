@@ -10,23 +10,15 @@
         CI{SAF{Float64},MOI.LessThan{Float64}}(1),
         "lessthan",
     )
-    MOI.set(
-        model,
-        MOI.ConstraintName(),
-        CI{SVF,MOI.GreaterThan{Float64}}(1),
-        "greaterthan1",
-    )
     @test model.con_to_name[CI{SAF{Float64},MOI.LessThan{Float64}}(1)] ==
           "lessthan"
-    @test model.con_to_name[CI{SVF,MOI.GreaterThan{Float64}}(1)] ==
-          "greaterthan1"
 
     # Dualize without names
     dual_problem = dualize(model)
     dual_model = dual_problem.dual_model
     primal_dual_map = dual_problem.primal_dual_map
     # Query variable names
-    vi_1 = primal_dual_map.primal_con_dual_var[CI{SVF,MOI.GreaterThan{Float64}}(
+    vi_1 = primal_dual_map.primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(
         1,
     )][1]
     vi_2 = primal_dual_map.primal_con_dual_var[CI{
@@ -50,7 +42,7 @@
     dual_model = dual_problem.dual_model
     primal_dual_map = dual_problem.primal_dual_map
     # Query variable names
-    vi_1 = primal_dual_map.primal_con_dual_var[CI{SVF,MOI.GreaterThan{Float64}}(
+    vi_1 = primal_dual_map.primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(
         1,
     )][1]
     vi_2 = primal_dual_map.primal_con_dual_var[CI{
@@ -59,8 +51,6 @@
     }(
         1,
     )][1]
-    @test MOI.get(dual_model, MOI.VariableName(), vi_1) ==
-          "dualvar_greaterthan1_1"
     @test MOI.get(dual_model, MOI.VariableName(), vi_2) == "dualvar_lessthan_1"
     # Query constraint names
     ci_1 = primal_dual_map.primal_var_dual_con[VI(1)]

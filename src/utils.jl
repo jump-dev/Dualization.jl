@@ -13,7 +13,7 @@ end
 
 function get_scalar_term(
     model::MOI.ModelLike,
-    ci::CI{SVF,S},
+    ci::CI{VI,S},
 ) where {S<:MOI.AbstractScalarSet}
     return [-MOI.constant(get_set(model, ci))]
 end
@@ -41,7 +41,7 @@ end
 function get_scalar_term(
     model::MOI.ModelLike,
     i::Int,
-    ci::CI{SVF,S},
+    ci::CI{VI,S},
 ) where {S<:MOI.AbstractScalarSet}
     return -MOI.constant(get_set(model, ci))
 end
