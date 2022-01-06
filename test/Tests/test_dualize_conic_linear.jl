@@ -78,7 +78,6 @@
             y <= 0
             z >= 0
             s zero
-                                                        
         dual
             max -4w_4 - 3w_5 + 12w_6
         s.t
