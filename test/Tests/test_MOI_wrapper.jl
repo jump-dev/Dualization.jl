@@ -52,6 +52,7 @@
                     "test_conic_SecondOrderCone_negative_post_bound_2",
                     "test_conic_SecondOrderCone_negative_post_bound_3",
                     "test_conic_SecondOrderCone_no_initial_bound",
+                    "test_conic_RotatedSecondOrderCone_out_of_order",
                     "test_conic_linear_INFEASIBLE",
                 ]
             )
