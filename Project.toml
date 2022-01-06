@@ -8,11 +8,8 @@ JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [compat]
-CSDP = "0.7"
-ECOS = "0.14"
-GLPK = "0.15"
 JuMP = "0.22"
-SCS = "0.8"
+MathOptInterface = "0.10"
 julia = "1"
 
 [extras]
