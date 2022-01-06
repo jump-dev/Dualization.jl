@@ -11,9 +11,7 @@
             MOIT.runtests(
                 linear_bridged,
                 linear_config,
-                include = [
-                    "test_linear_",
-                ],
+                include = ["test_linear_"],
                 exclude = [
                     "test_linear_FEASIBILITY_SENSE",
                     "test_linear_INFEASIBLE_2",
@@ -22,8 +20,8 @@
                     "test_linear_inactive_bounds",
                     "test_linear_integration_2",
                     "test_linear_integration_Interval",
-                    "test_linear_integration_delete_variables"
-                ]
+                    "test_linear_integration_delete_variables",
+                ],
             )
         end
     end
@@ -40,9 +38,7 @@
             MOIT.runtests(
                 conic_bridged,
                 conic_config,
-                include = [
-                    "test_conic_"
-                ],
+                include = ["test_conic_"],
                 exclude = [
                     "test_conic_NormInfinityCone_INFEASIBLE",
                     "test_conic_NormOneCone_INFEASIBLE",
@@ -54,7 +50,7 @@
                     "test_conic_SecondOrderCone_no_initial_bound",
                     "test_conic_RotatedSecondOrderCone_out_of_order",
                     "test_conic_linear_INFEASIBLE",
-                ]
+                ],
             )
         end
 
@@ -62,9 +58,7 @@
             MOIT.runtests(
                 conic_bridged,
                 conic_config,
-                include = [
-                    "test_quadratic_"
-                ],
+                include = ["test_quadratic_"],
             )
         end
     end

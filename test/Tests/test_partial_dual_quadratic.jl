@@ -6,7 +6,6 @@
             x + 2y + 3z >= 4 (a)
             x +  y      >= 1 (b)
             x,y,z \in R
-
         dual
             max 4a - 3z a +  b - w1^2 - w1 w2 - w2^2 + z^2
         s.t.
@@ -101,7 +100,6 @@
             x + y = 1 (a)
             x    >= 0 (b)
                y >= 0 (c)
-
         dual
             max 1 + y + a - y a - y c - 2 w1^2 + y^2
         s.t.
@@ -157,8 +155,7 @@
         @test primal_con_dual_var[CI{SAF{Float64},MOI.EqualTo{Float64}}(1)] ==
               [VI(1)]
         @test !haskey(primal_con_dual_var, CI{VI,MOI.GreaterThan{Float64}}(1))
-        @test primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(2)] ==
-              [VI(2)]
+        @test primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(2)] == [VI(2)]
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
         @test isempty(primal_var_dual_con)
@@ -176,7 +173,6 @@
             x + y = 1 (a)
             x    >= 0 (b)
             y >= 0 (c)
-
         dual
             max # ignored # 1 + y + a - y a - y c - 2 w1^2 + y^2
         s.t.
@@ -233,12 +229,8 @@
         primal_con_dual_var = primal_dual_map.primal_con_dual_var
         @test primal_con_dual_var[CI{SAF{Float64},MOI.EqualTo{Float64}}(1)] ==
               [VI(1)]
-        @test !(haskey(
-            primal_con_dual_var,
-            CI{VI,MOI.GreaterThan{Float64}}(1),
-        ))
-        @test primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(2)] ==
-              [VI(2)]
+        @test !(haskey(primal_con_dual_var, CI{VI,MOI.GreaterThan{Float64}}(1)))
+        @test primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(2)] == [VI(2)]
 
         @test isempty(primal_dual_map.primal_var_dual_con)
 

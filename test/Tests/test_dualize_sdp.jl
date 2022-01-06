@@ -6,7 +6,6 @@
         s.t.
             X[2,1] = 1 : y_1
             X in PSD : y_2, y_3, y_4
-
         dual
             max y_1
         s.t.
@@ -45,7 +44,6 @@
         s.t.
             X[2,1] = 1 : y_1
             X in PSD : y_2, y_3, y_4
-
         dual
             max y_1
         s.t.

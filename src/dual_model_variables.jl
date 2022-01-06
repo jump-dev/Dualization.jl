@@ -10,7 +10,7 @@ function add_dual_vars_in_dual_cones(
     for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
         # If `F` not one of these two, we can skip the `in` check.
         if (F === MOI.VectorOfVariables || F === MOI.VariableIndex) &&
-            haskey(primal_dual_map.constrained_var_dual, ci)
+           haskey(primal_dual_map.constrained_var_dual, ci)
             continue
         end
         # Add dual variable to dual cone

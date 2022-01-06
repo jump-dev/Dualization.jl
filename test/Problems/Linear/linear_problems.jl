@@ -369,11 +369,7 @@ function lp10_test()
 
     MOI.add_constraint(model, X[2], MOI.EqualTo(0.0))
 
-    MOI.set(
-        model,
-        MOI.ObjectiveFunction{MOI.VariableIndex}(),
-        X[1],
-    )
+    MOI.set(model, MOI.ObjectiveFunction{MOI.VariableIndex}(), X[1])
 
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 

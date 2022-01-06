@@ -6,9 +6,7 @@
         s.t.
             x_1 >= 3         :y_2
             x_1 + 2x_2 <= 3  :y_3
-
         ignore x_2 during dualization
-
         dual
             obj ignored
         s.t.
@@ -80,9 +78,7 @@
             x1 + 2x2 - 3 <= 0  :y_3
             x1 >= 1            :y_1
             x2 >= 0
-
             ignore x_1 during dualization
-
         dual
             obj ignored
         s.t.
@@ -157,9 +153,7 @@
             x_1 + 2x_2 + x_3 <= 20 :y_3
             x_1 <= 1               :y_1
             x_2 <= 3               :y_2
-
         ignoring x_1 and x_3
-
         dual
             obj ignored
         s.t.

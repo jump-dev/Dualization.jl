@@ -18,9 +18,8 @@
     dual_model = dual_problem.dual_model
     primal_dual_map = dual_problem.primal_dual_map
     # Query variable names
-    vi_1 = primal_dual_map.primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(
-        1,
-    )][1]
+    vi_1 =
+        primal_dual_map.primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(1)][1]
     vi_2 = primal_dual_map.primal_con_dual_var[CI{
         SAF{Float64},
         MOI.LessThan{Float64},
@@ -42,9 +41,8 @@
     dual_model = dual_problem.dual_model
     primal_dual_map = dual_problem.primal_dual_map
     # Query variable names
-    vi_1 = primal_dual_map.primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(
-        1,
-    )][1]
+    vi_1 =
+        primal_dual_map.primal_con_dual_var[CI{VI,MOI.GreaterThan{Float64}}(1)][1]
     vi_2 = primal_dual_map.primal_con_dual_var[CI{
         SAF{Float64},
         MOI.LessThan{Float64},

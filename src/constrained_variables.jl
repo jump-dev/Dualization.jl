@@ -14,13 +14,13 @@ function add_constrained_variables(
                 S,
                 params,
             )
-        elseif S <: MOI.AbstractScalarSet 
-            Dualization._add_constrained_variable(
+        elseif S <: MOI.AbstractScalarSet
+            _add_constrained_variable(
                 dual_problem.primal_dual_map,
                 primal_model,
                 S,
                 params,
-            ) 
+            )
         end
     end
 end

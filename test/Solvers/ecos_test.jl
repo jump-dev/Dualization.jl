@@ -9,12 +9,8 @@ const ECOS_DUAL_OPT = MOI.instantiate(ECOS_DUAL_FACTORY)
 
 @testset "ECOS conic Problems" begin
     @testset "ECOS Conic linear problems" begin
-        list_of_soc_problems = [
-            conic_linear1_test,
-            conic_linear2_test,
-            conic_linear3_test,
-            conic_linear4_test,
-        ]
+        list_of_soc_problems =
+            [conic_linear2_test, conic_linear3_test, conic_linear4_test]
         test_strong_duality(list_of_soc_problems, ECOS_PRIMAL_FACTORY)
     end
     @testset "ECOS SOC problems" begin

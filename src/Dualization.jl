@@ -13,7 +13,6 @@ const VAF{T} = MOI.VectorAffineFunction{T}
 const SQF{T} = MOI.ScalarQuadraticFunction{T}
 const VQF{T} = MOI.VectorQuadraticFunction{T}
 
-
 include("structures.jl")
 include("utils.jl")
 include("dual_sets.jl")

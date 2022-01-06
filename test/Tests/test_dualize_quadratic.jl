@@ -6,7 +6,6 @@
             x + 2y + 3z >= 4 (a)
             x +  y      >= 1 (b)
             x,y \in R
-
         dual
             max 4a +  b - w1^2 - w1 w2 - w2^2 - w2 w3 - w3^2
         s.t.
@@ -112,7 +111,6 @@
             x + y = 1 (a)
             x    >= 0 (b)
                y >= 0 (c)
-
         dual
             max a + 1 - 2 w1^2 - w2^2 - w1 w2
         s.t.

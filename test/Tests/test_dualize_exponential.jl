@@ -7,7 +7,6 @@
             y e^(x/y) <= z, y > 0 (i.e (x, y, z) are in the exponential primal cone) :w3, w_4, w_5
             x == 1 :w_1
             y == 2 :w_2
-
         dual
             max 2w_2 + w_1
         s.t.
@@ -43,7 +42,7 @@
             y e^(x/y) <= z, y > 0 (i.e (x, y, z) are in the exponential primal cone) :w3, w_4, w_5
             x == 1 :w_1
             y == 2 :w_2
-
+                                                        
         dual
             max 2w_2 + w_1
         s.t.

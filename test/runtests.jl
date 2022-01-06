@@ -12,7 +12,6 @@ const SAF{T} = MOI.ScalarAffineFunction{T}
 const VAF{T} = MOI.VectorAffineFunction{T}
 const SQF{T} = MOI.ScalarQuadraticFunction{T}
 
-
 MOIU.@model(
     TestModel,
     (MOI.ZeroOne, MOI.Integer),

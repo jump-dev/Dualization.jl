@@ -82,11 +82,7 @@ function rsoc3_test()
 
     vc1 = MOI.add_constraint(model, x[1], MOI.LessThan(1.0))
     vc2 = MOI.add_constraint(model, x[2], MOI.EqualTo(0.5))
-    vc3 = MOI.add_constraint(
-        model,
-        x[3],
-        MOI.GreaterThan(2.0),
-    )
+    vc3 = MOI.add_constraint(model, x[3], MOI.GreaterThan(2.0))
 
     rsoc = MOI.add_constraint(
         model,

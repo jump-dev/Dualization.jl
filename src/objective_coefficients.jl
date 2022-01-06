@@ -34,7 +34,10 @@ function _scalar_quadratic_function(
     )
 end
 function _scalar_quadratic_function(func::MOI.VariableIndex, T::Type)
-    return _scalar_quadratic_function(SAF{T}([MOI.ScalarAffineTerm(1.0, func)], 0), T)
+    return _scalar_quadratic_function(
+        SAF{T}([MOI.ScalarAffineTerm(1.0, func)], 0),
+        T,
+    )
 end
 
 # Primals
