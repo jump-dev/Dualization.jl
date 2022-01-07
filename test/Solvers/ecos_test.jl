@@ -5,6 +5,15 @@ const ECOS_DUAL_FACTORY = dual_optimizer(ECOS_PRIMAL_FACTORY)
 const ECOS_PRIMAL_OPT = MOI.instantiate(ECOS_PRIMAL_FACTORY)
 const ECOS_DUAL_OPT = MOI.instantiate(ECOS_DUAL_FACTORY)
 
+# Warm up to pass tests on x86
+dual_problem = dualize(soc1_test())
+test_strong_duality(
+    soc1_test(),
+    dual_problem.dual_model,
+    ECOS_PRIMAL_FACTORY,
+    1e-3,
+    1e-3,
+)
 
 @testset "ECOS conic Problems" begin
     @testset "ECOS SOC problems" begin
