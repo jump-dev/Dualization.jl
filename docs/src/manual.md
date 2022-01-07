@@ -110,9 +110,9 @@ a constraint not listed here, it will return an unsupported error.
 
 |  MOI Function | MOI Set |
 |:-------|:---------------|
-|    `SingleVariable`    |    `GreaterThan`    |
-|    `SingleVariable`    |    `LessThan`    |
-|    `SingleVariable`    |    `EqualTo`    |
+|    `VariableIndex`    |    `GreaterThan`    |
+|    `VariableIndex`    |    `LessThan`    |
+|    `VariableIndex`    |    `EqualTo`    |
 |    `ScalarAffineFunction`    |    `GreaterThan`    |
 |    `ScalarAffineFunction`    |    `LessThan`    |
 |    `ScalarAffineFunction`    |    `EqualTo`    |
@@ -143,7 +143,7 @@ Note that some of MOI constraints can be bridged, see [Bridges](http://jump.dev/
 
 |  MOI Function |
 |:-------:|
-|   `SingleVariable`   |
+|   `VariableIndex`   |
 |   `ScalarAffineFunction`   |
 
 ## Dualize a model

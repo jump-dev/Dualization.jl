@@ -1,6 +1,6 @@
 @testset "MOI_wrapper.jl" begin
     for opt in dual_linear_optimizer
-        linear_config = MOIT.TestConfig(atol = 1e-6, rtol = 1e-6)
+        linear_config = MOIT.Config(atol = 1e-6, rtol = 1e-6)
         linear_cache =
             MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
         MOI.empty!(opt)
@@ -8,87 +8,57 @@
         linear_bridged = MOIB.full_bridge_optimizer(linear_cached, Float64)
 
         @testset "linear test" begin
-            MOIT.contlineartest(
+            MOIT.runtests(
                 linear_bridged,
                 linear_config,
-                [
-                    "linear8b", # Asks for infeasibility ray
-                    "linear8c", # Asks for infeasibility ray
-                    "linear12", # Asks for infeasibility ray
-                    "linear13", # Feasibility problem
-                    "linear15",  # Feasibility when written in the canonical form
+                include = ["test_linear_"],
+                exclude = [
+                    "test_linear_FEASIBILITY_SENSE",
+                    "test_linear_INFEASIBLE_2",
+                    "test_linear_Interval_inactive",
+                    "test_linear_add_constraints",
+                    "test_linear_inactive_bounds",
+                    "test_linear_integration_2",
+                    "test_linear_integration_Interval",
+                    "test_linear_integration_delete_variables",
                 ],
             )
         end
     end
 
     for opt in dual_conic_optimizer
-        conic_config = MOIT.TestConfig(atol = 1e-4, rtol = 1e-4)
+        opt = dual_conic_optimizer[1]
+        conic_config = MOIT.Config(atol = 1e-4, rtol = 1e-4)
         conic_cache =
             MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
         conic_cached = MOIU.CachingOptimizer(conic_cache, opt)
         conic_bridged = MOIB.full_bridge_optimizer(conic_cached, Float64)
 
         @testset "conic linear, soc, rsoc and sdp test" begin
-            MOIT.contconictest(
+            MOIT.runtests(
                 conic_bridged,
                 conic_config,
-                [
-                    "lin3", # Feasibility problem
-                    "lin4", # Feasibility problem
-                    "geomean3f",
-                    "geomean3v", # CSDP does not converge after https://github.com/jump-dev/Dualization.jl/pull/86
-                    "normone2", # Feasibility problem
-                    "norminf2", # Feasibility problem
-                    "soc3", # Feasibility problem
-                    "rotatedsoc2", # Feasibility problem
-                    "rotatedsoc4", # Termination status is `ALMOST_OPTIMAL`
-                    "exp", # Tested in exp and power cone test
-                    "dualexp", # Tested in exp and power cone test
-                    "pow", # Tested in exp and power cone test
-                    "dualpow", # Tested in exp and power cone test
-                    "rootdet", # Dual not defined in MOI
-                    "logdet", # Dual not defined in MOI
-                    "relentr", # Dual not defined in MOI
-                    "psdt3", # atol should be 1e-2
-                    "psds3", # atol should be 1e-2
+                include = ["test_conic_"],
+                exclude = [
+                    "test_conic_NormInfinityCone_INFEASIBLE",
+                    "test_conic_NormOneCone_INFEASIBLE",
+                    "test_conic_PositiveSemidefiniteConeSquare_3",
+                    "test_conic_PositiveSemidefiniteConeTriangle_3",
+                    "test_conic_SecondOrderCone_INFEASIBLE",
+                    "test_conic_SecondOrderCone_negative_post_bound_2",
+                    "test_conic_SecondOrderCone_negative_post_bound_3",
+                    "test_conic_SecondOrderCone_no_initial_bound",
+                    "test_conic_RotatedSecondOrderCone_out_of_order",
+                    "test_conic_linear_INFEASIBLE",
                 ],
             )
         end
 
         @testset "quadratically constrained" begin
-            MOIT.contquadratictest(
+            MOIT.runtests(
                 conic_bridged,
                 conic_config,
-                ["qp", "ncqcp", "socp"],
-            )
-        end
-    end
-
-    for opt in dual_power_cone_optimizer
-        power_cone_config = MOIT.TestConfig(atol = 1e-3, rtol = 1e-3)
-        power_cone_cache =
-            MOIU.UniversalFallback(Dualization.DualizableModel{Float64}())
-        power_cone_cached = MOIU.CachingOptimizer(power_cone_cache, opt)
-        power_cone_bridged =
-            MOIB.full_bridge_optimizer(power_cone_cached, Float64)
-
-        @testset "power cone test" begin
-            MOIT.contconictest(
-                power_cone_bridged,
-                power_cone_config,
-                [
-                    "lin", # Tested in coninc linear, soc, rsoc and sdp test
-                    "normone", # Tested in coninc linear, soc, rsoc and sdp test
-                    "norminf", # Tested in coninc linear, soc, rsoc and sdp test
-                    "soc", # Tested in coninc linear, soc, rsoc and sdp test
-                    "rsoc", # Tested in coninc linear, soc, rsoc and sdp test
-                    "geomean", # Tested in coninc linear, soc, rsoc and sdp test
-                    "sdp", # Tested in coninc linear, soc, rsoc and sdp test
-                    "rootdet", # Dual not defined in MOI
-                    "logdet", # Dual not defined in MOI
-                    "relentr", # Dual not defined in MOI
-                ],
+                include = ["test_quadratic_"],
             )
         end
     end
@@ -113,7 +83,7 @@
 
     @testset "support" begin
         for opt in dual_linear_optimizer
-            @test !MOI.supports_constraint(opt, SVF, MOI.Integer)
+            @test !MOI.supports_constraint(opt, MOI.VariableIndex, MOI.Integer)
             @test MOI.supports(opt, MOI.ObjectiveSense())
         end
         for opt in dual_conic_optimizer

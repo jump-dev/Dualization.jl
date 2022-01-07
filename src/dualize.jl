@@ -8,7 +8,7 @@ function dualize(
     ignore_objective::Bool = false,
 )
     # Creates an empty dual problem
-    dual_problem = DualProblem{Float64}()
+    dual_problem = Dualization.DualProblem{Float64}()
     return dualize(
         primal_model,
         dual_problem,
@@ -43,18 +43,18 @@ function dualize(
     ignore_objective::Bool,
 ) where {T}
     # Throws an error if objective function cannot be dualized
-    supported_objective(primal_model)
+    Dualization.supported_objective(primal_model)
 
     # Query all constraint types of the model
-    con_types = MOI.get(primal_model, MOI.ListOfConstraints())
-    supported_constraints(con_types) # Throws an error if constraint cannot be dualized
+    con_types = MOI.get(primal_model, MOI.ListOfConstraintTypesPresent())
+    Dualization.supported_constraints(con_types) # Throws an error if constraint cannot be dualized
 
     # Set the dual model objective sense
-    set_dual_model_sense(dual_problem.dual_model, primal_model)
+    Dualization.set_dual_model_sense(dual_problem.dual_model, primal_model)
 
     # Get Primal Objective Coefficients
     primal_objective =
-        get_primal_objective(primal_model, variable_parameters, T)
+        Dualization.get_primal_objective(primal_model, variable_parameters, T)
 
     add_constrained_variables(dual_problem, primal_model, variable_parameters)
 
@@ -204,7 +204,7 @@ function fill_obj_dict_with_variables!(model::JuMP.Model)
 end
 
 function fill_obj_dict_with_constraints!(model::JuMP.Model)
-    con_types = MOI.get(model, JuMP.MOI.ListOfConstraints())
+    con_types = MOI.get(model, JuMP.MOI.ListOfConstraintTypesPresent())
     for (F, S) in con_types
         fill_obj_dict_with_constraints!(model, F, S)
     end

@@ -6,7 +6,6 @@
         s.t.
             x_1 >= 3         :y_2
             x_1 + 2x_2 <= 3  :y_3
-
         dual
             max 3y_2 + 3y_3 - 1
         s.t.
@@ -19,21 +18,21 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SVF, MOI.GreaterThan{Float64})
-                (SVF, MOI.LessThan{Float64})
+                (VI, MOI.GreaterThan{Float64})
+                (VI, MOI.LessThan{Float64})
                 (SAF{Float64}, MOI.EqualTo{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SVF,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SVF,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
@@ -55,7 +54,6 @@
             x1 + 2x2 - 3 <= 0  :y_4
             x1 >= 1            :y_1
             x2 >= 0            :y_2
-
         dual
             max 3y_4 + 3y_3 + y_1 - 1
         s.a.
@@ -70,10 +68,10 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SVF, MOI.GreaterThan{Float64})
+                (VI, MOI.GreaterThan{Float64})
                 (SAF{Float64}, MOI.EqualTo{Float64})
                 (SAF{Float64}, MOI.GreaterThan{Float64})
                 (VVF, MOI.Nonpositives)
@@ -81,7 +79,7 @@
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SVF,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
@@ -108,7 +106,6 @@
             x1 + 2x2  == 3 :y_4
             x1 >= 1        :y_1
             x2 == 0        :y_2
-
         dual
             max y_1 + 3y_3 + 3y_4
         s.t
@@ -120,16 +117,16 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SVF, MOI.GreaterThan{Float64})
+                (VI, MOI.GreaterThan{Float64})
                 (SAF{Float64}, MOI.EqualTo{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SVF,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
@@ -150,7 +147,6 @@
             x_1 + 2x_2 + x_3 <= 20 :y_3
             x_1 <= 1               :y_1
             x_2 <= 3               :y_2
-
         dual
             max 3y_2 + y_1 + 20y_3 + 5
         s.t.
@@ -165,16 +161,16 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SVF, MOI.LessThan{Float64})
+                (VI, MOI.LessThan{Float64})
                 (SAF{Float64}, MOI.EqualTo{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SVF,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
         ) == 3
         @test MOI.get(
             dual_model,
@@ -196,7 +192,6 @@
            x1 + 2x2 - 3 <= 0  :y_4
            x1 >= 0            :y_1
            x2 >= 0            :y_2
-
         dual
            max 3y_4 + 3y_3 - 1
         s.a.
@@ -211,7 +206,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set([
             (VAF{Float64}, MOI.Nonnegatives)
             (VVF, MOI.Nonpositives)

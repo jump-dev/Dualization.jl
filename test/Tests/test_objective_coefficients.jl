@@ -26,7 +26,7 @@
 
         model = lp10_test()
 
-        @test model.objective == MOI.SingleVariable(MOI.VariableIndex(1))
+        @test model.objective.single_variable == MOI.VariableIndex(1)
         primal_objective = Dualization.get_primal_objective(model)
         @test Dualization.get_affine_terms(
             Dualization.get_primal_objective(model),

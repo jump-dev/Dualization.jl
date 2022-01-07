@@ -7,7 +7,6 @@
             a    == 1/2 :w_2
             b    == 1   :w_1
             2a*b >= x^2+y^2  :w_3, w_4, w_5, w_6
-
         dual
             max w_2 + (1/2)w_1
         s.t.
@@ -21,7 +20,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) ==
               Set([(VAF{Float64}, MOI.RotatedSecondOrderCone)],)
         @test MOI.get(
@@ -44,7 +43,6 @@
             a    == 1/2
             b    == 1
             2a*b >= x^2+y^2
-
         dual
             max w_2 + (1/2)w_1
         s.t.
@@ -58,7 +56,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
                 (SAF{Float64}, MOI.EqualTo{Float64})

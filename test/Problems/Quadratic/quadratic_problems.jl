@@ -24,12 +24,12 @@ function qp1_test()
     )
 
     obj = MOI.ScalarQuadraticFunction(
-        MOI.ScalarAffineTerm{Float64}[],
         MOI.ScalarQuadraticTerm.(
             [2.0, 1.0, 2.0, 1.0, 2.0],
             v[[1, 1, 2, 2, 3]],
             v[[1, 2, 2, 3, 3]],
         ),
+        MOI.ScalarAffineTerm{Float64}[],
         0.0,
     )
     MOI.set(
@@ -64,12 +64,12 @@ function qp2_test()
         MOI.EqualTo(1.0),
     )
 
-    vc1 = MOI.add_constraint(model, MOI.SingleVariable(x), MOI.GreaterThan(0.0))
-    vc2 = MOI.add_constraint(model, MOI.SingleVariable(y), MOI.GreaterThan(0.0))
+    vc1 = MOI.add_constraint(model, x, MOI.GreaterThan(0.0))
+    vc2 = MOI.add_constraint(model, y, MOI.GreaterThan(0.0))
 
     obj = MOI.ScalarQuadraticFunction(
-        MOI.ScalarAffineTerm.([1.0, 1.0], [x, y]),
         MOI.ScalarQuadraticTerm.([4.0, 2.0, 1.0], [x, y, x], [x, y, y]),
+        MOI.ScalarAffineTerm.([1.0, 1.0], [x, y]),
         1.0,
     )
 

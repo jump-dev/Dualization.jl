@@ -6,7 +6,6 @@
             x + 2y + 3z >= 4 (a)
             x +  y      >= 1 (b)
             x,y \in R
-
         dual
             max 4a +  b - w1^2 - w1 w2 - w2^2 - w2 w3 - w3^2
         s.t.
@@ -20,16 +19,16 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2 + 3
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SVF, MOI.GreaterThan{Float64})
+                (VI, MOI.GreaterThan{Float64})
                 (SAF{Float64}, MOI.EqualTo{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SVF,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
         ) == 2
         @test MOI.get(
             dual_model,
@@ -112,7 +111,6 @@
             x + y = 1 (a)
             x    >= 0 (b)
                y >= 0 (c)
-
         dual
             max a + 1 - 2 w1^2 - w2^2 - w1 w2
         s.t.
@@ -126,7 +124,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 3
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) ==
               Set([(SAF{Float64}, MOI.GreaterThan{Float64})],)
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())

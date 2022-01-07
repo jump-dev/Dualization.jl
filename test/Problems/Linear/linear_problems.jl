@@ -15,7 +15,7 @@ function lp1_test()
         MOI.LessThan(3.0),
     )
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(3.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(3.0))
 
     MOI.set(
         model,
@@ -101,9 +101,9 @@ function lp3_test()
         MOI.LessThan(3.0),
     )
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, X[2], MOI.GreaterThan(0.0))
 
     MOI.set(
         model,
@@ -127,9 +127,9 @@ function lp4_test()
 
     X = MOI.add_variables(model, 2)
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, X[2], MOI.GreaterThan(0.0))
 
     MOI.set(
         model,
@@ -167,9 +167,9 @@ function lp5_test()
         MOI.EqualTo(3.0),
     )
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.EqualTo(0.0))
+    MOI.add_constraint(model, X[2], MOI.EqualTo(0.0))
 
     MOI.set(
         model,
@@ -205,9 +205,9 @@ function lp6_test()
 
     MOI.add_constraint(model, c1, MOI.Nonpositives(2))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, X[2], MOI.GreaterThan(0.0))
 
     MOI.set(
         model,
@@ -243,9 +243,9 @@ function lp7_test()
 
     MOI.add_constraint(model, c1, MOI.Nonpositives(2))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, X[2], MOI.GreaterThan(0.0))
 
     MOI.set(
         model,
@@ -313,7 +313,7 @@ function lp9_test()
 
     vc = MOI.add_constraints(
         model,
-        [MOI.SingleVariable(x), MOI.SingleVariable(y)],
+        [x, y],
         [MOI.GreaterThan(0.0), MOI.GreaterThan(0.0)],
     )
 
@@ -365,15 +365,11 @@ function lp10_test()
         MOI.EqualTo(3.0),
     )
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.EqualTo(0.0))
+    MOI.add_constraint(model, X[2], MOI.EqualTo(0.0))
 
-    MOI.set(
-        model,
-        MOI.ObjectiveFunction{MOI.SingleVariable}(),
-        MOI.SingleVariable(X[1]),
-    )
+    MOI.set(model, MOI.ObjectiveFunction{MOI.VariableIndex}(), X[1])
 
     MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
 
@@ -391,9 +387,9 @@ function lp11_test()
 
     X = MOI.add_variables(model, 2)
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.GreaterThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.GreaterThan(0.0))
+    MOI.add_constraint(model, X[2], MOI.GreaterThan(0.0))
 
     MOI.set(
         model,
@@ -425,9 +421,9 @@ function lp12_test()
         MOI.LessThan(20.0),
     )
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[1]), MOI.LessThan(1.0))
+    MOI.add_constraint(model, X[1], MOI.LessThan(1.0))
 
-    MOI.add_constraint(model, MOI.SingleVariable(X[2]), MOI.LessThan(3.0))
+    MOI.add_constraint(model, X[2], MOI.LessThan(3.0))
 
     MOI.set(
         model,

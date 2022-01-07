@@ -6,7 +6,6 @@
         s.t.
             X[2,1] = 1 : y_1
             X in PSD : y_2, y_3, y_4
-
         dual
             max y_1
         s.t.
@@ -20,7 +19,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 1
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) ==
               Set([(VAF{Float64}, MOI.PositiveSemidefiniteConeTriangle)],)
         @test MOI.get(
@@ -45,7 +44,6 @@
         s.t.
             X[2,1] = 1 : y_1
             X in PSD : y_2, y_3, y_4
-
         dual
             max y_1
         s.t.
@@ -59,7 +57,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 4
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
                 (SAF{Float64}, MOI.EqualTo{Float64})

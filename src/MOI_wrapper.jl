@@ -69,7 +69,7 @@ function MOI.supports(
     optimizer::DualOptimizer{T},
     ::MOI.ObjectiveFunction{F},
 ) where {T,F}
-    # If the objective function is `MOI.SingleVariable` or `MOI.ScalarAffineFunction`,
+    # If the objective function is `MOI.VariableIndex` or `MOI.ScalarAffineFunction`,
     # a `MOI.ScalarAffineFunction` is set as objective function for the dual problem.
     # If it is `MOI.ScalarQuadraticFunction` , a `MOI.ScalarQuadraticFunction` is set as objective function for the dual problem.
     G =
@@ -83,7 +83,7 @@ end
 
 function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
-    F::Type{<:Union{MOI.SingleVariable,MOI.ScalarAffineFunction{T}}},
+    F::Type{<:Union{MOI.VariableIndex,MOI.ScalarAffineFunction{T}}},
     S::Type{<:MOI.AbstractScalarSet},
 ) where {T}
     D = _dual_set_type(S)
@@ -210,7 +210,7 @@ function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
         setindex!(idx_map, vi, vi)
     end
 
-    for (F, S) in MOI.get(src, MOI.ListOfConstraints())
+    for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
         for con in MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
             setindex!(idx_map, con, con)
         end
@@ -267,7 +267,7 @@ end
 function _get(
     ::DualOptimizer{T},
     ::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex{MOI.SingleVariable,MOI.EqualTo{T}},
+    ::MOI.ConstraintIndex{MOI.VariableIndex,MOI.EqualTo{T}},
     ::MOI.ConstraintIndex{Nothing,Nothing},
 ) where {T}
     return zero(T)
@@ -295,7 +295,7 @@ end
 function _get_at_index(
     optimizer::DualOptimizer,
     attr::MOI.AbstractConstraintAttribute,
-    ci_primal::MOI.ConstraintIndex{MOI.SingleVariable},
+    ci_primal::MOI.ConstraintIndex{MOI.VariableIndex},
     ci_dual::MOI.ConstraintIndex,
     idx,
 )

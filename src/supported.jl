@@ -1,9 +1,9 @@
 """
-    supported_constraints(con_types::Vector{Tuple{DataType, DataType}})
+    supported_constraints(con_types::Vector{Tuple{Type, Type}})
 
 Returns `true` if `Function-in-Set` is supported for Dualization and throws an error if it is not.
 """
-function supported_constraints(con_types::Vector{Tuple{DataType,DataType}})
+function supported_constraints(con_types::Vector{Tuple{Type,Type}})
     for (F, S) in con_types
         if !supported_constraint(F, S)
             error(
@@ -20,7 +20,7 @@ end
 
 supported_constraint(::Type, ::Type) = false
 function supported_constraint(
-    ::Type{<:Union{MOI.SingleVariable,MOI.ScalarAffineFunction}},
+    ::Type{<:Union{MOI.VariableIndex,MOI.ScalarAffineFunction}},
     S::Type{<:MOI.AbstractScalarSet},
 )
     return _dual_set_type(S) !== nothing
@@ -48,6 +48,6 @@ end
 # General case
 supported_obj(::Type) = false
 # List of supported objective functions
-supported_obj(::Type{SVF}) = true
+supported_obj(::Type{VI}) = true
 supported_obj(::Type{<:SAF}) = true
 supported_obj(::Type{<:SQF}) = true

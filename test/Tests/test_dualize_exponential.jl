@@ -7,7 +7,6 @@
             y e^(x/y) <= z, y > 0 (i.e (x, y, z) are in the exponential primal cone) :w3, w_4, w_5
             x == 1 :w_1
             y == 2 :w_2
-
         dual
             max 2w_2 + w_1
         s.t.
@@ -20,7 +19,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) ==
               Set([(VAF{Float64}, MOI.DualExponentialCone)],)
         @test MOI.get(
@@ -43,7 +42,6 @@
             y e^(x/y) <= z, y > 0 (i.e (x, y, z) are in the exponential primal cone) :w3, w_4, w_5
             x == 1 :w_1
             y == 2 :w_2
-
         dual
             max 2w_2 + w_1
         s.t.
@@ -56,7 +54,7 @@
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 5
-        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraints())
+        list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
                 (SAF{Float64}, MOI.EqualTo{Float64})
