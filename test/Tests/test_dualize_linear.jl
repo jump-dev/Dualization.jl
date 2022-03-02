@@ -93,8 +93,7 @@
         @test obj_type == SAF{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
-        @test MOI.coefficient.(obj.terms) ==
-              (Sys.WORD_SIZE == 32 ? [1.0, 3.0, 3.0] : [3.0; 1.0; 3.0])
+        @test Set(MOI.coefficient.(obj.terms)) == Set([3.0; 1.0; 3.0])
     end
 
     @testset "lp10_test" begin
