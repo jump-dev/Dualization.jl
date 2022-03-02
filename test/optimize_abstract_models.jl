@@ -11,7 +11,11 @@ function solve_abstract_model(
     set_optimizer(JuMP_model, optimizer_constructor)
     optimize!(JuMP_model)
     termination_status = JuMP.termination_status(JuMP_model)
-    obj_val = JuMP.objective_value(JuMP_model)
+    obj_val = try
+        JuMP.objective_value(JuMP_model)
+    catch
+        NaN
+    end
     return termination_status, obj_val
 end
 
@@ -45,11 +49,13 @@ function test_strong_duality(
            (dual_term_status == MOI.DUAL_INFEASIBLE)
         return true
     end
+    @show primal_term_status, primal_obj_val
+    @show dual_term_status, dual_obj_val
     return false # In case strong duality doesn't hold
 end
 
 function test_strong_duality(
-    primal_problems::Array{Function},
+    primal_problems::Vector,
     optimizer_constructor;
     atol = 1e-6,
     rtol = 1e-4,
