@@ -28,15 +28,15 @@ The user can define the model providing the `DualOptimizer` and the solver of it
 Example:
 
 ```julia
-julia> using Dualization, JuMP, GLPK
+julia> using Dualization, JuMP, HiGHS
 
-julia> model = Model(dual_optimizer(GLPK.Optimizer))
+julia> model = Model(dual_optimizer(HiGHS.Optimizer))
 A JuMP Model
 Feasibility problem with:
 Variables: 0
 Model mode: AUTOMATIC
 CachingOptimizer state: EMPTY_OPTIMIZER
-Solver name: Dual model with GLPK attached
+Solver name: Dual model with HiGHS attached
 ```
 """
 function DualOptimizer(dual_optimizer::OT) where {OT<:MOI.ModelLike}

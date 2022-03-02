@@ -1,5 +1,5 @@
 @testset "modify" begin
-    model = Model(GLPK_DUAL_FACTORY)
+    model = Model(HiGHS_DUAL_FACTORY)
     @variable(model, x[1:2] >= 0)
     @constraint(model, 2x[1] + x[2] <= 4)
     @constraint(model, x[1] + 2x[2] <= 4)
@@ -10,7 +10,7 @@
     optimize!(model)
     @test objective_value(model) ≈ 10.6666666666
 
-    model = Model(GLPK_DUAL_FACTORY)
+    model = Model(HiGHS_DUAL_FACTORY)
     @variable(model, x[1:2] >= 0)
     @constraint(model, 2x[1] + x[2] <= 4)
     @constraint(model, x[1] + 2x[2] <= 4)

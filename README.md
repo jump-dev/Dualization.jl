@@ -29,7 +29,7 @@ Dualization.jl has two main features.
 dual_model = dualize(model)
 ```
 
- * The `DualOptimizer` that will pass the dual representation of the model to the solver of your choice.
+ * The `DualOptimizer` that will pass the dual representation of the model to the `SOLVER` of your choice.
 
 ```julia
 model = Model(dual_optimizer(SOLVER.Optimizer))

@@ -103,8 +103,7 @@ primal_power_cone_optimizer = []
 
 # Load & Test strong duality in linear/conic problems
 # Comment the solver that are not available for development
-include("Solvers/glpk_test.jl")
-include("Solvers/ecos_test.jl")
+include("Solvers/highs_test.jl")
 include("Solvers/csdp_test.jl")
 include("Solvers/scs_test.jl")
 
