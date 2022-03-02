@@ -30,9 +30,6 @@ push!(primal_linear_optimizer, HiGHS_PRIMAL_OPT)
 end
 
 @testset "HiGHS Quadratic Problems" begin
-    list_of_quad_problems = [
-        qp1_test,
-        qp2_test,
-    ]
+    list_of_quad_problems = [qp1_test, qp2_test]
     test_strong_duality(list_of_quad_problems, HiGHS_PRIMAL_FACTORY)
 end
