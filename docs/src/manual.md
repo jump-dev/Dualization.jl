@@ -6,6 +6,8 @@
 
 ## Conic Duality
 
+### MOI Duality
+
 Conic duality is the starting point for MOI's duality conventions. When all functions are affine (or coordinate projections), and all constraint sets are closed convex cones, the model may be called a conic optimization problem.
 For conic-form minimization problems, the primal is:
 
@@ -102,6 +104,57 @@ and similarly, the dual is:
 && y_2 &\le 0
 \end{align}
 ```
+
+### Dualization.jl Duality
+
+For conic-form minimization problems, the primal is:
+
+```math
+\begin{align}
+& \min_{x_1, \dots, x_n} & \sum_{j=1}^n a_j^T x_j + b_0
+\\
+& \;\;\text{s.t.} & \sum_{j=1}^n A_{ij} x_j + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\\
+& & x_j & \in \mathcal{V}_j & j = 1 \ldots n
+\end{align}
+```
+
+and the dual is:
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m} & -\sum_{i=1}^m b_i^T y_i + b_0
+\\
+& \;\;\text{s.t.} & - \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+where each ``\mathcal{C}_i`` and ``\mathcal{V}_j`` are closed convex cones and ``\mathcal{C}_i^*`` and ``\mathcal{V}_j^*`` the respective dual cones.
+
+For conic-form maximization problems, the primal is:
+```math
+\begin{align}
+& \max_{x_1, \dots, x_n} & \sum_{j=1}^n a_j^T x_j + b_0
+\\
+& \;\;\text{s.t.} & \sum_{j=1}^n A_{ij} x_j + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\\
+& & x_j & \in \mathcal{V}_j & j = 1 \ldots n
+\end{align}
+```
+
+and the dual is:
+
+```math
+\begin{align}
+& \min_{y_1, \ldots, y_m} & \sum_{i=1}^m b_i^T y_i + b_0
+\\
+& \;\;\text{s.t.} & \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
 
 ## Supported constraints
 
