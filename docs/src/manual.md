@@ -6,10 +6,13 @@
 
 ## Conic Duality
 
-### MOI Duality
+### MOI stardard form and duality
 
 Conic duality is the starting point for MOI's duality conventions. When all functions are affine (or coordinate projections), and all constraint sets are closed convex cones, the model may be called a conic optimization problem.
-For conic-form minimization problems, the primal is:
+
+The following formulations follow strictly MOI´s definition of duality we shall refer to them as *MOI stardard form*.
+
+For minimization problems, the primal is:
 
 ```math
 \begin{align}
@@ -32,7 +35,7 @@ and the dual is:
 ```
 where each ``\mathcal{C}_i`` is a closed convex cone and ``\mathcal{C}_i^*`` is its dual cone.
 
-For conic-form maximization problems, the primal is:
+For maximization problems, the primal is:
 ```math
 \begin{align}
 & \max_{x \in \mathbb{R}^n} & a_0^T x + b_0
@@ -105,9 +108,17 @@ and similarly, the dual is:
 \end{align}
 ```
 
-### Dualization.jl Duality
+### MOI compact form and duality
 
-For conic-form minimization problems, the primal is:
+An equivalent formulation for conic duality explicitly constrains variables into cones. The implicit version can be achieved with the above formulation (MOI standard form) by considering `A_i` that are projections onto some of the canonical axis.
+
+The explicit constraints on variable convey additional strutuctural information that can be exploitex by some solver. Therefore MOI includes the method `add_constrained_variables` for such purpose. These constraints are special because they are created together with the corresponding constrained variables. Therefore each variable can only belong to one of such.
+
+Next, we precisely define the *MOI compact form* and present their respective dual problems. The reader will notice that the models are more verbose than the MOI standard form, but actually the solvers receives fewer constraints and slack variables are avoided. Consequently, the dual will have fewer variables.
+
+### Minimization problem in MOI compact form
+
+The primal is:
 
 ```math
 \begin{align}
@@ -132,7 +143,10 @@ and the dual is:
 ```
 where each ``\mathcal{C}_i`` and ``\mathcal{V}_j`` are closed convex cones and ``\mathcal{C}_i^*`` and ``\mathcal{V}_j^*`` the respective dual cones.
 
-For conic-form maximization problems, the primal is:
+### Maximization problem in MOI compact form
+
+The primal is:
+
 ```math
 \begin{align}
 & \max_{x_1, \dots, x_n} & \sum_{j=1}^n a_j^T x_j + b_0
@@ -450,6 +464,8 @@ y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
 a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 ```
 
+We omit the MOI compact form for brevity, a complete version will be shown in the last section.
+
 ### Quadratic problems
 
 Optimization problems with conic constraints and quadratic objective are a straightforward extensions to the conic problem with linear constraints usually defined in MOI. More information [here](http://www.seas.ucla.edu/~vandenbe/publications/coneprog.pdf).
@@ -507,7 +523,11 @@ y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
 P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 ```
 
+We omit the MOI compact form for brevity, a complete version will be shown in the last section.
+
 ### Parametric quadratic problems
+
+#### MOI standard form
 
 Just like the linear problems, these quadratic programs can be parametric. The Primal minimization form is:
 
@@ -560,4 +580,63 @@ y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
 
 ```math
 P_1 x + P_2 z + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
+```
+
+
+#### MOI compact form
+
+The primal is:
+
+```math
+\begin{align}
+& \min_{x_1, \dots, x_n} &  \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n x_j^T P_{j,k} x_k + \sum_{j=1}^n x_j^T P_{j,0} z \\
+& & + \frac{1}{2} z^T P_{0,0} z + \sum_{j=1}^n a_j^T x_j + d^T z + b_0
+\\
+& \;\;\text{s.t.} & \sum_{j=1}^n A_{ij} x_j + D_i z + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\\
+& & x_j & \in \mathcal{V}_j & j = 1 \ldots n
+\end{align}
+```
+
+and the dual is:
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m, w_1, \ldots, w_n} & - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T P_{j,k} w_k - \sum_{i=1}^m (D_i z + b_i)^T y_i\\
+& & + \frac{1}{2} z^T P_{0,0} z + d^T z + b_0
+\\
+& \;\;\text{s.t.} & \sum_{k=1}^n P_{j,k} w_k - \sum_{i=1}^m A_{ij}^T y_i + a_j + P_{j,0} z & \in \mathcal{V}_j^* & j = 1 \ldots n
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+and the KKT conditions are:
+
+
+* Primal Feasibility:
+
+```math
+A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n
+```
+
+* Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_i^*, \ \ j = 1 \ldots n
+```
+
+* Complementary slackness:
+
+```math
+y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n
+```
+
+* Stationarity:
+
+```math
+\sum_{k=1}^n P_{j,k} x_k - \sum_{i=1}^m A_{ij}^T y_i + a_j + P_{j,0} z  = u_j, \ \ j = 1 \ldots n
 ```
