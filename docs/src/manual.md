@@ -116,7 +116,7 @@ The explicit constraints on variable convey additional strutuctural information 
 
 Next, we precisely define the *MOI compact form* and present their respective dual problems. The reader will notice that the models are more verbose than the MOI standard form, but actually the solvers receives fewer constraints and slack variables are avoided. Consequently, the dual will have fewer variables.
 
-### Minimization problem in MOI compact form
+#### Minimization problem in MOI compact form
 
 The primal is:
 
@@ -143,7 +143,7 @@ and the dual is:
 ```
 where each ``\mathcal{C}_i`` and ``\mathcal{V}_j`` are closed convex cones and ``\mathcal{C}_i^*`` and ``\mathcal{V}_j^*`` the respective dual cones.
 
-### Maximization problem in MOI compact form
+#### Maximization problem in MOI compact form
 
 The primal is:
 
@@ -163,12 +163,17 @@ and the dual is:
 \begin{align}
 & \min_{y_1, \ldots, y_m} & \sum_{i=1}^m b_i^T y_i + b_0
 \\
-& \;\;\text{s.t.} & \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
+& \;\;\text{s.t.} & - \sum_{i=1}^m A_{ij}^T y_i - a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
 \\
 & & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
 \end{align}
 ```
 
+Note that signs changed in the constraints of the dual compared to the standard form. This is because the standard form would have negative signs in all terms in a equality constraint, which were inverted for simplicity. However, in the compact form, this operation is not allowed because it would change a nontrivial cone ``\mathcal{C}_i``.
+
+##### Linear Programming
+
+TODO
 
 ## Supported constraints
 
@@ -382,6 +387,8 @@ The resulting dual model is
 
 The KKT conditions are a set of inequalities for which the feasible solution is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting to write them programatically.
 
+#### MOI standard form
+
 The KKT conditions of the minimization problem of the first section are the following:
 
 * Primal Feasibility:
@@ -412,11 +419,44 @@ Note that "Dual Feasibility" and "Stationarity" correspond to the two constraint
 
 One important use case is Bilevel optimization, see [BilevelJuMP.jl](https://github.com/joaquimg/BilevelJuMP.jl). In this case, variables of an upstream model are considered as parameters in a lower level model. One classical solution method for bilevel programs is to write the KKT conditions of the lower (or inner) problem and consider them as (non-linear) constraints of the upper (or outer) problem. Dualization can be used to derive parts of KKT conditions.
 
+#### MOI compact form
+
+* Primal Feasibility:
+
+```math
+\sum_{j=1}^n A_{ij} x_j + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n
+```
+
+* Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n
+```
+
+* Complementary slackness:
+
+```math
+y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n
+```
+
+* Stationarity:
+
+```math
+ - \sum_{i=1}^m A_{ij}^T y_i + a_j = u_j, \ \ j = 1 \ldots n
+```
+
 ### Parametric problems
 
 It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by ``x`` in the duality section, there are many use cases in which we can represent parameters that will not be considered in the optimization, these are treated as constants and, hence, not "dualized".
 
 In the following, we will use ``x`` to denote primal optimization variables, ``y`` for dual optimization variables and ``z`` for parameters.
+
+#### MOI standard form
+
+##### Primal
 
 ```math
 \begin{align}
@@ -426,7 +466,7 @@ In the following, we will use ``x`` to denote primal optimization variables, ``y
 \end{align}
 ```
 
-and the dual is:
+##### Dual
 
 ```math
 \begin{align}
@@ -438,7 +478,7 @@ and the dual is:
 \end{align}
 ```
 
-and the KKT conditions are:
+##### KKT
 
 * Primal Feasibility:
 
@@ -464,13 +504,69 @@ y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m
 a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 ```
 
-We omit the MOI compact form for brevity, a complete version will be shown in the last section.
+#### MOI compact form
+
+##### Primal
+
+```math
+\begin{align}
+& \min_{x_1, \dots, x_n} & \sum_{j=1}^n a_j^T x_j + d^T z + b_0
+\\
+& \;\;\text{s.t.} & \sum_{j=1}^n A_{ij} x_j + D_i z + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\\
+& & x_j & \in \mathcal{V}_j & j = 1 \ldots n
+\end{align}
+```
+
+##### Dual
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m} & - \sum_{i=1}^m (D_i z + b_i)^T y_i + d^T z + b_0
+\\
+& \;\;\text{s.t.} & - \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+##### KKT
+
+
+* Primal Feasibility:
+
+```math
+\sum_{j=1}^n A_{ij} x_j + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n
+```
+
+* Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n
+```
+
+* Complementary slackness:
+
+```math
+y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n
+```
+
+* Stationarity:
+
+```math
+- \sum_{i=1}^m A_{ij}^T y_i + a_j  = u_j, \ \ j = 1 \ldots n
+```
 
 ### Quadratic problems
 
-Optimization problems with conic constraints and quadratic objective are a straightforward extensions to the conic problem with linear constraints usually defined in MOI. More information [here](http://www.seas.ucla.edu/~vandenbe/publications/coneprog.pdf).
+Optimization problems with conic constraints and quadratic objective are straightforward extensions to the conic problems with linear constraints usually defined in MOI. More information [here](http://www.seas.ucla.edu/~vandenbe/publications/coneprog.pdf).
 
-A primal minimization problem can be standardized as:
+#### MOI standard form
+
+##### Primal
 
 ```math
 \begin{align}
@@ -481,6 +577,8 @@ A primal minimization problem can be standardized as:
 ```
 
 Where `P` is a positive semidefinite matrix.
+
+##### Dual
 
 A compact formulation for the dual problem requires pseudo-inverses, however, we can add an extra slack variable `w` to the dual problem and obtain the following dual problem:
 
@@ -494,10 +592,10 @@ A compact formulation for the dual problem requires pseudo-inverses, however, we
 \end{align}
 ```
 
-note that the sign in front of the `P` matrix can be changed because `w` is free and the only other term depending in `w` is quadratic and symmetric.
-The sign choice is interesting to keep the dual problem closer to the KKT conditions that reads as follows:
+note that, in the constraint, the sign in front of the `P` matrix can be changed because `w` is free and the only other term depending in `w` is quadratic and symmetric.
+The sign choice is interesting to keep the dual problem closer to the KKT conditions that reads as follows.
 
-\
+##### KKT
 
 * Primal Feasibility:
 
@@ -523,13 +621,69 @@ y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m
 P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 ```
 
-We omit the MOI compact form for brevity, a complete version will be shown in the last section.
+#### MOI compact form
+
+##### Primal
+
+```math
+\begin{align}
+& \min_{x_1, \dots, x_n} &  \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n x_j^T P_{j,k} x_k + \sum_{j=1}^n a_j^T x_j + b_0
+\\
+& \;\;\text{s.t.} & \sum_{j=1}^n A_{ij} x_j + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\\
+& & x_j & \in \mathcal{V}_j & j = 1 \ldots n
+\end{align}
+```
+
+##### Dual
+
+```math
+\begin{align}
+& \max_{y_1, \ldots, y_m, w_1, \ldots, w_n} & - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T P_{j,k} w_k - \sum_{i=1}^m b_i^T y_i + b_0
+\\
+& \;\;\text{s.t.} & - \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
+\\
+& & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
+\end{align}
+```
+
+##### KKT
+
+
+* Primal Feasibility:
+
+```math
+\sum_{j=1}^n A_{ij} x_j + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n
+```
+
+* Dual Feasibility:
+
+```math
+y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n
+```
+
+* Complementary slackness:
+
+```math
+y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n
+```
+
+* Stationarity:
+
+```math
+\sum_{k=1}^n P_{j,k} x_k - \sum_{i=1}^m A_{ij}^T y_i + a_j = u_j, \ \ j = 1 \ldots n
+```
 
 ### Parametric quadratic problems
 
 #### MOI standard form
 
-Just like the linear problems, these quadratic programs can be parametric. The Primal minimization form is:
+Just like the conic linear problems, these quadratic programs can be parametric.
+
+##### Primal
 
 ```math
 \begin{align}
@@ -541,7 +695,7 @@ Just like the linear problems, these quadratic programs can be parametric. The P
 \end{align}
 ```
 
-The Dual is:
+##### Dual
 
 ```math
 \begin{align}
@@ -555,7 +709,7 @@ The Dual is:
 \end{align}
 ```
 
-and the KKT conditions are:
+##### KKT
 
 
 * Primal Feasibility:
@@ -585,7 +739,7 @@ P_1 x + P_2 z + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 
 #### MOI compact form
 
-The primal is:
+##### Primal
 
 ```math
 \begin{align}
@@ -598,7 +752,7 @@ The primal is:
 \end{align}
 ```
 
-and the dual is:
+##### Dual
 
 ```math
 \begin{align}
@@ -611,13 +765,13 @@ and the dual is:
 \end{align}
 ```
 
-and the KKT conditions are:
+##### KKT
 
 
 * Primal Feasibility:
 
 ```math
-A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+\sum_{j=1}^n A_{ij} x_j + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
 x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n
 ```
 
@@ -625,13 +779,13 @@ x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n
 
 ```math
 y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
-u_j \in \mathcal{V}_i^*, \ \ j = 1 \ldots n
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n
 ```
 
 * Complementary slackness:
 
 ```math
-y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
 u_j^T x_j = 0, \ \ j = 1 \ldots n
 ```
 
