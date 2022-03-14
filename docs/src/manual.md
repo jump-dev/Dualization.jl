@@ -10,7 +10,7 @@
 
 Conic duality is the starting point for MOI's duality conventions. When all functions are affine (or coordinate projections), and all constraint sets are closed convex cones, the model may be called a conic optimization problem.
 
-The following formulations follow strictly MOI´s definition of duality we shall refer to them as *MOI stardard form*.
+The following formulations follow strictly MOI´s definition of duality we shall refer to them as *MOI standard form*.
 
 For minimization problems, the primal is:
 
@@ -110,11 +110,11 @@ and similarly, the dual is:
 
 ### MOI compact form and duality
 
-An equivalent formulation for conic duality explicitly constrains variables into cones. The implicit version can be achieved with the above formulation (MOI standard form) by considering `A_i` that are projections onto some of the canonical axis.
+An equivalent formulation for conic duality explicitly constrains variables into cones. The implicit version can be achieved with the above formulation (MOI standard form) by considering the `A_i` that are projections onto some of the canonical axis.
 
-The explicit constraints on variable convey additional strutuctural information that can be exploitex by some solver. Therefore MOI includes the method `add_constrained_variables` for such purpose. These constraints are special because they are created together with the corresponding constrained variables. Therefore each variable can only belong to one of such.
+The explicit constraints on variables convey additional structural information that can be exploited by some solver. Therefore, MOI includes the method `add_constrained_variables` for such purpose. These constraints are special because they are created together with the corresponding constrained variables. Hence, each variable can only belong to one of such.
 
-Next, we precisely define the *MOI compact form* and present their respective dual problems. The reader will notice that the models are more verbose than the MOI standard form, but actually the solvers receives fewer constraints and slack variables are avoided. Consequently, the dual will have fewer variables.
+Next, we precisely define the *MOI compact form* and present their respective dual problems. The reader will notice that the models are more verbose than the MOI standard form, but actually the solvers receives fewer constraints and slack variables are avoided. Consequently, the dual will have fewer variables and fewer constraints.
 
 #### Minimization problem in MOI compact form
 
