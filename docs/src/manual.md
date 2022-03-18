@@ -173,7 +173,69 @@ Note that signs changed in the constraints of the dual compared to the standard 
 
 ##### Linear Programming
 
-TODO
+###### Minimization
+
+###### Primal
+
+```math
+\begin{align}
+& \min_{x_{I}, x_{II}, x_{III}} & a_{I}^T x_{I} + a_{II}^T x_{II}  + a_{III}^T x_{III} &+ b_0
+\\
+& \;\;\text{s.t.}
+& A_{1,I} x_{I} +A_{1,II} x_{II} + A_{1,III} x_{III} & \ge b_1\\
+&&A_{2,I} x_{I} +A_{2,II} x_{II} + A_{2,III} x_{III} & \le b_2\\
+&&A_{3,I} x_{I} +A_{3,II} x_{II} + A_{3,III} x_{III} & = b_3\\
+&& x_{I}  & \ge 0\\
+&& x_{II} & \le 0
+\end{align}
+```
+
+###### Dual
+
+```math
+\begin{align}
+& \max_{y_1, y_2, y_3} & b_1^T y_1 + b_2^T y_2 + b_3^T y_3 &+ b_0
+\\
+& \;\;\text{s.t.}
+& A_{1,I}^T y_1   +A_{2,I}^T y_2   + A_{3,I}^T y_3   & \le a_{I}\\
+&&A_{1,II}^T y_1  +A_{2,II}^T y_2  + A_{3,II}^T y_3  & \ge a_{II}\\
+&&A_{1,III}^T y_1 +A_{2,III}^T y_2 + A_{3,III}^T y_3 & =   a_{III}\\
+&& y_1 & \ge 0\\
+&& y_2 & \le 0
+\end{align}
+```
+
+###### Maximization
+
+###### Primal
+
+```math
+\begin{align}
+& \max_{x_{I}, x_{II}, x_{III}} & a_{I}^T x_{I} + a_{II}^T x_{II}  + a_{III}^T x_{III} &+ b_0
+\\
+& \;\;\text{s.t.}
+& A_{1,I} x_{I} +A_{1,II} x_{II} + A_{1,III} x_{III} & \ge b_1\\
+&&A_{2,I} x_{I} +A_{2,II} x_{II} + A_{2,III} x_{III} & \le b_2\\
+&&A_{3,I} x_{I} +A_{3,II} x_{II} + A_{3,III} x_{III} & = b_3\\
+&& x_{I}  & \ge 0\\
+&& x_{II} & \le 0
+\end{align}
+```
+
+###### Dual
+
+```math
+\begin{align}
+& \min_{y_1, y_2, y_3} & -b_1^T y_1 - b_2^T y_2 - b_3^T y_3 &+ b_0
+\\
+& \;\;\text{s.t.}
+& A_{1,I}^T y_1   +A_{2,I}^T y_2   + A_{3,I}^T y_3   & \le -a_{I}\\
+&&A_{1,II}^T y_1  +A_{2,II}^T y_2  + A_{3,II}^T y_3  & \ge -a_{II}\\
+&&A_{1,III}^T y_1 +A_{2,III}^T y_2 + A_{3,III}^T y_3 & =   -a_{III}\\
+&& y_1 & \ge 0\\
+&& y_2 & \le 0
+\end{align}
+```
 
 ## Supported constraints
 
@@ -217,6 +279,7 @@ Note that some of MOI constraints can be bridged, see [Bridges](http://jump.dev/
 |:-------:|
 |   `VariableIndex`   |
 |   `ScalarAffineFunction`   |
+|   `ScalarQuadraticFunction`   |
 
 ## Dualize a model
 
@@ -263,6 +326,10 @@ Standard form has variables in cones
 | CSDP | ECOS |
 | SDPA | SeDuMi |
 | Mosek |
+
+!!! note 
+
+    MOI standard form is the Geometric form and not the "textbook" Standard form.
 
 ## Adding new sets
 
