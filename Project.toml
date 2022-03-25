@@ -8,6 +8,6 @@ JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 
 [compat]
-JuMP = "0.23"
+JuMP = "0.23, 1"
 MathOptInterface = "1"
 julia = "1.6"
