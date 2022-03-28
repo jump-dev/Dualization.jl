@@ -92,6 +92,7 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
+                (VAF{Float64}, MOI.Reals)
                 (VAF{Float64}, MOI.Nonpositives)
                 (VAF{Float64}, MOI.Nonnegatives)
                 (SAF{Float64}, MOI.EqualTo{Float64})
