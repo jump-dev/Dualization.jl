@@ -249,7 +249,6 @@ function set_dual_constraint_name(
     dual_ci::CI,
     prefix::String,
 )
-    @show MOI.get(primal_model, MOI.VariableName(), primal_vi)
     MOI.set(
         dual_model,
         MOI.ConstraintName(),
