@@ -52,7 +52,7 @@ function add_dual_equality_constraints(
             scalar_terms,
             sense_change,
             T,
-            dual_names
+            dual_names,
         )
     end
 
@@ -117,7 +117,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
-    dual_names::DualNames
+    dual_names::DualNames,
 ) where {T}
     set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     set_dual = MOI.dual_set(set_primal)
@@ -136,7 +136,9 @@ function _add_constrained_variable_constraint(
     ])
     ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
     if !is_empty(dual_names)
-        @warn("dual names for constrained vector of variables not supported yet.")
+        @warn(
+            "dual names for constrained vector of variables not supported yet."
+        )
     end
     return
 end
@@ -151,7 +153,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
-    dual_names::DualNames
+    dual_names::DualNames,
 ) where {T}
     # Nothing to add as the set is `EqualTo`.
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
@@ -171,7 +173,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
-    dual_names::DualNames
+    dual_names::DualNames,
 ) where {T}
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     primal_vi = func_primal
