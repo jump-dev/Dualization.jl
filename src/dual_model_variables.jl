@@ -163,6 +163,7 @@ function set_dual_variable_name(
     ci_name::String,
     prefix::String,
 )
+    isempty(ci_name) && return
     MOI.set(dual_model, MOI.VariableName(), vi, prefix * ci_name * "_$i")
     return
 end

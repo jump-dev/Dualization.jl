@@ -52,6 +52,7 @@ function add_dual_equality_constraints(
             scalar_terms,
             sense_change,
             T,
+            dual_names,
         )
     end
 
@@ -66,7 +67,7 @@ function add_dual_equality_constraints(
             MOI.ScalarAffineFunction(scalar_affine_terms[primal_vi], zero(T)),
             MOI.EqualTo(sense_change * get(scalar_terms, primal_vi, zero(T))),
         )
-        #Set constraint name with the name of the associated priaml variable
+        # Set constraint name with the name of the associated priaml variable
         if !is_empty(dual_names)
             set_dual_constraint_name(
                 dual_model,
@@ -116,6 +117,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
+    dual_names::DualNames,
 ) where {T}
     set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     set_dual = MOI.dual_set(set_primal)
@@ -133,6 +135,11 @@ function _add_constrained_variable_constraint(
         ) for (i, primal_vi) in enumerate(func_primal.variables)
     ])
     ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
+    if !is_empty(dual_names)
+        @warn(
+            "dual names for constrained vector of variables not supported yet."
+        )
+    end
     return
 end
 
@@ -146,6 +153,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
+    dual_names::DualNames,
 ) where {T}
     # Nothing to add as the set is `EqualTo`.
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
@@ -165,6 +173,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
+    dual_names::DualNames,
 ) where {T}
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     primal_vi = func_primal
@@ -176,6 +185,15 @@ function _add_constrained_variable_constraint(
     set_dual = _dual_set(set_primal)
     ci_map[ci] =
         MOIU.normalize_and_add_constraint(dual_model, func_dual, set_dual)
+    if !is_empty(dual_names)
+        set_dual_constraint_name(
+            dual_model,
+            primal_model,
+            primal_vi,
+            ci_map[ci],
+            dual_names.dual_constraint_name_prefix,
+        )
+    end
     return
 end
 
