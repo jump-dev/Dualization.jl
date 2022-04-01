@@ -51,8 +51,13 @@ end
         @constraint(model, eqcon, x == 1)
         @objective(model, Min, y + z)
 
+        # Test that unnamed objects don't create a key `Symbol("")` in `dual_model`.
+        @variable(model)
+        @constraint(model, x == y)
+
         dual_model = dualize(model; dual_names = DualNames("dual", ""))
 
         @test typeof(dual_model[:dualeqcon_1]) == VariableRef
+        @test !haskey(dual_model, Symbol(""))
     end
 end
