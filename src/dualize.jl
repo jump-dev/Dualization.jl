@@ -191,17 +191,19 @@ level model is represented as a KKT in the upper level model.
 function dualize end
 
 function fill_obj_dict_with_variables!(model::JuMP.Model)
-    all_indices = MOI.get(
-        model,
-        JuMP.MOI.ListOfVariableIndices(),
-    )::Vector{MOI.VariableIndex}
+    list = MOI.get(model, MOI.ListOfVariableAttributesSet())
+    if !(MOI.VariableName() in list)
+        return
+    end
+    all_indices =
+        MOI.get(model, MOI.ListOfVariableIndices())::Vector{MOI.VariableIndex}
     for vi in all_indices
         name = MOI.get(backend(model), MOI.VariableName(), vi)
         if !isempty(name)
             model[Symbol(name)] = VariableRef(model, vi)
         end
     end
-    return model
+    return
 end
 
 function fill_obj_dict_with_constraints!(model::JuMP.Model)
@@ -209,10 +211,14 @@ function fill_obj_dict_with_constraints!(model::JuMP.Model)
     for (F, S) in con_types
         fill_obj_dict_with_constraints!(model, F, S)
     end
-    return model
+    return
 end
 
 function fill_obj_dict_with_constraints!(model::JuMP.Model, F::Type, S::Type)
+    list = MOI.get(model, MOI.ListOfConstraintAttributesSet{F,S}())
+    if !(MOI.ConstraintName() in list)
+        return
+    end
     for ci in MOI.get(backend(model), MOI.ListOfConstraintIndices{F,S}())
         name = MOI.get(backend(model), MOI.ConstraintName(), ci)
         if !isempty(name)
