@@ -1,5 +1,7 @@
 module Dualization
 
+import LinearAlgebra
+
 using JuMP, MathOptInterface
 const MOI = MathOptInterface
 const MOIU = MathOptInterface.Utilities

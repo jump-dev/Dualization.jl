@@ -405,41 +405,42 @@ function fill_scalar_affine_terms!(
     return
 end
 
-struct OneEntryVector{T} <: AbstractVector{T}
-    value::T
+struct CanonicalVector{T} <: AbstractVector{T}
     index::Int
     n::Int
 end
-Base.eltype(::Type{OneEntryVector{T}}) where {T} = T
-Base.length(v::OneEntryVector) = v.n
-Base.size(v::OneEntryVector) = (v.n,)
-function Base.getindex(v::OneEntryVector{T}, i::Integer) where {T}
-    if i == v.index
-        return v.value
-    else
-        return zero(T)
-    end
+Base.eltype(::Type{CanonicalVector{T}}) where {T} = T
+Base.length(v::CanonicalVector) = v.n
+Base.size(v::CanonicalVector) = (v.n,)
+function Base.getindex(v::CanonicalVector{T}, i::Integer) where {T}
+    return convert(T, i == v.index)
 end
 
 # This is much faster than the default implementation that goes
 # through all entries even if only one is nonzero.
+function LinearAlgebra.dot(
+    x::CanonicalVector{T},
+    y::CanonicalVector{T},
+) where {T}
+    return convert(T, x.index == y.index)
+end
 function MOI.Utilities.triangle_dot(
-    x::OneEntryVector{T},
-    y::OneEntryVector{T},
+    x::CanonicalVector{T},
+    y::CanonicalVector{T},
     dim::Int,
     offset::Int,
 ) where {T}
     if x.index != y.index || x.index <= offset
         return zero(T)
     elseif MOI.Utilities.is_diagonal_vectorized_index(x.index - offset)
-        return x.value * y.value
+        return one(T)
     else
-        return 2x.value * y.value
+        return 2one(T)
     end
 end
 
 function set_dot(i::Integer, s::MOI.AbstractVectorSet, T::Type)
-    vec = OneEntryVector{T}(one(T), i, MOI.dimension(s))
+    vec = CanonicalVector{T}(i, MOI.dimension(s))
     return MOIU.set_dot(vec, vec, s)
 end
 function set_dot(::Integer, ::MOI.AbstractScalarSet, T::Type)
