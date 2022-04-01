@@ -101,11 +101,11 @@ function push_to_dual_obj_aff_terms!(
     primal_model::MOI.ModelLike,
     dual_obj_affine_terms::Dict{VI,T},
     vi::VI,
-    ci::CI{F,S},
+    func::MOI.AbstractFunction,
+    set::MOI.AbstractSet,
     i::Int,
-) where {T,F<:MOI.AbstractFunction,S<:MOI.AbstractSet}
-    s = get_set(primal_model, ci)
-    value = set_dot(i, s, T) * get_scalar_term(primal_model, i, ci)
+) where {T}
+    value = set_dot(i, set, T) * get_scalar_term(func, set, i)
     if !iszero(value) # If value is different than 0 add to the dictionary
         push!(dual_obj_affine_terms, vi => value)
     end
@@ -113,12 +113,13 @@ function push_to_dual_obj_aff_terms!(
 end
 
 function push_to_dual_obj_aff_terms!(
-    primal_model::MOI.ModelLike,
-    dual_obj_affine_terms::Dict{VI,T},
-    vi::VI,
-    ci::CI{VVF,S},
+    ::MOI.ModelLike,
+    ::Dict{VI},
+    ::VI,
+    ::MOI.VectorOfVariables,
+    ::MOI.AbstractVectorSet,
     i::Int,
-) where {T,S<:MOI.AbstractSet}
+)
     return # It is zero so don't push to the dual_obj_affine_terms
 end
 
@@ -135,12 +136,15 @@ function add_dual_variable(
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary
+    func = get_function(primal_model, ci)
+    set = get_set(primal_model, ci)
     for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(
             primal_model,
             dual_obj_affine_terms,
             vi,
-            ci,
+            func,
+            set,
             i,
         )
         if !is_empty(dual_names)
