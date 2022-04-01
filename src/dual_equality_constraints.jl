@@ -405,9 +405,38 @@ function fill_scalar_affine_terms!(
     return
 end
 
+struct OneEntryVector{T} <: AbstractVector{T}
+    value::T
+    index::Int
+    n::Int
+end
+function Base.getindex(v::OneEntryVector{T}, i::Integer) where {T}
+    if i == v.index
+        return v.value
+    else
+        return zero(T)
+    end
+end
+
+# This is much faster than the default implementation that goes
+# through all entries even if only one is nonzero.
+function MOI.Utilities.triangle_dot(
+    x::OneEntryVector{T},
+    y::OneEntryVector{T},
+    dim::Int,
+    offset::Int,
+) where {T}
+    if x.index != y.index || x.index <= offset
+        return zero(T)
+    elseif MOI.Utilities.is_diagonal_vectorized_index(x.index - offset)
+        return x.value * y.value
+    else
+        return 2x.value * y.value
+    end
+end
+
 function set_dot(i::Integer, s::MOI.AbstractVectorSet, T::Type)
-    vec = zeros(T, MOI.dimension(s))
-    vec[i] = one(T)
+    vec = OneEntryVector(one(T), i, MOI.dimension(s))
     return MOIU.set_dot(vec, vec, s)
 end
 function set_dot(::Integer, ::MOI.AbstractScalarSet, T::Type)
