@@ -410,6 +410,9 @@ struct OneEntryVector{T} <: AbstractVector{T}
     index::Int
     n::Int
 end
+Base.eltype(::Type{OneEntryVector{T}}) where {T} = T
+Base.length(v::OneEntryVector) = v.n
+Base.size(v::OneEntryVector) = (v.n,)
 function Base.getindex(v::OneEntryVector{T}, i::Integer) where {T}
     if i == v.index
         return v.value
