@@ -196,9 +196,10 @@ function fill_obj_dict_with_variables!(model::JuMP.Model)
         JuMP.MOI.ListOfVariableIndices(),
     )::Vector{MOI.VariableIndex}
     for vi in all_indices
-        model.obj_dict[Symbol(
-            MOI.get(backend(model), MOI.VariableName(), vi),
-        )] = VariableRef(model, vi)
+        name = MOI.get(backend(model), MOI.VariableName(), vi)
+        if !isempty(name)
+            model[Symbol(name)] = VariableRef(model, vi)
+        end
     end
     return model
 end
@@ -214,14 +215,9 @@ end
 function fill_obj_dict_with_constraints!(model::JuMP.Model, F::Type, S::Type)
     for ci in MOI.get(backend(model), MOI.ListOfConstraintIndices{F,S}())
         name = MOI.get(backend(model), MOI.ConstraintName(), ci)
-        if F <: MOI.AbstractScalarFunction
-            model.obj_dict[Symbol(name)] =
-                ConstraintRef(model, ci, JuMP.ScalarShape())
-        elseif S <: MOI.AbstractVectorFunction
-            model.obj_dict[Symbol(name)] =
-                ConstraintRef(model, ci, JuMP.VectorShape())
-        else
-            continue
+        if !isempty(name)
+            con_ref = JuMP.constraint_ref_with_index(model, ci)
+            model[Symbol(name)] = con_ref
         end
     end
 end
