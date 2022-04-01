@@ -3,7 +3,10 @@
     @testset "push_to_dual_obj_aff_terms!" begin
         primal_model = soc1_test()
         dual_obj_affine_terms = Dict{VI,Float64}()
-        list = MOI.get(primal_model, MOI.ListOfConstraintIndices{VVF,MOI.SecondOrderCone}())
+        list = MOI.get(
+            primal_model,
+            MOI.ListOfConstraintIndices{VVF,MOI.SecondOrderCone}(),
+        )
         ci = first(list)
         func = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
         set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
