@@ -409,6 +409,9 @@ struct OneEntryVector{T} <: AbstractVector{T}
     value::T
     index::Int
     n::Int
+    function OneEntryVector{T}(value::T, index::Integer, n::Integer)
+        return new{T}(value, index, n)
+    end
 end
 Base.eltype(::Type{OneEntryVector{T}}) where {T} = T
 Base.length(v::OneEntryVector) = v.n
