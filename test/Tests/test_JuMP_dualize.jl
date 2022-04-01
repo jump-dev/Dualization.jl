@@ -28,7 +28,6 @@ end
             @test backend(dual_JuMP_model).state == MOIU.EMPTY_OPTIMIZER
             @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) ==
                   MOI.get(primal_linear_optimizer[i], MOI.SolverName())
-
         end
     end
     @testset "set_dot on different sets" begin
