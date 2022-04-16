@@ -1,5 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Dualization = "191a621a-6537-11e9-281d-650236a99e60"
 
 [compat]
 Documenter = "0.24"
