@@ -7,7 +7,7 @@ function supported_constraints(con_types::Vector{Tuple{Type,Type}})
     for (F, S) in con_types
         if !supported_constraint(F, S)
             error(
-                "Constraints of function ",
+                "Constraints of the Function ",
                 F,
                 " in the Set ",
                 S,

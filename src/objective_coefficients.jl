@@ -10,7 +10,7 @@ function set_dual_model_sense(
     # Get model sense
     primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
     if primal_sense == MOI.FEASIBILITY_SENSE
-        error(primal_sense, " is not supported") # Feasibility should be supported?
+        error(primal_sense, " is not supported")
     end
     # Set dual model sense
     dual_sense = (primal_sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
@@ -53,17 +53,6 @@ mutable struct PrimalObjective{T}
 
     function PrimalObjective{T}(obj) where {T}
         canonical_obj = _scalar_quadratic_function(obj, T)
-        # if isempty(canonical_obj.terms)
-        #     error("Dualization does not support models with no variables in the objective function.")
-        # end
-        # This was commented for now, because the current understanding is that
-        # problems like {min 0*x} are well defined and have well defined dual problems.
-        # Therefore, they present no issue to dualization as opposed to problems
-        # with FEASIBILITY_SENSE that do not have a well defined dual problem.
-        # Moreover, JuMP and MOI default is FEASIBILITY_SENSE, if a MIN_SENSE
-        # is in the problem, it is because the user set it explicitly.
-        # For more on the original discussion, see:
-        # https://github.com/JuliaOpt/Dualization.jl/pull/64#discussion_r347484642
         quad_cross_parameters = Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}()
         return new(canonical_obj, quad_cross_parameters, nothing)
     end

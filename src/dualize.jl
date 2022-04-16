@@ -8,7 +8,7 @@ function dualize(
     ignore_objective::Bool = false,
 )
     # Creates an empty dual problem
-    dual_problem = Dualization.DualProblem{Float64}()
+    dual_problem = DualProblem{Float64}()
     return dualize(
         primal_model,
         dual_problem,
@@ -43,23 +43,30 @@ function dualize(
     ignore_objective::Bool,
 ) where {T}
     # Throws an error if objective function cannot be dualized
-    Dualization.supported_objective(primal_model)
+    supported_objective(primal_model)
 
     # Query all constraint types of the model
     con_types = MOI.get(primal_model, MOI.ListOfConstraintTypesPresent())
-    Dualization.supported_constraints(con_types) # Throws an error if constraint cannot be dualized
+    supported_constraints(con_types) # Errors if constraint cant be dualized
 
     # Set the dual model objective sense
-    Dualization.set_dual_model_sense(dual_problem.dual_model, primal_model)
+    set_dual_model_sense(dual_problem.dual_model, primal_model)
 
-    # Get Primal Objective Coefficients
+    # Get primal objective in quadratic form
+    # terms already split considering parameters
     primal_objective =
-        Dualization.get_primal_objective(primal_model, variable_parameters, T)
+        get_primal_objective(primal_model, variable_parameters, T)
 
+    # cache information of which variables as `constrained_variables`
+    # creating a map: constrained_var_idx, from original vars to original
+    # constrains and their internal index (if vector constrains), 1 otherwise.
+    # and initializes the map: constrained_var_dual, from original ci
+    # to the dual constraint (latter is initilized as empty at this point).
     add_constrained_variables(dual_problem, primal_model, variable_parameters)
 
     # Add variables to the dual model and their dual cone constraint.
-    # Return a dictionary from dual variables to primal constraints constants (obj coef of dual var)
+    # Return a dictionary from dual variables to primal constraints
+    # constants (obj coef of dual var)
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(
         dual_problem.dual_model,
         primal_model,
@@ -77,14 +84,13 @@ function dualize(
         primal_objective,
         ignore_objective,
     )
+
     add_quadratic_slack_vars(
         dual_problem.dual_model,
         primal_model,
         dual_problem.primal_dual_map,
         dual_names,
-        variable_parameters,
         primal_objective,
-        ignore_objective,
     )
 
     # Add dual equality constraint and get the link dictionary

@@ -23,6 +23,7 @@ function add_constrained_variables(
             )
         end
     end
+    return
 end
 const NO_CONSTRAINT = CI{Nothing,Nothing}(0)
 # Function barrier for the type unstability of `F` and `S`.
@@ -50,6 +51,7 @@ function _add_constrained_variables(
             m.constrained_var_dual[ci] = NO_CONSTRAINT
         end
     end
+    return
 end
 function _add_constrained_variable(
     m::PrimalDualMap,
@@ -71,7 +73,8 @@ function _add_constrained_variable(
             m.constrained_var_idx[f] = (ci, 1)
             # Placeholder to indicate this constraint is part of constrained variables,
             # it will be replaced later with a dual constraints
-            m.constrained_var_dual[ci] = CI{Nothing,Nothing}(0)
+            m.constrained_var_dual[ci] = NO_CONSTRAINT
         end
     end
+    return
 end
