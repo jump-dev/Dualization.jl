@@ -50,11 +50,15 @@ and the dual is:
 \begin{align}
 & \min_{y_1, \ldots, y_m} & \sum_{i=1}^m b_i^T y_i + b_0
 \\
-& \;\;\text{s.t.} & a_0 + \sum_{i=1}^m A_i^T y_i & = 0
+& \;\;\text{s.t.} & - a_0 - \sum_{i=1}^m A_i^T y_i & = 0
 \\
 & & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
 \end{align}
 ```
+
+Note that the equality constraints have minus signs that could be flipped for
+simplicity. However, for generality, we keep the minus signs so that the models
+displayed here precisely match the outputs of the package.
 
 A linear inequality constraint ``a^T x + b \ge c`` should be interpreted as ``a^T x + b - c \in \mathbb{R}_+``, and similarly ``a^T x + b \le c`` should be interpreted as ``a^T x + b - c \in \mathbb{R}_-``.
 Variable-wise constraints should be interpreted as affine constraints with the appropriate identity mapping in place of ``A_i``.
@@ -78,7 +82,7 @@ By applying the stated transformations to conic form, taking the dual, and trans
 & \max_{y_1,y_2,y_3} & b_1^Ty_1 + b_2^Ty_2 + b_3^Ty_3 &+ b_0
 \\
 & \;\;\text{s.t.}
-&A_1^Ty_1 + A_2^Ty_2 + A_3^Ty_3 & = a_0\\
+& -A_1^Ty_1 -A_2^Ty_2 -A_3^Ty_3 & = -a_0\\
 && y_1 &\ge 0\\
 && y_2 &\le 0
 \end{align}
@@ -102,7 +106,7 @@ and similarly, the dual is:
 & \min_{y_1,y_2,y_3} & -b_1^Ty_1 - b_2^Ty_2 - b_3^Ty_3 &+ b_0
 \\
 & \;\;\text{s.t.}
-&A_1^Ty_1 + A_2^Ty_2 + A_3^Ty_3 & = -a_0\\
+& -A_1^Ty_1 - A_2^Ty_2 - A_3^Ty_3 & = a_0\\
 && y_1 &\ge 0\\
 && y_2 &\le 0
 \end{align}
@@ -197,9 +201,9 @@ Note that signs changed in the constraints of the dual compared to the standard 
 & \max_{y_1, y_2, y_3} & b_1^T y_1 + b_2^T y_2 + b_3^T y_3 &+ b_0
 \\
 & \;\;\text{s.t.}
-& A_{1,I}^T y_1   +A_{2,I}^T y_2   + A_{3,I}^T y_3   & \le a_{I}\\
-&&A_{1,II}^T y_1  +A_{2,II}^T y_2  + A_{3,II}^T y_3  & \ge a_{II}\\
-&&A_{1,III}^T y_1 +A_{2,III}^T y_2 + A_{3,III}^T y_3 & =   a_{III}\\
+&  - A_{1,I}^T y_1   -A_{2,I}^T y_2   - A_{3,I}^T y_3   & \ge - a_{I}\\
+&& - A_{1,II}^T y_1  -A_{2,II}^T y_2  - A_{3,II}^T y_3  & \le - a_{II}\\
+&& - A_{1,III}^T y_1 -A_{2,III}^T y_2 - A_{3,III}^T y_3 & =   - a_{III}\\
 && y_1 & \ge 0\\
 && y_2 & \le 0
 \end{align}
@@ -229,9 +233,9 @@ Note that signs changed in the constraints of the dual compared to the standard 
 & \min_{y_1, y_2, y_3} & -b_1^T y_1 - b_2^T y_2 - b_3^T y_3 &+ b_0
 \\
 & \;\;\text{s.t.}
-& A_{1,I}^T y_1   +A_{2,I}^T y_2   + A_{3,I}^T y_3   & \le -a_{I}\\
-&&A_{1,II}^T y_1  +A_{2,II}^T y_2  + A_{3,II}^T y_3  & \ge -a_{II}\\
-&&A_{1,III}^T y_1 +A_{2,III}^T y_2 + A_{3,III}^T y_3 & =   -a_{III}\\
+&  -A_{1,I}^T y_1   - A_{2,I}^T y_2   - A_{3,I}^T y_3   & \ge a_{I}\\
+&& -A_{1,II}^T y_1  - A_{2,II}^T y_2  - A_{3,II}^T y_3  & \le a_{II}\\
+&& -A_{1,III}^T y_1 - A_{2,III}^T y_2 - A_{3,III}^T y_3 & =   a_{III}\\
 && y_1 & \ge 0\\
 && y_2 & \le 0
 \end{align}
@@ -515,6 +519,10 @@ u_j^T x_j = 0, \ \ j = 1 \ldots n
  - \sum_{i=1}^m A_{ij}^T y_i + a_j = u_j, \ \ j = 1 \ldots n
 ```
 
+We keep the ``u_j`` variable explicit to make Dual Feasibility and Complementary
+Slackness very clear. However, in the final model it is possible to replace the
+latter using the sationarity constraint.
+
 ### Parametric problems
 
 It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by ``x`` in the duality section, there are many use cases in which we can represent parameters that will not be considered in the optimization, these are treated as constants and, hence, not "dualized".
@@ -708,7 +716,7 @@ P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 \begin{align}
 & \max_{y_1, \ldots, y_m, w_1, \ldots, w_n} & - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T P_{j,k} w_k - \sum_{i=1}^m b_i^T y_i + b_0
 \\
-& \;\;\text{s.t.} & - \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
+& \;\;\text{s.t.} & \sum_{k=1}^n P_{j,k} w_k - \sum_{i=1}^m A_{ij}^T y_i + a_j & \in \mathcal{V}_j^* & j = 1 \ldots n
 \\
 & & y_i & \in \mathcal{C}_i^* & i = 1 \ldots m
 \end{align}
