@@ -56,7 +56,7 @@ function add_dual_equality_constraints(
         # These are constraints that will not be regular equality constraints
         # they will be  function-in-set, where set is the dual set of the
         # primal constrained variable.
-        # TODO: flip these signs a priorie instead of require post processing later
+        # TODO: flip these signs a priori instead of requiring post-processing later
         _add_constrained_variable_constraint(
             dual_model,
             primal_model,
