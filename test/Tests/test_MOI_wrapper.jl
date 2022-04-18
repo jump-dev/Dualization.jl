@@ -50,6 +50,7 @@
                     "test_conic_SecondOrderCone_no_initial_bound",
                     "test_conic_RotatedSecondOrderCone_out_of_order",
                     "test_conic_linear_INFEASIBLE",
+                    "test_conic_empty_matrix", # has feasibility sense
                 ],
             )
         end
