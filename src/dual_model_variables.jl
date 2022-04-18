@@ -75,7 +75,11 @@ function push_to_primal_con_constants!(
     primal_con_constants::Dict{CI,Vector{T}},
     ci::CI{F,S},
 ) where {T,F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
-    return # No constants need to be passed to the DualOptimizer in this case, don't need to push zero to the dict
+    # No constants need to be passed to the DualOptimizer in this case,
+    # because the VectorSet's do not have constants inside them that
+    # will need to be used in result queries as some ScalarSet's might.
+    # Hence, don't need to push zero to the dict.
+    return
 end
 
 # Utils for primal_con_dual_con dict

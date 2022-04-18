@@ -57,16 +57,37 @@ function dualize(
     primal_objective =
         get_primal_objective(primal_model, variable_parameters, T)
 
-    # cache information of which variables as `constrained_variables`
-    # creating a map: constrained_var_idx, from original vars to original
+    # Cache information of which primal variables are `constrained_variables`
+    # creating a map: constrained_var_idx, from original primal vars to original
     # constrains and their internal index (if vector constrains), 1 otherwise.
-    # and initializes the map: constrained_var_dual, from original ci
+    # Also, initializes the map: `constrained_var_dual`, from original primal ci
     # to the dual constraint (latter is initilized as empty at this point).
+    # If the Set constant of a VI-in-Set constraint is non-zero, the respective
+    # primal variable will not be a constrained variable (with respect to that
+    # constraint).
     add_constrained_variables(dual_problem, primal_model, variable_parameters)
+    # TODO: add flag here to block usage of constrained variables
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary from dual variables to primal constraints
     # constants (obj coef of dual var)
+    # Loops through all constraints that are not the constraint of a
+    # constrained variable (defined by `add_constrained_variables`).
+    # * creates the dual variable associated with the primal constraint
+    # * fills `dual_obj_affine_terms`, since we are already looping through
+    #   all constraints that might have constants.
+    # * fills `primal_con_dual_var` mapping the primal constraint and the dual
+    #   variable
+    # * fills `primal_con_dual_con` to map the primal constraint to a
+    #   constraint in the dual variable (if there is such constraint the dual
+    #   dual variable is said to be constrained). If the primal constraint's set
+    #   is EqualTo or Zeros, no constraint is added in the dual variable (the 
+    #   dual variable is said to be free).
+    # * fills `primal_con_constants` mapping primal constraints to their
+    #   respective constants, which might be inside the set.
+    #   this map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
+    #   that requires extra information in the case that the scalar set constrains
+    #   a constant (EqualtTo, GreaterThan, LessThan)
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(
         dual_problem.dual_model,
         primal_model,
@@ -75,6 +96,10 @@ function dualize(
         con_types,
     )
 
+    # Created variables in the dual problem that represent parameters in the
+    # primal model.
+    # Fills `primal_parameter` mapping parameters in the primal to parameter in
+    # the dual model.
     add_primal_parameter_vars(
         dual_problem.dual_model,
         primal_model,
@@ -85,6 +110,11 @@ function dualize(
         ignore_objective,
     )
 
+    # Add dual slack variables that are associated to the primal quadratic terms
+    # All primal variables that appear in the objective products will have an
+    # associated dual slack variable tha is created here.
+    # also, `primal_var_dual_quad_slack` is filled, mapping primal variables
+    # (that appear in quadritc objective terms) to dual "slack" variables.
     add_quadratic_slack_vars(
         dual_problem.dual_model,
         primal_model,
@@ -93,7 +123,14 @@ function dualize(
         primal_objective,
     )
 
-    # Add dual equality constraint and get the link dictionary
+    # Add dual constraints
+    # that will be equality if associated to "free variables"
+    # but will be constrained in the dual set of the associated primal
+    # constrained variable if such variable is not "free"
+    # Also, fills the the link dictionary.
+    # returns `scalar_affine_terms`
+    # because the terms associated to variables that are parameters will be used
+    # in `get_dual_objective`
     scalar_affine_terms = add_dual_equality_constraints(
         dual_problem.dual_model,
         primal_model,
@@ -112,7 +149,6 @@ function dualize(
             dual_problem,
             dual_obj_affine_terms,
             primal_objective,
-            con_types,
             scalar_affine_terms,
             variable_parameters,
         )
