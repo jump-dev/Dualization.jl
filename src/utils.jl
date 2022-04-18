@@ -30,30 +30,28 @@ end
 
 # This is used to fill the dual objective dictionary
 function get_scalar_term(
-    model::MOI.ModelLike,
+    func::MOI.AbstractVectorFunction,
+    ::MOI.AbstractVectorSet,
     i::Int,
-    ci::CI{F,S},
-) where {F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
-    return MOI.constant(get_function(model, ci))[i]
+)
+    return MOI.constant(func)[i]
 end
 
 # This is used to fill the dual objective dictionary
 function get_scalar_term(
-    model::MOI.ModelLike,
+    ::MOI.VariableIndex,
+    set::MOI.AbstractScalarSet,
     i::Int,
-    ci::CI{VI,S},
-) where {S<:MOI.AbstractScalarSet}
-    return -MOI.constant(get_set(model, ci))
+)
+    return -MOI.constant(set)
 end
 
 # This is used to fill the dual objective dictionary
 function get_scalar_term(
-    model::MOI.ModelLike,
+    func::MOI.AbstractScalarFunction,
+    set::MOI.AbstractScalarSet,
     i::Int,
-    ci::CI{F,S},
-) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
-
+)
     # In this case there i only one constant in the function and one in the set
-    return MOI.constant(get_function(model, ci))[1] -
-           MOI.constant(get_set(model, ci))
+    return MOI.constant(func) - MOI.constant(set)
 end

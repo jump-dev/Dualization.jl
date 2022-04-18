@@ -233,16 +233,19 @@ level model is represented as a KKT in the upper level model.
 function dualize end
 
 function fill_obj_dict_with_variables!(model::JuMP.Model)
-    all_indices = MOI.get(
-        model,
-        JuMP.MOI.ListOfVariableIndices(),
-    )::Vector{MOI.VariableIndex}
-    for vi in all_indices
-        model.obj_dict[Symbol(
-            MOI.get(backend(model), MOI.VariableName(), vi),
-        )] = VariableRef(model, vi)
+    list = MOI.get(model, MOI.ListOfVariableAttributesSet())
+    if !(MOI.VariableName() in list)
+        return
     end
-    return model
+    all_indices =
+        MOI.get(model, MOI.ListOfVariableIndices())::Vector{MOI.VariableIndex}
+    for vi in all_indices
+        name = MOI.get(backend(model), MOI.VariableName(), vi)
+        if !isempty(name)
+            model[Symbol(name)] = VariableRef(model, vi)
+        end
+    end
+    return
 end
 
 function fill_obj_dict_with_constraints!(model::JuMP.Model)
@@ -250,20 +253,19 @@ function fill_obj_dict_with_constraints!(model::JuMP.Model)
     for (F, S) in con_types
         fill_obj_dict_with_constraints!(model, F, S)
     end
-    return model
+    return
 end
 
 function fill_obj_dict_with_constraints!(model::JuMP.Model, F::Type, S::Type)
+    list = MOI.get(model, MOI.ListOfConstraintAttributesSet{F,S}())
+    if !(MOI.ConstraintName() in list)
+        return
+    end
     for ci in MOI.get(backend(model), MOI.ListOfConstraintIndices{F,S}())
         name = MOI.get(backend(model), MOI.ConstraintName(), ci)
-        if F <: MOI.AbstractScalarFunction
-            model.obj_dict[Symbol(name)] =
-                ConstraintRef(model, ci, JuMP.ScalarShape())
-        elseif S <: MOI.AbstractVectorFunction
-            model.obj_dict[Symbol(name)] =
-                ConstraintRef(model, ci, JuMP.VectorShape())
-        else
-            continue
+        if !isempty(name)
+            con_ref = JuMP.constraint_ref_with_index(model, ci)
+            model[Symbol(name)] = con_ref
         end
     end
 end

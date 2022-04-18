@@ -65,6 +65,7 @@ function add_dual_equality_constraints(
             scalar_terms,
             sense_change,
             T,
+            dual_names,
         )
     end
 
@@ -87,7 +88,7 @@ function add_dual_equality_constraints(
                 -sense_change * get(scalar_terms, primal_vi, zero(T))),
             MOI.EqualTo(zero(T)),
         )
-        #Set constraint name with the name of the associated priaml variable
+        # Set constraint name with the name of the associated priaml variable
         if !is_empty(dual_names)
             set_dual_constraint_name(
                 dual_model,
@@ -138,6 +139,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
+    dual_names::DualNames,
 ) where {T}
     set_primal = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     set_dual = MOI.dual_set(set_primal)
@@ -155,6 +157,11 @@ function _add_constrained_variable_constraint(
         ) for (i, primal_vi) in enumerate(func_primal.variables)
     ])
     ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
+    if !is_empty(dual_names)
+        @warn(
+            "dual names for constrained vector of variables not supported yet."
+        )
+    end
     return
 end
 
@@ -168,6 +175,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
+    dual_names::DualNames,
 ) where {T}
     # Nothing to add as the set is `EqualTo`.
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
@@ -188,6 +196,7 @@ function _add_constrained_variable_constraint(
     scalar_terms,
     sense_change,
     ::Type{T},
+    dual_names::DualNames,
 ) where {T}
     func_primal = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     primal_vi = func_primal
@@ -199,6 +208,15 @@ function _add_constrained_variable_constraint(
     set_dual = _dual_set(set_primal)
     ci_map[ci] =
         MOIU.normalize_and_add_constraint(dual_model, func_dual, set_dual)
+    if !is_empty(dual_names)
+        set_dual_constraint_name(
+            dual_model,
+            primal_model,
+            primal_vi,
+            ci_map[ci],
+            dual_names.dual_constraint_name_prefix,
+        )
+    end
     return
 end
 
@@ -417,9 +435,42 @@ function fill_scalar_affine_terms!(
     return
 end
 
+struct CanonicalVector{T} <: AbstractVector{T}
+    index::Int
+    n::Int
+end
+Base.eltype(::Type{CanonicalVector{T}}) where {T} = T
+Base.length(v::CanonicalVector) = v.n
+Base.size(v::CanonicalVector) = (v.n,)
+function Base.getindex(v::CanonicalVector{T}, i::Integer) where {T}
+    return convert(T, i == v.index)
+end
+
+# This is much faster than the default implementation that goes
+# through all entries even if only one is nonzero.
+function LinearAlgebra.dot(
+    x::CanonicalVector{T},
+    y::CanonicalVector{T},
+) where {T}
+    return convert(T, x.index == y.index)
+end
+function MOI.Utilities.triangle_dot(
+    x::CanonicalVector{T},
+    y::CanonicalVector{T},
+    dim::Int,
+    offset::Int,
+) where {T}
+    if x.index != y.index || x.index <= offset
+        return zero(T)
+    elseif MOI.Utilities.is_diagonal_vectorized_index(x.index - offset)
+        return one(T)
+    else
+        return 2one(T)
+    end
+end
+
 function set_dot(i::Integer, s::MOI.AbstractVectorSet, T::Type)
-    vec = zeros(T, MOI.dimension(s))
-    vec[i] = one(T)
+    vec = CanonicalVector{T}(i, MOI.dimension(s))
     return MOIU.set_dot(vec, vec, s)
 end
 function set_dot(::Integer, ::MOI.AbstractScalarSet, T::Type)
