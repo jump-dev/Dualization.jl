@@ -107,16 +107,23 @@
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([3.0; 1.0; 3.0])
 
-        ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}())[]
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+        )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([1.0; 2.0; 1.0])
         @test MOI.constant(f) == 0.0
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(-4.0)
-        ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}())[]
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+        )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([-1.0; -2.0])
         @test MOI.constant(f) == 0.0
-        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.GreaterThan(3.0)
+        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
+              MOI.GreaterThan(3.0)
     end
 
     @testset "lp10_test" begin
@@ -182,13 +189,20 @@
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([8.0, -12.0, 16])
 
-        ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}())[]
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+        )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([-5.0; 9.0; -13.0])
         @test MOI.constant(f) == 0.0
-        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.GreaterThan(-2.0)
+        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
+              MOI.GreaterThan(-2.0)
 
-        ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.LessThan{Float64}}())[]
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.LessThan{Float64}}(),
+        )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([6.0; -10.0; +14.0])
         @test MOI.constant(f) == 0.0
@@ -265,13 +279,20 @@
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([-8.0, 12.0, -16])
 
-        ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}())[]
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+        )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([-5.0; 9.0; -13.0])
         @test MOI.constant(f) == 0.0
-        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.GreaterThan(2.0)
+        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
+              MOI.GreaterThan(2.0)
 
-        ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.LessThan{Float64}}())[]
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{SAF{Float64},MOI.LessThan{Float64}}(),
+        )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([6.0; -10.0; +14.0])
         @test MOI.constant(f) == 0.0

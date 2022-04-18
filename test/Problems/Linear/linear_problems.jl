@@ -487,9 +487,13 @@ function lp14_test(sense)
 
     X = MOI.add_variables(model, 3)
 
-    MOI.add_constraint(model, +5.0X[1]  -6.0X[2]  +7.0X[3], MOI.LessThan(8.0))
-    MOI.add_constraint(model, -9.0X[1] +10.0X[2] -11.0X[3], MOI.GreaterThan(-12.0))
-    MOI.add_constraint(model, 13.0X[1] -14.0X[2] +15.0X[3], MOI.EqualTo(16.0))
+    MOI.add_constraint(model, +5.0X[1] - 6.0X[2] + 7.0X[3], MOI.LessThan(8.0))
+    MOI.add_constraint(
+        model,
+        -9.0X[1] + 10.0X[2] - 11.0X[3],
+        MOI.GreaterThan(-12.0),
+    )
+    MOI.add_constraint(model, 13.0X[1] - 14.0X[2] + 15.0X[3], MOI.EqualTo(16.0))
 
     MOI.add_constraint(model, X[1], MOI.GreaterThan(0.0))
 
@@ -498,7 +502,7 @@ function lp14_test(sense)
     MOI.set(
         model,
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
-        -1.0 +2.0X[1] -3.0X[2] +4.0X[3],
+        -1.0 + 2.0X[1] - 3.0X[2] + 4.0X[3],
     )
 
     MOI.set(model, MOI.ObjectiveSense(), sense)

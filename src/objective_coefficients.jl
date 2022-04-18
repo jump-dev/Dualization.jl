@@ -12,7 +12,7 @@ function set_dual_model_sense(
     # Set dual model sense
     dual_sense = if primal_sense == MOI.MIN_SENSE
         MOI.MAX_SENSE
-    elseif  primal_sense == MOI.MAX_SENSE
+    elseif primal_sense == MOI.MAX_SENSE
         MOI.MIN_SENSE
     else # primal_sense == MOI.FEASIBILITY_SENSE
         error(primal_sense, " is not supported")
@@ -209,7 +209,8 @@ function get_dual_objective(
     sense_change = ifelse(
         MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE,
         -one(T),
-        one(T))
+        one(T),
+    )
 
     # standard linear part
     lin_terms = MOI.ScalarAffineTerm{T}[]

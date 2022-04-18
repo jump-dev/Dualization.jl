@@ -9,7 +9,9 @@ function add_dual_equality_constraints(
 ) where {T}
     sense_change = ifelse(
         MOI.get(primal_model, MOI.ObjectiveSense()) == MOI.MIN_SENSE,
-        one(T), -one(T))
+        one(T),
+        -one(T),
+    )
 
     all_variables = MOI.get(primal_model, MOI.ListOfVariableIndices())
     non_parameter_variables = setdiff(all_variables, variable_parameters)
@@ -85,7 +87,8 @@ function add_dual_equality_constraints(
                 # MOIU.operate_terms(-, scalar_affine_terms[primal_vi]),
                 # sense_change * get(scalar_terms, primal_vi, zero(T))),
                 MOIU.operate_terms(+, scalar_affine_terms[primal_vi]),
-                -sense_change * get(scalar_terms, primal_vi, zero(T))),
+                -sense_change * get(scalar_terms, primal_vi, zero(T)),
+            ),
             MOI.EqualTo(zero(T)),
         )
         # Set constraint name with the name of the associated priaml variable
@@ -152,8 +155,8 @@ function _add_constrained_variable_constraint(
                 scalar_affine_terms[primal_vi],
             ),
             sense_change *
-                inv(set_dot(i, set_primal, T)) *
-                get(scalar_terms, primal_vi, zero(T)),
+            inv(set_dot(i, set_primal, T)) *
+            get(scalar_terms, primal_vi, zero(T)),
         ) for (i, primal_vi) in enumerate(func_primal.variables)
     ])
     ci_map[ci] = MOI.add_constraint(dual_model, func_dual, set_dual)
