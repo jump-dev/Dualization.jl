@@ -96,10 +96,10 @@ function dualize(
         con_types,
     )
 
-    # Created variables in the dual problem that represent parameters in the
+    # Creates variables in the dual problem that represent parameters in the
     # primal model.
-    # Fills `primal_parameter` mapping parameters in the primal to parameter in
-    # the dual model.
+    # Fills `primal_parameter` mapping parameters in the primal to parameters
+    # in the dual model.
     add_primal_parameter_vars(
         dual_problem.dual_model,
         primal_model,
@@ -112,7 +112,7 @@ function dualize(
 
     # Add dual slack variables that are associated to the primal quadratic terms
     # All primal variables that appear in the objective products will have an
-    # associated dual slack variable tha is created here.
+    # associated dual slack variable that is created here.
     # also, `primal_var_dual_quad_slack` is filled, mapping primal variables
     # (that appear in quadritc objective terms) to dual "slack" variables.
     add_quadratic_slack_vars(
@@ -127,7 +127,7 @@ function dualize(
     # that will be equality if associated to "free variables"
     # but will be constrained in the dual set of the associated primal
     # constrained variable if such variable is not "free"
-    # Also, fills the the link dictionary.
+    # Also, fills the link dictionary.
     # returns `scalar_affine_terms`
     # because the terms associated to variables that are parameters will be used
     # in `get_dual_objective`
