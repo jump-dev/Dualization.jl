@@ -96,10 +96,10 @@ function dualize(
         con_types,
     )
 
-    # Created variables in the dual problem that represent parameters in the
+    # Creates variables in the dual problem that represent parameters in the
     # primal model.
-    # Fills `primal_parameter` mapping parameters in the primal to parameter in
-    # the dual model.
+    # Fills `primal_parameter` mapping parameters in the primal to parameters
+    # in the dual model.
     add_primal_parameter_vars(
         dual_problem.dual_model,
         primal_model,
