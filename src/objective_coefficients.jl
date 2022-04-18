@@ -245,7 +245,7 @@ function get_dual_objective(
     if nothing !== primal_objective.obj_parametric
 
         # linear: coef * parameter
-        # are treaded as constants in the objective, so they go
+        # are treated as constants in the objective, so they go
         # to the dual objective in the exact same way they come from primal obj.
         for term in primal_objective.obj_parametric.affine_terms
             push!(
