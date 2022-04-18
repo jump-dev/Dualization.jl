@@ -112,7 +112,7 @@ function dualize(
 
     # Add dual slack variables that are associated to the primal quadratic terms
     # All primal variables that appear in the objective products will have an
-    # associated dual slack variable tha is created here.
+    # associated dual slack variable that is created here.
     # also, `primal_var_dual_quad_slack` is filled, mapping primal variables
     # (that appear in quadritc objective terms) to dual "slack" variables.
     add_quadratic_slack_vars(
