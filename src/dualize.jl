@@ -127,7 +127,7 @@ function dualize(
     # that will be equality if associated to "free variables"
     # but will be constrained in the dual set of the associated primal
     # constrained variable if such variable is not "free"
-    # Also, fills the the link dictionary.
+    # Also, fills the link dictionary.
     # returns `scalar_affine_terms`
     # because the terms associated to variables that are parameters will be used
     # in `get_dual_objective`
