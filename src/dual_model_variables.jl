@@ -1,4 +1,4 @@
-function add_dual_vars_in_dual_cones(
+function _add_dual_vars_in_dual_cones(
     dual_obj_affine_terms::Dict{VI,T},
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
@@ -47,7 +47,7 @@ function add_dual_vars_in_dual_cones(
 ) where {T}
     dual_obj_affine_terms = Dict{VI,T}()
     for (F, S) in con_types
-        add_dual_vars_in_dual_cones(
+        _add_dual_vars_in_dual_cones(
             dual_obj_affine_terms,
             dual_model,
             primal_model,
@@ -75,7 +75,11 @@ function push_to_primal_con_constants!(
     primal_con_constants::Dict{CI,Vector{T}},
     ci::CI{F,S},
 ) where {T,F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
-    return # No constants need to be passed to the DualOptimizer in this case, don't need to push zero to the dict
+    # No constants need to be passed to the DualOptimizer in this case,
+    # because the VectorSet's do not have constants inside them that
+    # will need to be used in result queries as some ScalarSet's might.
+    # Hence, don't need to push zero to the dict.
+    return
 end
 
 # Utils for primal_con_dual_con dict
@@ -268,12 +272,10 @@ function add_quadratic_slack_vars(
     primal_model::MOI.ModelLike,
     primal_dual_map::PrimalDualMap{T},
     dual_names::DualNames,
-    variable_parameters::Vector{VI},
     primal_objective,
-    ignore_objective::Bool,
 ) where {T}
-    # only crossed terms (parameter times primal variable) of the objective
-    # are required
+    # only main quadratic terms (primal variable times primal variable)
+    # of the objective are required
     added = Set{VI}()
     for term in primal_objective.obj.quadratic_terms
         for ind in [term.variable_1, term.variable_2]
@@ -311,9 +313,11 @@ function set_quad_slack_name(
     vi_name::String,
     dual_names,
 )
-    prefix =
-        dual_names.quadratic_slack_name_prefix == "" ? "quadslack_" :
+    prefix = if dual_names.quadratic_slack_name_prefix == ""
+        "quadslack_"
+    else
         dual_names.quadratic_slack_name_prefix
+    end
     MOI.set(dual_model, MOI.VariableName(), vi, prefix * vi_name)
     return
 end

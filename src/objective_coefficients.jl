@@ -9,11 +9,14 @@ function set_dual_model_sense(
 )::Nothing where {T}
     # Get model sense
     primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
-    if primal_sense == MOI.FEASIBILITY_SENSE
-        error(primal_sense, " is not supported") # Feasibility should be supported?
-    end
     # Set dual model sense
-    dual_sense = (primal_sense == MOI.MIN_SENSE) ? MOI.MAX_SENSE : MOI.MIN_SENSE
+    dual_sense = if primal_sense == MOI.MIN_SENSE
+        MOI.MAX_SENSE
+    elseif primal_sense == MOI.MAX_SENSE
+        MOI.MIN_SENSE
+    else # primal_sense == MOI.FEASIBILITY_SENSE
+        error(primal_sense, " is not supported")
+    end
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
     return
 end
@@ -53,17 +56,6 @@ mutable struct PrimalObjective{T}
 
     function PrimalObjective{T}(obj) where {T}
         canonical_obj = _scalar_quadratic_function(obj, T)
-        # if isempty(canonical_obj.terms)
-        #     error("Dualization does not support models with no variables in the objective function.")
-        # end
-        # This was commented for now, because the current understanding is that
-        # problems like {min 0*x} are well defined and have well defined dual problems.
-        # Therefore, they present no issue to dualization as opposed to problems
-        # with FEASIBILITY_SENSE that do not have a well defined dual problem.
-        # Moreover, JuMP and MOI default is FEASIBILITY_SENSE, if a MIN_SENSE
-        # is in the problem, it is because the user set it explicitly.
-        # For more on the original discussion, see:
-        # https://github.com/JuliaOpt/Dualization.jl/pull/64#discussion_r347484642
         quad_cross_parameters = Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}()
         return new(canonical_obj, quad_cross_parameters, nothing)
     end
@@ -209,20 +201,20 @@ function get_dual_objective(
     dual_problem,
     dual_obj_affine_terms::Dict,
     primal_objective::PrimalObjective{T},
-    con_types,
     scalar_affine_terms,
     variable_parameters,
 )::DualObjective{T} where {T}
     dual_model = dual_problem.dual_model
     map = dual_problem.primal_dual_map
-    sense_change =
-        MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE ? -one(T) :
-        one(T)
+    sense_change = ifelse(
+        MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE,
+        -one(T),
+        one(T),
+    )
 
     # standard linear part
-    num_objective_terms = length(dual_obj_affine_terms)
     lin_terms = MOI.ScalarAffineTerm{T}[]
-    sizehint!(lin_terms, num_objective_terms)
+    sizehint!(lin_terms, length(dual_obj_affine_terms))
     for var in keys(dual_obj_affine_terms) # Number of constraints of the primal model
         coef = dual_obj_affine_terms[var]
         push!(lin_terms, MOI.ScalarAffineTerm{T}(
@@ -248,10 +240,13 @@ function get_dual_objective(
     end
 
     # parametric part
-
+    # if some varaibles were marked to be parameters then their final
+    # processing occurs here.
     if nothing !== primal_objective.obj_parametric
 
-        # linear
+        # linear: coef * parameter
+        # are treated as constants in the objective, so they go
+        # to the dual objective in the exact same way they come from primal obj.
         for term in primal_objective.obj_parametric.affine_terms
             push!(
                 lin_terms,
@@ -262,7 +257,9 @@ function get_dual_objective(
             )
         end
 
-        # quadratic
+        # quadratic: coef * parameter * parameter
+        # are treated as constants in the objective, so they go
+        # to the dual objective in the exact same way they come from primal obj.
         for term in primal_objective.obj_parametric.quadratic_terms
             push!(
                 quad_terms,
@@ -274,7 +271,11 @@ function get_dual_objective(
             )
         end
 
-        # crossed
+        # crossed terms: parameters * variables
+        # these come from parameters that belong to constraints functions
+        # that were collectted while building constraints.
+        # Since they are parameters they are treated as "constrants in rhs"
+        # and, thus, the go to the obj of the dual.
         # TODO? set_dot
         for vi in variable_parameters
             param = map.primal_parameter[vi]

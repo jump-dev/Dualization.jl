@@ -20,6 +20,56 @@ MOIU.@model(
     (MOI.VectorAffineFunction,)
 )
 
+"""
+    PrimalDualMap{T}
+
+Maps information from all structures of the primal to the dual model.
+
+* `constrained_var_idx::Dict{VI,Tuple{CI,Int}}`: maps original primal
+constrained variables to their primal original constraints (the special ones
+that makes them constrained variables) and their internal index (if vector
+constraints, VectorOfVariables-in-Set), 1 otherwise (VariableIndex-in-Set).
+
+* `constrained_var_dual::Dict{CI,CI}`: maps the original primal constraint index
+of constrained variables to the dual model's constraint index of the
+associated dual constraint.
+
+* `constrained_var_zero::Dict{CI,Unions{SAF,VAF}}`: caches scalar affine
+functions or vector affine functions associated with constrained variables
+of type `VectorOfVariables`-in-`Zeros` or
+`VariableIndex`-in-`EqualTo(zero(T))` as
+their duals would be `func`-in-`Reals`, which are "irrelevant" to the model.
+This information is cached for completeness of the `DualOptimizer` for
+`get`ting `ConstraintDuals`.
+
+* `primal_var_dual_con::Dict{VI,CI}`: maps "free" primal variables to their
+associated dual constraints. Free variables as opposed to constrained
+variables. Note that Dualization will select automatically which variables
+are free and which are constrained.
+
+* `primal_con_dual_var::Dict{CI,Vector{VI}}`: maps primal constraint indices to
+vectors of dual variable indices. For scalar constraints those vectors will be
+single element vectors.
+
+* `primal_con_dual_con::Dict{CI,CI}`: maps primal constraints to
+dual variable constraints (if there is such constraint the dual
+dual variable is said to be constrained). If the primal constraint's set
+is EqualTo or Zeros, no constraint is added in the dual variable (the 
+dual variable is said to be free).
+
+* `primal_con_constants::Dict{CI,Vector{T}}`: maps primal constraints to
+their respective constants, which might be inside the set.
+This map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
+that requires extra information in the case that the scalar set constrains
+a constant (`EqualtTo`, `GreaterThan`, `LessThan`).
+
+* `primal_parameter::Dict{VI,VI}`: maps parameters in the primal to parameters
+in the dual model.
+
+* `primal_var_dual_quad_slack::Dict{VI,VI}`: maps primal variables
+(that appear in quadratic objective terms) to dual "slack" variables.
+
+"""
 mutable struct PrimalDualMap{T}
     constrained_var_idx::Dict{VI,Tuple{CI,Int}}
     constrained_var_dual::Dict{CI,CI}
@@ -32,7 +82,7 @@ mutable struct PrimalDualMap{T}
     primal_con_dual_con::Dict{CI,CI}
     primal_con_constants::Dict{CI,Vector{T}}
 
-    primal_parameter::Dict{VI,VI} # in the future we could have Parameters, as in ParameterJuMP
+    primal_parameter::Dict{VI,VI}
     primal_var_dual_quad_slack::Dict{VI,VI}
 
     function PrimalDualMap{T}() where {T}
@@ -78,6 +128,18 @@ function empty!(primal_dual_map::PrimalDualMap)
     return
 end
 
+"""
+    DualProblem{T,OT<:MOI.ModelLike}
+
+Result of the `dualize` function. Contains the fields:
+
+* `dual_model::OT`: contaninf a optimizer or data structure with the
+`MathOptInterface` definition of the resulting dual model.
+
+* `primal_dual_map::PrimalDualMap{T}`: a data structure to hold information of
+how the primal and dual model are related in terms of indices (`VariableIndex`
+and `ConstraintIndex`) and other data.
+"""
 struct DualProblem{T,OT<:MOI.ModelLike}
     dual_model::OT #It can be a model from an optimizer or a DualizableModel{T}
     primal_dual_map::PrimalDualMap{T}

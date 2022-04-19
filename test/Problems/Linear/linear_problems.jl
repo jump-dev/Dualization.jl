@@ -471,3 +471,41 @@ function lp13_test()
 
     return model
 end
+
+function lp14_test(sense)
+    #=
+        min -1 +2x1 -3x2 +4x3
+    s.t.
+        +5x1  -6x2  +7x3 <= 8
+        -9x1 +10x2 -11x3 >= -12
+        13x1 -14x2 +15x3 == 16
+        x1 >= 0
+        x2 <= 0
+        x3 free
+    =#
+    model = TestModel{Float64}()
+
+    X = MOI.add_variables(model, 3)
+
+    MOI.add_constraint(model, +5.0X[1] - 6.0X[2] + 7.0X[3], MOI.LessThan(8.0))
+    MOI.add_constraint(
+        model,
+        -9.0X[1] + 10.0X[2] - 11.0X[3],
+        MOI.GreaterThan(-12.0),
+    )
+    MOI.add_constraint(model, 13.0X[1] - 14.0X[2] + 15.0X[3], MOI.EqualTo(16.0))
+
+    MOI.add_constraint(model, X[1], MOI.GreaterThan(0.0))
+
+    MOI.add_constraint(model, X[2], MOI.LessThan(0.0))
+
+    MOI.set(
+        model,
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{Float64}}(),
+        -1.0 + 2.0X[1] - 3.0X[2] + 4.0X[3],
+    )
+
+    MOI.set(model, MOI.ObjectiveSense(), sense)
+
+    return model
+end
