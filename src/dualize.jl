@@ -6,6 +6,7 @@ function dualize(
     dual_names::DualNames = EMPTY_DUAL_NAMES,
     variable_parameters::Vector{VI} = VI[],
     ignore_objective::Bool = false,
+    consider_constrained_variables::Bool = true,
 )
     # Creates an empty dual problem
     dual_problem = DualProblem{Float64}()
@@ -15,6 +16,7 @@ function dualize(
         dual_names,
         variable_parameters,
         ignore_objective,
+        consider_constrained_variables,
     )
 end
 
@@ -24,6 +26,7 @@ function dualize(
     dual_names::DualNames = EMPTY_DUAL_NAMES,
     variable_parameters::Vector{VI} = VI[],
     ignore_objective::Bool = false,
+    consider_constrained_variables::Bool = true,
 ) where {T}
     # Dualize with the optimizer already attached
     return dualize(
@@ -32,6 +35,7 @@ function dualize(
         dual_names,
         variable_parameters,
         ignore_objective,
+        consider_constrained_variables,
     )
 end
 
@@ -41,6 +45,7 @@ function dualize(
     dual_names::DualNames,
     variable_parameters::Vector{VI},
     ignore_objective::Bool,
+    consider_constrained_variables::Bool,
 ) where {T}
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model)
@@ -65,8 +70,13 @@ function dualize(
     # If the Set constant of a VI-in-Set constraint is non-zero, the respective
     # primal variable will not be a constrained variable (with respect to that
     # constraint).
-    add_constrained_variables(dual_problem, primal_model, variable_parameters)
-    # TODO: add flag here to block usage of constrained variables
+    if consider_constrained_variables
+        add_constrained_variables(
+            dual_problem,
+            primal_model,
+            variable_parameters,
+        )
+    end
 
     # Add variables to the dual model and their dual cone constraint.
     # Return a dictionary from dual variables to primal constraints
