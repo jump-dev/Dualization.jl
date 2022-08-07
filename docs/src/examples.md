@@ -67,7 +67,7 @@ dual_model = dualize(model, ECOS.Optimizer)
 ## Naming the dual variables and dual constraints
 
 You can provide prefixes for the name of the variables and the name of the constraints using the a `DualNames` variable.
-Everytime you use the dualize function you can provide a `DualNames` as keyword argument. Consider the following example.
+Every time you use the dualize function you can provide a `DualNames` as keyword argument. Consider the following example.
 
 You want to dualize this JuMP problem and add a prefix to the name of each constraint to be more clear on what the variables
 represent. For instance you want to put `"dual"` before the name of the constraint.

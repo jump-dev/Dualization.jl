@@ -6,7 +6,7 @@
 
 ## Conic Duality
 
-### MOI stardard form and duality
+### MOI standard form and duality
 
 Conic duality is the starting point for MOI's duality conventions. When all functions are affine (or coordinate projections), and all constraint sets are closed convex cones, the model may be called a conic optimization problem.
 
@@ -456,7 +456,7 @@ The resulting dual model is
 
 ### KKT Conditions
 
-The KKT conditions are a set of inequalities for which the feasible solution is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting to write them programatically.
+The KKT conditions are a set of inequalities for which the feasible solution is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater's are valid. The KKT is used in many branches of optimization and it might be interesting to write them programmatically.
 
 #### MOI standard form
 
@@ -521,7 +521,7 @@ u_j^T x_j = 0, \ \ j = 1 \ldots n
 
 We keep the ``u_j`` variable explicit to make Dual Feasibility and Complementary
 Slackness very clear. However, in the final model it is possible to replace the
-latter using the sationarity constraint.
+latter using the stationarity constraint.
 
 ### Parametric problems
 
