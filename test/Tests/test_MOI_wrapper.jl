@@ -26,6 +26,8 @@
                     "test_linear_integration_2",
                     "test_linear_integration_Interval",
                     "test_linear_integration_delete_variables",
+                    "test_linear_complex_Zeros",
+                    "test_linear_complex_Zeros_duplicate",
                 ],
             )
         end
@@ -45,6 +47,7 @@
                 conic_config,
                 include = ["test_conic_"],
                 exclude = [
+                    # uses FEASIBILITY_SENSE
                     "test_conic_NormInfinityCone_INFEASIBLE",
                     "test_conic_NormOneCone_INFEASIBLE",
                     "test_conic_PositiveSemidefiniteConeSquare_3",
@@ -55,7 +58,8 @@
                     "test_conic_SecondOrderCone_no_initial_bound",
                     "test_conic_RotatedSecondOrderCone_out_of_order",
                     "test_conic_linear_INFEASIBLE",
-                    "test_conic_empty_matrix", # uses FEASIBILITY_SENSE
+                    "test_conic_empty_matrix",
+                    "test_conic_HermitianPositiveSemidefiniteConeTriangle_2",
                 ],
             )
         end
