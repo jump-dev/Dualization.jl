@@ -26,7 +26,7 @@ function add_constrained_variables(
     return
 end
 const NO_CONSTRAINT = CI{Nothing,Nothing}(0)
-# Function barrier for the type unstability of `F` and `S`.
+# Function barrier for the type instability of `F` and `S`.
 function _add_constrained_variables(
     m::PrimalDualMap,
     primal_model,
