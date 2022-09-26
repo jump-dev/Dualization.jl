@@ -5,35 +5,56 @@
 
 export dualize
 
-# MOI dualize
+"""
+    dualize(args...; kwargs...)
+
+The `dualize` function works in three different ways. The user can provide:
+
+  * A `MathOptInterface.ModelLike`
+
+    The function will return a `DualProblem` struct that has the dualized model
+    and `PrimalDualMap{Float64}` for users to identify the links between primal
+    and dual model. The `PrimalDualMap{Float64}` maps variables and constraints
+    from the original primal model into the respective objects of the dual
+    model.
+
+  * A `MathOptInterface.ModelLike` and a `DualProblem{T}`
+
+  * A `JuMP.Model`
+
+    The function will return a JuMP model with the dual representation of the
+    problem.
+
+  * A `JuMP.Model` and an optimizer constructor
+
+    The function will return a JuMP model with the dual representation of the
+    problem with the optimizer constructor attached.
+
+On each of these methods, the user can provide the following keyword arguments:
+
+  * `dual_names`: of type `DualNames` struct. It allows users to set more
+    intuitive names for the dual variables and dual constraints created.
+
+  * `variable_parameters`: A vector of MOI.VariableIndex containing the
+    variables that should not be considered model variables during dualization.
+    These variables will behave like constants during dualization. This is
+    especially useful for the case of bi-level modelling, where the second level
+    depends on some decisions from the upper level.
+
+  * `ignore_objective`: a boolean indicating if the objective function should be
+    added to the dual model. This is also useful for bi-level modelling, where
+    the second level model is represented as a KKT in the upper level model.
+"""
+function dualize end
+
 function dualize(
-    primal_model::MOI.ModelLike;
+    primal_model::MOI.ModelLike,
+    dual_problem::DualProblem = DualProblem{Float64}();
     dual_names::DualNames = EMPTY_DUAL_NAMES,
     variable_parameters::Vector{MOI.VariableIndex} = MOI.VariableIndex[],
     ignore_objective::Bool = false,
     consider_constrained_variables::Bool = true,
 )
-    # Creates an empty dual problem
-    dual_problem = DualProblem{Float64}()
-    return dualize(
-        primal_model,
-        dual_problem,
-        dual_names,
-        variable_parameters,
-        ignore_objective,
-        consider_constrained_variables,
-    )
-end
-
-function dualize(
-    primal_model::MOI.ModelLike,
-    dual_problem::DualProblem{T};
-    dual_names::DualNames = EMPTY_DUAL_NAMES,
-    variable_parameters::Vector{MOI.VariableIndex} = MOI.VariableIndex[],
-    ignore_objective::Bool = false,
-    consider_constrained_variables::Bool = true,
-) where {T}
-    # Dualize with the optimizer already attached
     return dualize(
         primal_model,
         dual_problem,
@@ -72,9 +93,9 @@ function dualize(
     # constrains and their internal index (if vector constrains), 1 otherwise.
     # Also, initializes the map: `constrained_var_dual`, from original primal ci
     # to the dual constraint (latter is initilized as empty at this point).
-    # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero, the respective
-    # primal variable will not be a constrained variable (with respect to that
-    # constraint).
+    # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
+    # the respective primal variable will not be a constrained variable (with
+    # respect to that constraint).
     if consider_constrained_variables
         add_constrained_variables(
             dual_problem,
@@ -101,8 +122,8 @@ function dualize(
     # * fills `primal_con_constants` mapping primal constraints to their
     #   respective constants, which might be inside the set.
     #   this map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
-    #   that requires extra information in the case that the scalar set constrains
-    #   a constant (EqualtTo, GreaterThan, LessThan)
+    #   that requires extra information in the case that the scalar set
+    #   constrains a constant (EqualtTo, GreaterThan, LessThan)
     dual_obj_affine_terms = add_dual_vars_in_dual_cones(
         dual_problem.dual_model,
         primal_model,
@@ -173,114 +194,65 @@ function dualize(
     return dual_problem
 end
 
-# JuMP dualize
-function dualize(model::JuMP.Model; dual_names::DualNames = EMPTY_DUAL_NAMES)
-    # Create an empty JuMP model
-    JuMP_model = JuMP.Model()
-
-    if JuMP.mode(model) != JuMP.AUTOMATIC # Only works in AUTOMATIC mode
-        error(
-            "Dualization does not support solvers in $(model.moi_backend.mode) mode",
-        )
-    end
-    # Dualize and attach to the model
-    dualize(
-        backend(model),
-        DualProblem(backend(JuMP_model));
-        dual_names = dual_names,
-    )
-    fill_obj_dict_with_variables!(JuMP_model)
-    fill_obj_dict_with_constraints!(JuMP_model)
-    return JuMP_model
-end
-
 function dualize(
     model::JuMP.Model,
-    optimizer_constructor;
+    optimizer_constructor::Nothing;
     dual_names::DualNames = EMPTY_DUAL_NAMES,
 )
-    # Dualize the JuMP model
-    dual_JuMP_model = dualize(model; dual_names = dual_names)
-    # Set the optimizer
-    JuMP.set_optimizer(dual_JuMP_model, optimizer_constructor)
-    return dual_JuMP_model
+    mode = JuMP.mode(model)
+    if mode != JuMP.AUTOMATIC
+        error("Dualization does not support solvers in $(mode) mode")
+    end
+    dual_model = JuMP.Model()
+    dualize(
+        JuMP.backend(model),
+        DualProblem(JuMP.backend(dual_model));
+        dual_names = dual_names,
+    )
+    _fill_obj_dict_with_variables!(dual_model)
+    _fill_obj_dict_with_constraints!(dual_model)
+    if optimizer_constructor !== nothing
+        JuMP.set_optimizer(dual_model, optimizer_constructor)
+    end
+    return dual_model
 end
 
-# dualize docs
-"""
-    dualize(args...; kwargs...)
-
-The `dualize` function works in three different ways. The user can provide:
-
-* A `MathOptInterface.ModelLike`
-
-The function will return a `DualProblem` struct that has the dualized model
-and `PrimalDualMap{Float64}` for users to identify the links between primal
-and dual model. The `PrimalDualMap{Float64}` maps variables and constraints
-from the original primal model into the respective objects of the dual model.
-
-* A `MathOptInterface.ModelLike` and a `DualProblem{T}`
-
-* A `JuMP.Model`
-
-The function will return a JuMP model with the dual representation of the problem.
-
-* A `JuMP.Model` and an optimizer constructor
-
-The function will return a JuMP model with the dual representation of the problem with
-the optimizer constructor attached.
-
-On each of these methods, the user can provide the following keyword arguments:
-
-* `dual_names`: of type `DualNames` struct. It allows users to set more intuitive names
-for the dual variables and dual constraints created.
-
-* `variable_parameters`: A vector of MOI.VariableIndex containing the variables that
-should not be considered model variables during dualization. These variables will behave
-like constants during dualization. This is specially useful for the case of bi-level
-modelling, where the second level depends on some decisions from the upper level.
-
-* `ignore_objective`: a boolean indicating if the objective function should be
-added to the dual model. This is also useful for bi-level modelling, where the second
-level model is represented as a KKT in the upper level model.
-
-"""
-function dualize end
-
-function fill_obj_dict_with_variables!(model::JuMP.Model)
+function _fill_obj_dict_with_variables!(model::JuMP.Model)
     list = MOI.get(model, MOI.ListOfVariableAttributesSet())
     if !(MOI.VariableName() in list)
         return
     end
-    all_indices =
-        MOI.get(model, MOI.ListOfVariableIndices())::Vector{MOI.VariableIndex}
-    for vi in all_indices
-        name = MOI.get(backend(model), MOI.VariableName(), vi)
+    for vi in MOI.get(model, MOI.ListOfVariableIndices())
+        name = MOI.get(JuMP.backend(model), MOI.VariableName(), vi)
         if !isempty(name)
-            model[Symbol(name)] = VariableRef(model, vi)
+            model[Symbol(name)] = JuMP.VariableRef(model, vi)
         end
     end
     return
 end
 
-function fill_obj_dict_with_constraints!(model::JuMP.Model)
-    con_types = MOI.get(model, JuMP.MOI.ListOfConstraintTypesPresent())
+function _fill_obj_dict_with_constraints!(model::JuMP.Model)
+    con_types = MOI.get(model, MOI.ListOfConstraintTypesPresent())
     for (F, S) in con_types
-        fill_obj_dict_with_constraints!(model, F, S)
+        _fill_obj_dict_with_constraints!(model, F, S)
     end
     return
 end
 
-function fill_obj_dict_with_constraints!(model::JuMP.Model, F::Type, S::Type)
+function _fill_obj_dict_with_constraints!(
+    model::JuMP.Model,
+    ::Type{F},
+    ::Type{S},
+) where {F,S}
     list = MOI.get(model, MOI.ListOfConstraintAttributesSet{F,S}())
     if !(MOI.ConstraintName() in list)
         return
     end
-    for ci in MOI.get(backend(model), MOI.ListOfConstraintIndices{F,S}())
-        name = MOI.get(backend(model), MOI.ConstraintName(), ci)
+    for ci in MOI.get(JuMP.backend(model), MOI.ListOfConstraintIndices{F,S}())
+        name = MOI.get(JuMP.backend(model), MOI.ConstraintName(), ci)
         if !isempty(name)
-            con_ref = JuMP.constraint_ref_with_index(model, ci)
-            model[Symbol(name)] = con_ref
+            model[Symbol(name)] = JuMP.constraint_ref_with_index(model, ci)
         end
     end
+    return
 end
