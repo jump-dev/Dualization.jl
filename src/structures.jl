@@ -3,7 +3,7 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-MOIU.@model(
+MOI.Utilities.@model(
     DualizableModel,
     (),
     (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan),
@@ -30,16 +30,16 @@ MOIU.@model(
 
 Maps information from all structures of the primal to the dual model.
 
-* `constrained_var_idx::Dict{VI,Tuple{CI,Int}}`: maps original primal
+* `constrained_var_idx::Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}`: maps original primal
 constrained variables to their primal original constraints (the special ones
 that makes them constrained variables) and their internal index (if vector
 constraints, VectorOfVariables-in-Set), 1 otherwise (VariableIndex-in-Set).
 
-* `constrained_var_dual::Dict{CI,CI}`: maps the original primal constraint index
+* `constrained_var_dual::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`: maps the original primal constraint index
 of constrained variables to the dual model's constraint index of the
 associated dual constraint.
 
-* `constrained_var_zero::Dict{CI,Unions{SAF,VAF}}`: caches scalar affine
+* `constrained_var_zero::Dict{MOI.ConstraintIndex,Unions{MOI.ScalarAffineFunction,MOI.VectorAffineFunction}}`: caches scalar affine
 functions or vector affine functions associated with constrained variables
 of type `VectorOfVariables`-in-`Zeros` or
 `VariableIndex`-in-`EqualTo(zero(T))` as
@@ -47,63 +47,63 @@ their duals would be `func`-in-`Reals`, which are "irrelevant" to the model.
 This information is cached for completeness of the `DualOptimizer` for
 `get`ting `ConstraintDuals`.
 
-* `primal_var_dual_con::Dict{VI,CI}`: maps "free" primal variables to their
+* `primal_var_dual_con::Dict{MOI.VariableIndex,MOI.ConstraintIndex}`: maps "free" primal variables to their
 associated dual constraints. Free variables as opposed to constrained
 variables. Note that Dualization will select automatically which variables
 are free and which are constrained.
 
-* `primal_con_dual_var::Dict{CI,Vector{VI}}`: maps primal constraint indices to
+* `primal_con_dual_var::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}`: maps primal constraint indices to
 vectors of dual variable indices. For scalar constraints those vectors will be
 single element vectors.
 
-* `primal_con_dual_con::Dict{CI,CI}`: maps primal constraints to
+* `primal_con_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`: maps primal constraints to
 dual variable constraints (if there is such constraint the dual
 dual variable is said to be constrained). If the primal constraint's set
-is EqualTo or Zeros, no constraint is added in the dual variable (the 
+is EqualTo or Zeros, no constraint is added in the dual variable (the
 dual variable is said to be free).
 
-* `primal_con_constants::Dict{CI,Vector{T}}`: maps primal constraints to
+* `primal_con_constants::Dict{MOI.ConstraintIndex,Vector{T}}`: maps primal constraints to
 their respective constants, which might be inside the set.
 This map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
 that requires extra information in the case that the scalar set constrains
 a constant (`EqualtTo`, `GreaterThan`, `LessThan`).
 
-* `primal_parameter::Dict{VI,VI}`: maps parameters in the primal to parameters
+* `primal_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex}`: maps parameters in the primal to parameters
 in the dual model.
 
-* `primal_var_dual_quad_slack::Dict{VI,VI}`: maps primal variables
+* `primal_var_dual_quad_slack::Dict{MOI.VariableIndex,MOI.VariableIndex}`: maps primal variables
 (that appear in quadratic objective terms) to dual "slack" variables.
 
 """
 mutable struct PrimalDualMap{T}
-    constrained_var_idx::Dict{VI,Tuple{CI,Int}}
-    constrained_var_dual::Dict{CI,CI}
+    constrained_var_idx::Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}
+    constrained_var_dual::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}
     constrained_var_zero::Dict{
-        CI,
+        MOI.ConstraintIndex,
         Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
     }
-    primal_var_dual_con::Dict{VI,CI}
-    primal_con_dual_var::Dict{CI,Vector{VI}}
-    primal_con_dual_con::Dict{CI,CI}
-    primal_con_constants::Dict{CI,Vector{T}}
+    primal_var_dual_con::Dict{MOI.VariableIndex,MOI.ConstraintIndex}
+    primal_con_dual_var::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}
+    primal_con_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}
+    primal_con_constants::Dict{MOI.ConstraintIndex,Vector{T}}
 
-    primal_parameter::Dict{VI,VI}
-    primal_var_dual_quad_slack::Dict{VI,VI}
+    primal_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex}
+    primal_var_dual_quad_slack::Dict{MOI.VariableIndex,MOI.VariableIndex}
 
     function PrimalDualMap{T}() where {T}
         return new(
-            Dict{VI,Tuple{CI,Int}}(),
-            Dict{CI,CI}(),
+            Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}(),
+            Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}(),
             Dict{
-                CI,
+                MOI.ConstraintIndex,
                 Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
             }(),
-            Dict{VI,CI}(),
-            Dict{CI,Vector{VI}}(),
-            Dict{CI,CI}(),
-            Dict{CI,Vector{T}}(),
-            Dict{VI,VI}(),
-            Dict{VI,VI}(),
+            Dict{MOI.VariableIndex,MOI.ConstraintIndex}(),
+            Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}(),
+            Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}(),
+            Dict{MOI.ConstraintIndex,Vector{T}}(),
+            Dict{MOI.VariableIndex,MOI.VariableIndex}(),
+            Dict{MOI.VariableIndex,MOI.VariableIndex}(),
         )
     end
 end

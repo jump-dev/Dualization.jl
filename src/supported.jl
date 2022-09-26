@@ -53,6 +53,6 @@ end
 # General case
 supported_obj(::Type) = false
 # List of supported objective functions
-supported_obj(::Type{VI}) = true
-supported_obj(::Type{<:SAF}) = true
-supported_obj(::Type{<:SQF}) = true
+supported_obj(::Type{MOI.VariableIndex}) = true
+supported_obj(::Type{<:MOI.ScalarAffineFunction}) = true
+supported_obj(::Type{<:MOI.ScalarQuadraticFunction}) = true

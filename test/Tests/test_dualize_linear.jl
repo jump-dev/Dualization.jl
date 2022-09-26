@@ -26,25 +26,31 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (VI, MOI.GreaterThan{Float64})
-                (VI, MOI.LessThan{Float64})
-                (SAF{Float64}, MOI.EqualTo{Float64})
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VariableIndex, MOI.LessThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{MOI.VariableIndex,MOI.LessThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 2
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test MOI.coefficient.(obj.terms) == [3.0; 3.0]
@@ -84,37 +90,49 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (VI, MOI.GreaterThan{Float64})
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (SAF{Float64}, MOI.GreaterThan{Float64})
-                (VVF, MOI.Nonpositives)
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64})
+                (MOI.VectorOfVariables, MOI.Nonpositives)
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VVF,MOI.Nonpositives}(),
+            MOI.NumberOfConstraints{MOI.VectorOfVariables,MOI.Nonpositives}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([3.0; 1.0; 3.0])
 
         ci = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([1.0; 2.0; 1.0])
@@ -122,7 +140,10 @@
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(-4.0)
         ci = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.GreaterThan{Float64},
+            }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([-1.0; -2.0])
@@ -165,32 +186,41 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (VI, MOI.GreaterThan{Float64})
-                (VVF, MOI.Nonpositives)
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VectorOfVariables, MOI.Nonpositives)
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VVF,MOI.Nonpositives}(),
+            MOI.NumberOfConstraints{MOI.VectorOfVariables,MOI.Nonpositives}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 2
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 2
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([3.0; 1.0; 3.0])
 
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{VI,MOI.GreaterThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         )
         for ci in cis
             @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
@@ -199,7 +229,10 @@
 
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         )
         @test Set(MOI.get.(dual_model, MOI.ConstraintSet(), cis)) ==
               Set([MOI.EqualTo(-4.0), MOI.EqualTo(-3.0)])
@@ -234,43 +267,58 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (VI, MOI.GreaterThan{Float64})
-                (VI, MOI.LessThan{Float64})
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (SAF{Float64}, MOI.GreaterThan{Float64})
-                (SAF{Float64}, MOI.LessThan{Float64})
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VariableIndex, MOI.LessThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.LessThan{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{MOI.VariableIndex,MOI.LessThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.LessThan{Float64},
+            }(),
         ) == 1
 
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([8.0, -12.0, 16])
 
         ci = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.GreaterThan{Float64},
+            }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([-5.0; 9.0; -13.0])
@@ -280,7 +328,10 @@
 
         ci = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.LessThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.LessThan{Float64},
+            }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([6.0; -10.0; +14.0])
@@ -288,7 +339,7 @@
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.LessThan(3.0)
 
         # TODO flip these
-        # ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}())[]
+        # ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{Float64},MOI.EqualTo{Float64}}())[]
         # f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         # @test Set(MOI.coefficient.(f.terms)) == Set([-7.0; +11.0; -15.0])
         # @test MOI.constant(f) == 0.0
@@ -334,43 +385,58 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (VI, MOI.GreaterThan{Float64})
-                (VI, MOI.LessThan{Float64})
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (SAF{Float64}, MOI.GreaterThan{Float64})
-                (SAF{Float64}, MOI.LessThan{Float64})
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VariableIndex, MOI.LessThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.GreaterThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.LessThan{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{MOI.VariableIndex,MOI.LessThan{Float64}}(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.LessThan{Float64},
+            }(),
         ) == 1
 
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([-8.0, 12.0, -16])
 
         ci = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.GreaterThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.GreaterThan{Float64},
+            }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([-5.0; 9.0; -13.0])
@@ -380,7 +446,10 @@
 
         ci = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.LessThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.LessThan{Float64},
+            }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         @test Set(MOI.coefficient.(f.terms)) == Set([6.0; -10.0; +14.0])
@@ -388,7 +457,7 @@
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.LessThan(-3.0)
 
         # TODO flip these
-        # ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}())[]
+        # ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{Float64},MOI.EqualTo{Float64}}())[]
         # f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
         # @test Set(MOI.coefficient.(f.terms)) == Set([-7.0; +11.0; -15.0])
         # @test MOI.constant(f) == 0.0
@@ -434,33 +503,42 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (VI, MOI.GreaterThan{Float64})
-                (VI, MOI.LessThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VariableIndex, MOI.LessThan{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 3
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 2
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{MOI.VariableIndex,MOI.LessThan{Float64}}(),
         ) == 2
 
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([8.0, -12.0, 16])
 
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{VI,MOI.GreaterThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         )
         for ci in cis
             @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
@@ -468,7 +546,10 @@
         end
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{VI,MOI.LessThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.VariableIndex,
+                MOI.LessThan{Float64},
+            }(),
         )
         for ci in cis
             @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
@@ -477,7 +558,10 @@
 
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         )
         # TODO: review signs here
         @test Set(MOI.get.(dual_model, MOI.ConstraintSet(), cis)) ==
@@ -541,33 +625,42 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (VI, MOI.GreaterThan{Float64})
-                (VI, MOI.LessThan{Float64})
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VariableIndex, MOI.LessThan{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 3
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.GreaterThan{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         ) == 2
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VI,MOI.LessThan{Float64}}(),
+            MOI.NumberOfConstraints{MOI.VariableIndex,MOI.LessThan{Float64}}(),
         ) == 2
 
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == -1.0
         @test Set(MOI.coefficient.(obj.terms)) == Set([-8.0, 12.0, -16])
 
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{VI,MOI.GreaterThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(),
         )
         for ci in cis
             @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
@@ -575,7 +668,10 @@
         end
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{VI,MOI.LessThan{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.VariableIndex,
+                MOI.LessThan{Float64},
+            }(),
         )
         for ci in cis
             @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
@@ -584,7 +680,10 @@
 
         cis = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         )
         # TODO: review signs here
         @test Set(MOI.get.(dual_model, MOI.ConstraintSet(), cis)) ==

@@ -9,7 +9,7 @@ export dualize
 function dualize(
     primal_model::MOI.ModelLike;
     dual_names::DualNames = EMPTY_DUAL_NAMES,
-    variable_parameters::Vector{VI} = VI[],
+    variable_parameters::Vector{MOI.VariableIndex} = MOI.VariableIndex[],
     ignore_objective::Bool = false,
     consider_constrained_variables::Bool = true,
 )
@@ -29,7 +29,7 @@ function dualize(
     primal_model::MOI.ModelLike,
     dual_problem::DualProblem{T};
     dual_names::DualNames = EMPTY_DUAL_NAMES,
-    variable_parameters::Vector{VI} = VI[],
+    variable_parameters::Vector{MOI.VariableIndex} = MOI.VariableIndex[],
     ignore_objective::Bool = false,
     consider_constrained_variables::Bool = true,
 ) where {T}
@@ -48,7 +48,7 @@ function dualize(
     primal_model::MOI.ModelLike,
     dual_problem::DualProblem{T},
     dual_names::DualNames,
-    variable_parameters::Vector{VI},
+    variable_parameters::Vector{MOI.VariableIndex},
     ignore_objective::Bool,
     consider_constrained_variables::Bool,
 ) where {T}
@@ -72,7 +72,7 @@ function dualize(
     # constrains and their internal index (if vector constrains), 1 otherwise.
     # Also, initializes the map: `constrained_var_dual`, from original primal ci
     # to the dual constraint (latter is initilized as empty at this point).
-    # If the Set constant of a VI-in-Set constraint is non-zero, the respective
+    # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero, the respective
     # primal variable will not be a constrained variable (with respect to that
     # constraint).
     if consider_constrained_variables
@@ -96,7 +96,7 @@ function dualize(
     # * fills `primal_con_dual_con` to map the primal constraint to a
     #   constraint in the dual variable (if there is such constraint the dual
     #   dual variable is said to be constrained). If the primal constraint's set
-    #   is EqualTo or Zeros, no constraint is added in the dual variable (the 
+    #   is EqualTo or Zeros, no constraint is added in the dual variable (the
     #   dual variable is said to be free).
     # * fills `primal_con_constants` mapping primal constraints to their
     #   respective constants, which might be inside the set.

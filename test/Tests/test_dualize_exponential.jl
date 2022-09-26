@@ -25,14 +25,19 @@
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
-        @test Set(list_of_cons) ==
-              Set([(VAF{Float64}, MOI.DualExponentialCone)],)
+        @test Set(list_of_cons) == Set([(
+            MOI.VectorAffineFunction{Float64},
+            MOI.DualExponentialCone,
+        )],)
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VAF{Float64},MOI.DualExponentialCone}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorAffineFunction{Float64},
+                MOI.DualExponentialCone,
+            }(),
         ) == 1
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         @test MOI.constant(obj) == 0.0
@@ -62,20 +67,26 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (VVF, MOI.DualExponentialCone)
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.VectorOfVariables, MOI.DualExponentialCone)
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VVF,MOI.DualExponentialCone}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorOfVariables,
+                MOI.DualExponentialCone,
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 3
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         @test MOI.constant(obj) == 0.0
@@ -83,7 +94,10 @@
 
         eq_con1, eq_con2, eq_con3 = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         )
 
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con1)
@@ -105,19 +119,25 @@
         dual_exp_con = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{VVF,MOI.DualExponentialCone}(1),
+            MOI.ConstraintIndex{MOI.VectorOfVariables,MOI.DualExponentialCone}(
+                1,
+            ),
         )
-        @test dual_exp_con.variables == VI.(3:5)
+        @test dual_exp_con.variables == MOI.VariableIndex.(3:5)
 
         primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[eq_con1] == [VI(1)]
-        @test primal_con_dual_var[eq_con2] == [VI(2)]
-        @test primal_con_dual_var[CI{VAF{Float64},MOI.ExponentialCone}(1)] ==
-              VI.(3:5)
+        @test primal_con_dual_var[eq_con1] == [MOI.VariableIndex(1)]
+        @test primal_con_dual_var[eq_con2] == [MOI.VariableIndex(2)]
+        @test primal_con_dual_var[MOI.ConstraintIndex{
+            MOI.VectorAffineFunction{Float64},
+            MOI.ExponentialCone,
+        }(
+            1,
+        )] == MOI.VariableIndex.(3:5)
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[VI(1)] == eq_con1
-        @test primal_var_dual_con[VI(2)] == eq_con2
-        @test primal_var_dual_con[VI(3)] == eq_con3
+        @test primal_var_dual_con[MOI.VariableIndex(1)] == eq_con1
+        @test primal_var_dual_con[MOI.VariableIndex(2)] == eq_con2
+        @test primal_var_dual_con[MOI.VariableIndex(3)] == eq_con3
     end
 end

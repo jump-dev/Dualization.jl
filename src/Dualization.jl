@@ -6,19 +6,11 @@
 module Dualization
 
 import LinearAlgebra
+import MathOptInterface
 
-using JuMP, MathOptInterface
+using JuMP
+
 const MOI = MathOptInterface
-const MOIU = MathOptInterface.Utilities
-const MOIB = MathOptInterface.Bridges
-
-const VI = MOI.VariableIndex
-const CI = MOI.ConstraintIndex
-const VVF = MOI.VectorOfVariables
-const SAF{T} = MOI.ScalarAffineFunction{T}
-const VAF{T} = MOI.VectorAffineFunction{T}
-const SQF{T} = MOI.ScalarQuadraticFunction{T}
-const VQF{T} = MOI.VectorQuadraticFunction{T}
 
 include("structures.jl")
 include("utils.jl")

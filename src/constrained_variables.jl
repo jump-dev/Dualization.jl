@@ -9,7 +9,10 @@ function add_constrained_variables(
     variable_parameters,
 )
     single_or_vector_variables_types =
-        MOIU.sorted_variable_sets_by_cost(dual_problem.dual_model, primal_model)
+        MOI.Utilities.sorted_variable_sets_by_cost(
+            dual_problem.dual_model,
+            primal_model,
+        )
     params = Set(variable_parameters)
     for S in single_or_vector_variables_types
         if S <: MOI.AbstractVectorSet
@@ -30,7 +33,9 @@ function add_constrained_variables(
     end
     return
 end
-const NO_CONSTRAINT = CI{Nothing,Nothing}(0)
+
+const NO_CONSTRAINT = MOI.ConstraintIndex{Nothing,Nothing}(0)
+
 # Function barrier for the type instability of `F` and `S`.
 function _add_constrained_variables(
     m::PrimalDualMap,
