@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 @testset "names" begin
     model = lp1_test()
     MOI.set(model, MOI.VariableName(), VI(1), "x1")

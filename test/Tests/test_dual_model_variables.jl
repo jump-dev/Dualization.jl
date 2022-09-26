@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 # Tests of this file not covered in other tests
 @testset "dual_model_variables.jl" begin
     @testset "push_to_dual_obj_aff_terms!" begin

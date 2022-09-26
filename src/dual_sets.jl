@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 # We define `_dual_set` instead as adding methods for `MOI.dual_set` on MOI sets is type piracy.
 _dual_set(set::MOI.AbstractSet) = MOI.dual_set(set)
 function _dual_set_type(S::Type)

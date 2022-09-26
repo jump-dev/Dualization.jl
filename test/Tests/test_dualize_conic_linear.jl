@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 @testset "conic linear problems" begin
     @testset "conic_linear1_test" begin
         #=
