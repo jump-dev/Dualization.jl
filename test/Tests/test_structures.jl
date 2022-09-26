@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 @testset "structures" begin
     primal_dual_map = Dualization.PrimalDualMap{Float64}()
     @test Dualization.is_empty(primal_dual_map)

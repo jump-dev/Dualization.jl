@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 @testset "objective_coefficients.jl" begin
     @testset "set_dual_model_sense" begin
         # ERROR: FEASIBILITY_SENSE is not supported

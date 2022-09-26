@@ -1,3 +1,8 @@
+# Copyright (c) 2017: Guilherme Bodin, and contributors
+#
+# Use of this source code is governed by an MIT-style license that can be found
+# in the LICENSE.md file or at https://opensource.org/licenses/MIT.
+
 function _add_dual_vars_in_dual_cones(
     dual_obj_affine_terms::Dict{VI,T},
     dual_model::MOI.ModelLike,
