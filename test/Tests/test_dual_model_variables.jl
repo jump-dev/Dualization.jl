@@ -7,10 +7,13 @@
 @testset "dual_model_variables.jl" begin
     @testset "push_to_dual_obj_aff_terms!" begin
         primal_model = soc1_test()
-        dual_obj_affine_terms = Dict{VI,Float64}()
+        dual_obj_affine_terms = Dict{MOI.VariableIndex,Float64}()
         list = MOI.get(
             primal_model,
-            MOI.ListOfConstraintIndices{VVF,MOI.SecondOrderCone}(),
+            MOI.ListOfConstraintIndices{
+                MOI.VectorOfVariables,
+                MOI.SecondOrderCone,
+            }(),
         )
         ci = first(list)
         func = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
@@ -18,7 +21,7 @@
         Dualization.push_to_dual_obj_aff_terms!(
             primal_model,
             dual_obj_affine_terms,
-            VI(1),
+            MOI.VariableIndex(1),
             func,
             set,
             1,
@@ -28,7 +31,7 @@
 
     @testset "set_dual_variable_name" begin
         primal_model = soc1_test()
-        vi = VI(1)
+        vi = MOI.VariableIndex(1)
         Dualization.set_dual_variable_name(primal_model, vi, 1, "con", "")
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "con_1"
         Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "")

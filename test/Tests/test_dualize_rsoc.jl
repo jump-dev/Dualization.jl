@@ -26,14 +26,19 @@
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
-        @test Set(list_of_cons) ==
-              Set([(VAF{Float64}, MOI.RotatedSecondOrderCone)],)
+        @test Set(list_of_cons) == Set([(
+            MOI.VectorAffineFunction{Float64},
+            MOI.RotatedSecondOrderCone,
+        )],)
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VAF{Float64},MOI.RotatedSecondOrderCone}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorAffineFunction{Float64},
+                MOI.RotatedSecondOrderCone,
+            }(),
         ) == 1
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         @test MOI.constant(obj) == 0.0
@@ -64,20 +69,26 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (SAF{Float64}, MOI.EqualTo{Float64})
-                (VVF, MOI.RotatedSecondOrderCone)
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
+                (MOI.VectorOfVariables, MOI.RotatedSecondOrderCone)
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VVF,MOI.RotatedSecondOrderCone}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorOfVariables,
+                MOI.RotatedSecondOrderCone,
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 2
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         @test MOI.constant(obj) == 0.0
@@ -85,7 +96,10 @@
 
         eq_con1, eq_con2 = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         )
 
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con1)
@@ -102,17 +116,25 @@
         rsoc_con = MOI.get(
             dual_model,
             MOI.ConstraintFunction(),
-            CI{VVF,MOI.RotatedSecondOrderCone}(1),
+            MOI.ConstraintIndex{
+                MOI.VectorOfVariables,
+                MOI.RotatedSecondOrderCone,
+            }(
+                1,
+            ),
         )
-        @test rsoc_con.variables == VI.(1:4)
+        @test rsoc_con.variables == MOI.VariableIndex.(1:4)
 
         primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[CI{VAF{Float64},MOI.RotatedSecondOrderCone}(
+        @test primal_con_dual_var[MOI.ConstraintIndex{
+            MOI.VectorAffineFunction{Float64},
+            MOI.RotatedSecondOrderCone,
+        }(
             1,
-        )] == VI.(1:4)
+        )] == MOI.VariableIndex.(1:4)
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[VI(1)] == eq_con1
-        @test primal_var_dual_con[VI(2)] == eq_con2
+        @test primal_var_dual_con[MOI.VariableIndex(1)] == eq_con1
+        @test primal_var_dual_con[MOI.VariableIndex(2)] == eq_con2
     end
 end

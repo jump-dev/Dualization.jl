@@ -30,20 +30,24 @@ function _scalar_quadratic_function(
     func::MOI.ScalarQuadraticFunction{T},
     ::Type{T},
 ) where {T}
-    return MOIU.canonical(func)
+    return MOI.Utilities.canonical(func)
 end
 function _scalar_quadratic_function(
     func::MOI.ScalarAffineFunction{T},
     ::Type{T},
 ) where {T}
     return _scalar_quadratic_function(
-        SQF{T}(MOI.ScalarQuadraticTerm{T}[], func.terms, func.constant),
+        MOI.ScalarQuadraticFunction{T}(
+            MOI.ScalarQuadraticTerm{T}[],
+            func.terms,
+            func.constant,
+        ),
         T,
     )
 end
 function _scalar_quadratic_function(func::MOI.VariableIndex, T::Type)
     return _scalar_quadratic_function(
-        SAF{T}([MOI.ScalarAffineTerm(1.0, func)], 0),
+        MOI.ScalarAffineFunction{T}([MOI.ScalarAffineTerm(1.0, func)], 0),
         T,
     )
 end
@@ -55,13 +59,17 @@ end
 Primal objective is defined as a `MOI.ScalarAffineFunction`
 """
 mutable struct PrimalObjective{T}
-    obj::SQF{T}
-    quad_cross_parameters::Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}
-    obj_parametric::Union{SQF{T},Nothing}
+    obj::MOI.ScalarQuadraticFunction{T}
+    quad_cross_parameters::Dict{
+        MOI.VariableIndex,
+        Vector{MOI.ScalarAffineTerm{T}},
+    }
+    obj_parametric::Union{MOI.ScalarQuadraticFunction{T},Nothing}
 
     function PrimalObjective{T}(obj) where {T}
         canonical_obj = _scalar_quadratic_function(obj, T)
-        quad_cross_parameters = Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}()
+        quad_cross_parameters =
+            Dict{MOI.VariableIndex,Vector{MOI.ScalarAffineTerm{T}}}()
         return new(canonical_obj, quad_cross_parameters, nothing)
     end
 end
@@ -73,7 +81,7 @@ end
 Dual objective is defined as a `MOI.ScalarAffineFunction`.
 """
 mutable struct DualObjective{T}
-    obj::SQF{T}
+    obj::MOI.ScalarQuadraticFunction{T}
 end
 
 const Objective{T} = Union{PrimalObjective{T},DualObjective{T}}
@@ -100,7 +108,7 @@ end
 # allow removing variables from objective function
 function get_primal_objective(
     primal_model::MOI.ModelLike,
-    variable_parameters::Vector{VI},
+    variable_parameters::Vector{MOI.VariableIndex},
     T::Type,
 )
     p_obj = get_primal_objective(primal_model, T)
@@ -116,7 +124,7 @@ end
 
 function split_variables(
     func::MOI.ScalarQuadraticFunction{T},
-    variable_parameters::Vector{VI},
+    variable_parameters::Vector{MOI.VariableIndex},
 ) where {T}
 
     # linear part
@@ -133,7 +141,8 @@ function split_variables(
     # Quadratic part
     quad_params = MOI.ScalarQuadraticTerm{T}[]
     quad_vars = MOI.ScalarQuadraticTerm{T}[]
-    quad_cross_params = Dict{VI,Vector{MOI.ScalarAffineTerm{T}}}()
+    quad_cross_params =
+        Dict{MOI.VariableIndex,Vector{MOI.ScalarAffineTerm{T}}}()
     for term in func.quadratic_terms
         is_param_1 = term.variable_1 in variable_parameters
         is_param_2 = term.variable_2 in variable_parameters
@@ -184,13 +193,17 @@ function set_dual_objective(
 )::Nothing where {T}
     # Set dual model objective function
     raw_obj = get_raw_obj(dual_objective)
-    if MOIU.number_of_quadratic_terms(T, raw_obj) > 0
-        MOI.set(dual_model, MOI.ObjectiveFunction{SQF{T}}(), raw_obj)
+    if MOI.Utilities.number_of_quadratic_terms(T, raw_obj) > 0
+        MOI.set(
+            dual_model,
+            MOI.ObjectiveFunction{MOI.ScalarQuadraticFunction{T}}(),
+            raw_obj,
+        )
     else
         MOI.set(
             dual_model,
-            MOI.ObjectiveFunction{SAF{T}}(),
-            SAF{T}(raw_obj.affine_terms, raw_obj.constant),
+            MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}}(),
+            MOI.ScalarAffineFunction{T}(raw_obj.affine_terms, raw_obj.constant),
         )
     end
     return

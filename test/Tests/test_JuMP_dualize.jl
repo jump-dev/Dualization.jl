@@ -15,8 +15,9 @@ end
 
 @testset "JuMP dualize" begin
     @testset "direct_mode" begin
-        JuMP_model =
-            JuMP.direct_model(MOIU.MockOptimizer(MOIU.Model{Float64}()))
+        JuMP_model = JuMP.direct_model(
+            MOI.Utilities.MockOptimizer(MOI.Utilities.Model{Float64}()),
+        )
         err = ErrorException(
             "Dualization does not support solvers in DIRECT mode",
         )
@@ -28,9 +29,10 @@ end
             JuMP_model = JuMP.Model()
             MOI.copy_to(JuMP.backend(JuMP_model), lp1_test())
             dual_JuMP_model = dualize(JuMP_model)
-            @test backend(dual_JuMP_model).state == MOIU.NO_OPTIMIZER
+            @test backend(dual_JuMP_model).state == MOI.Utilities.NO_OPTIMIZER
             dual_JuMP_model = dualize(JuMP_model, primal_linear_factory[i])
-            @test backend(dual_JuMP_model).state == MOIU.EMPTY_OPTIMIZER
+            @test backend(dual_JuMP_model).state ==
+                  MOI.Utilities.EMPTY_OPTIMIZER
             @test MOI.get(backend(dual_JuMP_model), MOI.SolverName()) ==
                   MOI.get(primal_linear_optimizer[i], MOI.SolverName())
         end

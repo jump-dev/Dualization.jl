@@ -3,21 +3,11 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-using MathOptInterface, JuMP, Dualization, Test
+using Dualization
+using JuMP
+using Test
 
-const MOI = MathOptInterface
-const MOIU = MathOptInterface.Utilities
-const MOIB = MathOptInterface.Bridges
-const MOIT = MathOptInterface.Test
-
-const CI = MOI.ConstraintIndex
-const VI = MOI.VariableIndex
-const VVF = MOI.VectorOfVariables
-const SAF{T} = MOI.ScalarAffineFunction{T}
-const VAF{T} = MOI.VectorAffineFunction{T}
-const SQF{T} = MOI.ScalarQuadraticFunction{T}
-
-MOIU.@model(
+MOI.Utilities.@model(
     TestModel,
     (MOI.ZeroOne, MOI.Integer),
     (

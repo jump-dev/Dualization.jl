@@ -24,13 +24,17 @@
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
-        @test list_of_cons == [(VAF{Float64}, MOI.Nonnegatives)]
+        @test list_of_cons ==
+              [(MOI.VectorAffineFunction{Float64}, MOI.Nonnegatives)]
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VAF{Float64},MOI.Nonnegatives}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorAffineFunction{Float64},
+                MOI.Nonnegatives,
+            }(),
         ) == 1
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
@@ -39,7 +43,10 @@
         ci = first(
             MOI.get(
                 dual_model,
-                MOI.ListOfConstraintIndices{VAF{Float64},MOI.Nonnegatives}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorAffineFunction{Float64},
+                    MOI.Nonnegatives,
+                }(),
             ),
         )
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
@@ -52,21 +59,27 @@
         ci_zero = first(
             MOI.get(
                 primal_model,
-                MOI.ListOfConstraintIndices{VAF{Float64},MOI.Zeros}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorAffineFunction{Float64},
+                    MOI.Zeros,
+                }(),
             ),
         )
-        @test primal_con_dual_var[ci_zero] == VI.(1:2)
+        @test primal_con_dual_var[ci_zero] == MOI.VariableIndex.(1:2)
         ci_nneg = first(
             MOI.get(
                 primal_model,
-                MOI.ListOfConstraintIndices{VVF,MOI.Nonnegatives}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorOfVariables,
+                    MOI.Nonnegatives,
+                }(),
             ),
         )
         @test !haskey(primal_con_dual_var, ci_nneg)
         @test primal_dual_map.constrained_var_dual[ci_nneg] == ci
 
         for i in 1:3
-            vi = VI(i)
+            vi = MOI.VariableIndex(i)
             @test !haskey(primal_dual_map.primal_var_dual_con, vi)
             @test primal_dual_map.constrained_var_idx[vi] == (ci_nneg, i)
         end
@@ -97,26 +110,35 @@
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
         @test Set(list_of_cons) == Set(
             [
-                (VAF{Float64}, MOI.Reals)
-                (VAF{Float64}, MOI.Nonpositives)
-                (VAF{Float64}, MOI.Nonnegatives)
-                (SAF{Float64}, MOI.EqualTo{Float64})
+                (MOI.VectorAffineFunction{Float64}, MOI.Reals)
+                (MOI.VectorAffineFunction{Float64}, MOI.Nonpositives)
+                (MOI.VectorAffineFunction{Float64}, MOI.Nonnegatives)
+                (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
             ],
         )
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{SAF{Float64},MOI.EqualTo{Float64}}(),
+            MOI.NumberOfConstraints{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VAF{Float64},MOI.Nonnegatives}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorAffineFunction{Float64},
+                MOI.Nonnegatives,
+            }(),
         ) == 1
         @test MOI.get(
             dual_model,
-            MOI.NumberOfConstraints{VAF{Float64},MOI.Nonpositives}(),
+            MOI.NumberOfConstraints{
+                MOI.VectorAffineFunction{Float64},
+                MOI.Nonpositives,
+            }(),
         ) == 1
         obj_type = MOI.get(dual_model, MOI.ObjectiveFunctionType())
-        @test obj_type == SAF{Float64}
+        @test obj_type == MOI.ScalarAffineFunction{Float64}
         @test MOI.get(dual_model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
         obj = MOI.get(dual_model, MOI.ObjectiveFunction{obj_type}())
         @test MOI.constant(obj) == 0.0
@@ -125,7 +147,10 @@
         ci_eq = first(
             MOI.get(
                 dual_model,
-                MOI.ListOfConstraintIndices{SAF{Float64},MOI.EqualTo{Float64}}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.ScalarAffineFunction{Float64},
+                    MOI.EqualTo{Float64},
+                }(),
             ),
         )
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), ci_eq)
@@ -136,7 +161,10 @@
         ci_np = first(
             MOI.get(
                 dual_model,
-                MOI.ListOfConstraintIndices{VAF{Float64},MOI.Nonpositives}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorAffineFunction{Float64},
+                    MOI.Nonpositives,
+                }(),
             ),
         )
         eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), ci_np)
@@ -147,7 +175,10 @@
         ci_nn = first(
             MOI.get(
                 dual_model,
-                MOI.ListOfConstraintIndices{VAF{Float64},MOI.Nonnegatives}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorAffineFunction{Float64},
+                    MOI.Nonnegatives,
+                }(),
             ),
         )
         eq_con3_fun = MOI.get(dual_model, MOI.ConstraintFunction(), ci_nn)
@@ -158,13 +189,19 @@
 
         primal_con_dual_var = primal_dual_map.primal_con_dual_var
         ci_zero = first(
-            MOI.get(primal_model, MOI.ListOfConstraintIndices{VVF,MOI.Zeros}()),
+            MOI.get(
+                primal_model,
+                MOI.ListOfConstraintIndices{MOI.VectorOfVariables,MOI.Zeros}(),
+            ),
         )
         @test !haskey(primal_con_dual_var, ci_zero)
         ci_nneg = first(
             MOI.get(
                 primal_model,
-                MOI.ListOfConstraintIndices{VVF,MOI.Nonnegatives}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorOfVariables,
+                    MOI.Nonnegatives,
+                }(),
             ),
         )
         @test !haskey(primal_con_dual_var, ci_nneg)
@@ -172,7 +209,10 @@
         ci_npos = first(
             MOI.get(
                 primal_model,
-                MOI.ListOfConstraintIndices{VVF,MOI.Nonpositives}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorOfVariables,
+                    MOI.Nonpositives,
+                }(),
             ),
         )
         @test !haskey(primal_con_dual_var, ci_npos)
@@ -180,19 +220,25 @@
         ci_aff_zero = first(
             MOI.get(
                 primal_model,
-                MOI.ListOfConstraintIndices{VAF{Float64},MOI.Zeros}(),
+                MOI.ListOfConstraintIndices{
+                    MOI.VectorAffineFunction{Float64},
+                    MOI.Zeros,
+                }(),
             ),
         )
-        @test primal_con_dual_var[ci_aff_zero] == VI.(1:3)
+        @test primal_con_dual_var[ci_aff_zero] == MOI.VariableIndex.(1:3)
 
         primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[VI(1)] == ci_eq
+        @test primal_var_dual_con[MOI.VariableIndex(1)] == ci_eq
         for i in 2:4
-            vi = VI(i)
+            vi = MOI.VariableIndex(i)
             @test !haskey(primal_var_dual_con, vi)
         end
-        @test primal_dual_map.constrained_var_idx[VI(2)] == (ci_npos, 1)
-        @test primal_dual_map.constrained_var_idx[VI(3)] == (ci_nneg, 1)
-        @test primal_dual_map.constrained_var_idx[VI(4)] == (ci_zero, 1)
+        @test primal_dual_map.constrained_var_idx[MOI.VariableIndex(2)] ==
+              (ci_npos, 1)
+        @test primal_dual_map.constrained_var_idx[MOI.VariableIndex(3)] ==
+              (ci_nneg, 1)
+        @test primal_dual_map.constrained_var_idx[MOI.VariableIndex(4)] ==
+              (ci_zero, 1)
     end
 end
