@@ -196,7 +196,7 @@ end
 
 function dualize(
     model::JuMP.Model,
-    optimizer_constructor::Nothing;
+    optimizer_constructor = nothing;
     dual_names::DualNames = EMPTY_DUAL_NAMES,
 )
     mode = JuMP.mode(model)
