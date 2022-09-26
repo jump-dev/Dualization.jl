@@ -5,10 +5,9 @@
 
 module Dualization
 
+import JuMP
 import LinearAlgebra
 import MathOptInterface
-
-using JuMP
 
 const MOI = MathOptInterface
 
