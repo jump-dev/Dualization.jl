@@ -48,38 +48,38 @@ include("utils.jl")
 # Problems database
 include("Problems/Linear/linear_problems.jl")
 include("Problems/Linear/conic_linear_problems.jl")
-include("Problems/Quadratic/quadratic_problems.jl")
-include("Problems/SOC/soc_problems.jl")
-include("Problems/RSOC/rsoc_problems.jl")
-include("Problems/SDP/sdp_triangle_problems.jl")
-include("Problems/Exponential/exponential_cone_problems.jl")
-include("Problems/Power/power_cone_problems.jl")
+# include("Problems/Quadratic/quadratic_problems.jl")
+# include("Problems/SOC/soc_problems.jl")
+# include("Problems/RSOC/rsoc_problems.jl")
+# include("Problems/SDP/sdp_triangle_problems.jl")
+# include("Problems/Exponential/exponential_cone_problems.jl")
+# include("Problems/Power/power_cone_problems.jl")
 
 # Run tests to travis ci
-include("Tests/test_structures.jl")
-include("Tests/test_supported.jl")
-include("Tests/test_objective_coefficients.jl")
-include("Tests/test_dual_model_variables.jl")
-include("Tests/test_dual_sets.jl")
-include("Tests/test_dualize_conic_linear.jl")
+# include("Tests/test_structures.jl")
+# include("Tests/test_supported.jl")
+# include("Tests/test_objective_coefficients.jl")
+# include("Tests/test_dual_model_variables.jl")
+# include("Tests/test_dual_sets.jl")
+# include("Tests/test_dualize_conic_linear.jl")
 include("Tests/test_dualize_linear.jl")
-include("Tests/test_dualize_soc.jl")
-include("Tests/test_dualize_rsoc.jl")
-include("Tests/test_dualize_sdp.jl")
-include("Tests/test_dualize_exponential.jl")
-include("Tests/test_dualize_power.jl")
-include("Tests/test_dualize_quadratic.jl")
-include("Tests/test_dual_names.jl")
-include("Tests/test_dot.jl")
+# include("Tests/test_dualize_soc.jl")
+# include("Tests/test_dualize_rsoc.jl")
+# include("Tests/test_dualize_sdp.jl")
+# include("Tests/test_dualize_exponential.jl")
+# include("Tests/test_dualize_power.jl")
+# include("Tests/test_dualize_quadratic.jl")
+# include("Tests/test_dual_names.jl")
+# include("Tests/test_dot.jl")
 
-include("Tests/test_partial_dual_linear.jl")
-include("Tests/test_partial_dual_quadratic.jl")
+# include("Tests/test_partial_dual_linear.jl")
+# include("Tests/test_partial_dual_quadratic.jl")
 
 #=
     Tests depending on solvers
 =#
 
-include("optimize_abstract_models.jl")
+# include("optimize_abstract_models.jl")
 
 primal_linear_factory = []
 primal_conic_factory = []
@@ -99,10 +99,10 @@ primal_power_cone_optimizer = []
 
 # Load & Test strong duality in linear/conic problems
 # Comment the solver that are not available for development
-include("Solvers/highs_test.jl")
-include("Solvers/csdp_test.jl")
-include("Solvers/scs_test.jl")
+# include("Solvers/highs_test.jl")
+# include("Solvers/csdp_test.jl")
+# include("Solvers/scs_test.jl")
 
-include("Tests/test_JuMP_dualize.jl")
-include("Tests/test_MOI_wrapper.jl")
-include("Tests/test_modify.jl")
+# include("Tests/test_JuMP_dualize.jl")
+# include("Tests/test_MOI_wrapper.jl")
+# include("Tests/test_modify.jl")

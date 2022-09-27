@@ -20,4 +20,7 @@ makedocs(
     pages = ["Home" => "index.md", "manual.md", "examples.md", "reference.md"],
 )
 
-deploydocs(repo = "github.com/jump-dev/Dualization.jl.git")
+Documenter.deploydocs(;
+    repo = "github.com/jump-dev/Dualization.jl.git",
+    push_preview = true,
+)
