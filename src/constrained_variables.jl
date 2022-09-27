@@ -63,6 +63,7 @@ function _add_constrained_variables(
     end
     return
 end
+
 function _add_constrained_variable(
     m::PrimalDualMap,
     primal_model,

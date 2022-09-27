@@ -45,6 +45,7 @@ function _scalar_quadratic_function(
         T,
     )
 end
+
 function _scalar_quadratic_function(func::MOI.VariableIndex, T::Type)
     return _scalar_quadratic_function(
         MOI.ScalarAffineFunction{T}([MOI.ScalarAffineTerm(1.0, func)], 0),
@@ -52,7 +53,6 @@ function _scalar_quadratic_function(func::MOI.VariableIndex, T::Type)
     )
 end
 
-# Primals
 """
     PrimalObjective{T}
 
@@ -74,7 +74,6 @@ mutable struct PrimalObjective{T}
     end
 end
 
-# Duals
 """
     DualObjective{T}
 
@@ -183,7 +182,10 @@ function push_affine_term(
 end
 
 """
-    set_dual_objective(dual_model::MOI.ModelLike, dual_objective::DualObjective{T})::Nothing where T
+    set_dual_objective(
+        dual_model::MOI.ModelLike,
+        dual_objective::DualObjective{T},
+    )::Nothing where {T}
 
 Add the objective function to the dual model.
 """
@@ -210,8 +212,11 @@ function set_dual_objective(
 end
 
 """
-    get_dual_objective(dual_model::MOI.ModelLike, dual_obj_affine_terms::Dict,
-                       primal_objective::PrimalObjective{T})::DualObjective{T} where T
+    get_dual_objective(
+        dual_model::MOI.ModelLike,
+        dual_obj_affine_terms::Dict,
+        primal_objective::PrimalObjective{T},
+    )::DualObjective{T} where {T}
 
 build the dual model objective function from the primal model.
 """

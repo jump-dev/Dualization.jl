@@ -22,15 +22,18 @@ end
 """
     DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
 
-The DualOptimizer finds the solution for a problem by solving its dual representation.
-It builds the dual model internally and solve it using the `dual_optimizer` as solver.
-Primal results are obtained by querying dual results of the internal problem solved
-by `dual_optimizer`. Analogously, dual results are obtained by querying primal results
-of the internal problem.
+The DualOptimizer finds the solution for a problem by solving its dual
+representation. It builds the dual model internally and solve it using the
+`dual_optimizer` as the solver.
 
-The user can define the model providing the `DualOptimizer` and the solver of its choice.
+Primal results are obtained by querying dual results of the internal problem
+solved by `dual_optimizer`. Analogously, dual results are obtained by querying
+primal results of the internal problem.
 
-Example:
+The user can define the model providing the `DualOptimizer` and the solver of
+its choice.
+
+## Example
 
 ```julia
 julia> using Dualization, JuMP, HiGHS
@@ -58,53 +61,48 @@ function DualOptimizer{T}(dual_optimizer::OT) where {T,OT<:MOI.ModelLike}
             T,
         ),
     )
-    # discover the type of MOI.Utilities.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
+    # discover the type of
+    # MOI.Utilities.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
     OptimizerType = typeof(dual_problem.dual_model)
     return DualOptimizer{T,OptimizerType}(dual_problem)
 end
 
-function DualOptimizer()
-    return error("DualOptimizer must have a solver attached")
-end
+DualOptimizer() = error("DualOptimizer must have a solver attached")
 
-function MOI.supports(::DualOptimizer, ::MOI.ObjectiveSense)
-    return true
-end
+MOI.supports(::DualOptimizer, ::MOI.ObjectiveSense) = true
+
 function MOI.supports(
     optimizer::DualOptimizer{T},
     ::MOI.ObjectiveFunction{F},
 ) where {T,F}
-    # If the objective function is `MOI.VariableIndex` or `MOI.ScalarAffineFunction`,
-    # a `MOI.ScalarAffineFunction` is set as objective function for the dual problem.
-    # If it is `MOI.ScalarQuadraticFunction` , a `MOI.ScalarQuadraticFunction` is set as objective function for the dual problem.
-    G =
-        F <: MOI.ScalarQuadraticFunction ? MOI.ScalarQuadraticFunction{T} :
-        MOI.ScalarAffineFunction{T}
-    return supported_obj(F) && MOI.supports(
-        optimizer.dual_problem.dual_model,
-        MOI.ObjectiveFunction{G}(),
-    )
+    # If the objective function is `MOI.VariableIndex` or
+    # `MOI.ScalarAffineFunction`, then a `MOI.ScalarAffineFunction` is set as
+    # the objective function for the dual problem.
+    # If it is `MOI.ScalarQuadraticFunction` , a `MOI.ScalarQuadraticFunction`
+    # is set as objective function for the dual problem.
+    attr = if F <: MOI.ScalarQuadraticFunction
+        MOI.ObjectiveFunction{MOI.ScalarQuadraticFunction{T}}()
+    else
+        MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}}()
+    end
+    return supported_obj(F) &&
+           MOI.supports(optimizer.dual_problem.dual_model, attr)
 end
 
 function MOI.supports_constraint(
     optimizer::DualOptimizer{T},
-    F::Type{<:Union{MOI.VariableIndex,MOI.ScalarAffineFunction{T}}},
+    ::Type{<:Union{MOI.VariableIndex,MOI.ScalarAffineFunction{T}}},
     S::Type{<:MOI.AbstractScalarSet},
 ) where {T}
     D = _dual_set_type(S)
     if D === nothing
         return false
     end
+    model = optimizer.dual_problem.dual_model
     if D <: MOI.AbstractVectorSet # The dual of `EqualTo` is `Reals`
-        return MOI.supports_add_constrained_variables(
-            optimizer.dual_problem.dual_model,
-            D,
-        )
+        return MOI.supports_add_constrained_variables(model, D)
     else
-        return MOI.supports_add_constrained_variable(
-            optimizer.dual_problem.dual_model,
-            D,
-        )
+        return MOI.supports_add_constrained_variable(model, D)
     end
 end
 
@@ -117,10 +115,8 @@ function MOI.supports_constraint(
     if D === nothing
         return false
     end
-    return MOI.supports_add_constrained_variables(
-        optimizer.dual_problem.dual_model,
-        D,
-    )
+    model = optimizer.dual_problem.dual_model
+    return MOI.supports_add_constrained_variables(model, D)
 end
 
 function _change_constant(
@@ -132,6 +128,7 @@ function _change_constant(
     MOI.set(model, MOI.ConstraintSet(), ci, S(constant))
     return
 end
+
 function _change_constant(
     model,
     ci::MOI.ConstraintIndex{<:MOI.VectorAffineFunction},
@@ -144,6 +141,7 @@ function _change_constant(
     MOI.modify(model, ci, MOI.VectorConstantChange(constants))
     return
 end
+
 function MOI.modify(
     optimizer::DualOptimizer{T},
     ::MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}},
@@ -189,6 +187,7 @@ function MOI.supports_add_constrained_variables(
     )
     # If `_dual_set_type(MOI.Reals)` was `MOI.Zeros`, we would not need this method as special case of the one below
 end
+
 function MOI.supports_add_constrained_variables(
     optimizer::DualOptimizer{T},
     S::Type{<:MOI.AbstractVectorSet},
@@ -204,17 +203,12 @@ function MOI.supports_add_constrained_variables(
     )
 end
 
-function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike; kwargs...)
-    # Dualize the original problem
+function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike)
     dualize(src, dest.dual_problem)
-
-    # Identity IndexMap
     idx_map = MOI.Utilities.IndexMap()
-
     for vi in MOI.get(src, MOI.ListOfVariableIndices())
         setindex!(idx_map, vi, vi)
     end
-
     for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
         for con in MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
             setindex!(idx_map, con, con)
@@ -270,9 +264,8 @@ function get_vis_dual_problem(optimizer::DualOptimizer, ci::MOI.ConstraintIndex)
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolverName)
-    return "Dual model with " *
-           MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName()) *
-           " attached"
+    name = MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName())
+    return "Dual model with $name attached"
 end
 
 function _get(
@@ -283,6 +276,7 @@ function _get(
 ) where {T}
     return zero(T)
 end
+
 function _get(
     optimizer::DualOptimizer,
     attr::MOI.AbstractConstraintAttribute,
@@ -291,6 +285,7 @@ function _get(
 )
     return MOI.get(optimizer.dual_problem.dual_model, attr, ci)
 end
+
 function _get(
     optimizer::DualOptimizer{T},
     ::MOI.AbstractConstraintAttribute,
@@ -313,6 +308,7 @@ function _get_at_index(
     @assert isone(idx)
     return _get(optimizer, attr, ci_primal, ci_dual)
 end
+
 function _get_at_index(
     optimizer::DualOptimizer,
     attr::MOI.AbstractConstraintAttribute,
@@ -518,6 +514,7 @@ function MOI.set(
 )
     return MOI.set(optimizer.dual_problem.dual_model, attr, value)
 end
+
 function MOI.get(
     optimizer::DualOptimizer,
     attr::Union{MOI.AbstractModelAttribute,MOI.AbstractOptimizerAttribute},
