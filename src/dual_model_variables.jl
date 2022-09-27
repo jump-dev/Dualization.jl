@@ -12,7 +12,7 @@ function _add_dual_vars_in_dual_cones(
     ::Type{F},
     ::Type{S},
 ) where {T,F,S}
-    for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}()) # Constraints of type {F, S}
+    for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
         # If `F` not one of these two, we can skip the `in` check.
         if (F === MOI.VectorOfVariables || F === MOI.VariableIndex) &&
            haskey(primal_dual_map.constrained_var_dual, ci)
@@ -141,7 +141,8 @@ function add_dual_variable(
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractFunction,S<:MOI.AbstractSet}
     vis, con_index = add_dual_cone_constraint(dual_model, primal_model, ci)
-    push!(primal_con_dual_var, ci => vis) # Add the map of the added dual variable to the relationated constraint
+    # Add the map of the added dual variable to the relationated constraint
+    push!(primal_con_dual_var, ci => vis)
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary

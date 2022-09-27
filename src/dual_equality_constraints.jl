@@ -137,6 +137,7 @@ function _add_constrained_variable_constraint(
     ])
     return
 end
+
 function _add_constrained_variable_constraint(
     dual_model,
     primal_model,
@@ -194,6 +195,7 @@ function _add_constrained_variable_constraint(
     )
     return
 end
+
 function _add_constrained_variable_constraint(
     dual_model,
     primal_model,
@@ -472,9 +474,13 @@ struct CanonicalVector{T} <: AbstractVector{T}
     index::Int
     n::Int
 end
+
 Base.eltype(::Type{CanonicalVector{T}}) where {T} = T
+
 Base.length(v::CanonicalVector) = v.n
+
 Base.size(v::CanonicalVector) = (v.n,)
+
 function Base.getindex(v::CanonicalVector{T}, i::Integer) where {T}
     return convert(T, i == v.index)
 end
@@ -487,6 +493,7 @@ function LinearAlgebra.dot(
 ) where {T}
     return convert(T, x.index == y.index)
 end
+
 function MOI.Utilities.triangle_dot(
     x::CanonicalVector{T},
     y::CanonicalVector{T},
@@ -506,6 +513,7 @@ function set_dot(i::Integer, s::MOI.AbstractVectorSet, T::Type)
     vec = CanonicalVector{T}(i, MOI.dimension(s))
     return MOI.Utilities.set_dot(vec, vec, s)
 end
+
 function set_dot(::Integer, ::MOI.AbstractScalarSet, T::Type)
     return one(T)
 end

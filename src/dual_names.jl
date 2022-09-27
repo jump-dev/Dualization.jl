@@ -4,10 +4,13 @@
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
 export DualNames
+
 """
     DualNames
 
-DualNames is a struct to pass the prefix of dual variables and dual constraints names.
+DualNames is a struct to pass the prefix of dual variables and dual constraints
+names.
+
 See more on naming the variables.
 """
 mutable struct DualNames
@@ -16,8 +19,10 @@ mutable struct DualNames
     parameter_name_prefix::String
     quadratic_slack_name_prefix::String
 end
+
 DualNames() = DualNames("", "", "", "")
 DualNames(var, ctr) = DualNames(var, ctr, "", "")
 
 const EMPTY_DUAL_NAMES = DualNames()
+
 is_empty(dual_names::DualNames) = dual_names == EMPTY_DUAL_NAMES
