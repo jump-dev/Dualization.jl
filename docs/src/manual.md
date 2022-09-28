@@ -60,8 +60,17 @@ Note that the equality constraints have minus signs that could be flipped for
 simplicity. However, for generality, we keep the minus signs so that the models
 displayed here precisely match the outputs of the package.
 
-A linear inequality constraint ``a^T x + b \ge c`` should be interpreted as ``a^T x + b - c \in \mathbb{R}_+``, and similarly ``a^T x + b \le c`` should be interpreted as ``a^T x + b - c \in \mathbb{R}_-``.
-Variable-wise constraints should be interpreted as affine constraints with the appropriate identity mapping in place of ``A_i``.
+A linear inequality constraint ``a^T x + b \ge c`` should be interpreted as
+``a^T x + b - c \in \mathbb{R}_+``, and similarly ``a^T x + b \le c`` should be
+interpreted as ``a^T x + b - c \in \mathbb{R}_-``.
+Variable-wise constraints should be interpreted as affine constraints with the
+appropriate identity mapping in place of ``A_i``.
+
+We will always present the maximization forms after the minimization form for
+completeness. However, it is possible to obtain the maximizatio dual by flipping
+the objective signs of a maximization problem, converting it in a minimization
+problem, then apply minimization duality and flip the signs again to obtain
+the dual as a minimization problem.
 
 For the special case of minimization LPs, the MOI primal form can be stated as
 ```math
