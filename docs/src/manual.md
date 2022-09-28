@@ -879,7 +879,7 @@ P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0
 \end{align}
 ```
 
-Where `-N` is a positive semidefinite matrix.
+Where `N` is negative semidefinite, i.e., `-N` is a positive semidefinite matrix.
 
 ###### Dual
 
