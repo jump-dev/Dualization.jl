@@ -44,6 +44,7 @@ function add_dual_equality_constraints(
         scalar_affine_terms,
         primal_dual_map.primal_var_dual_quad_slack,
         primal_objective,
+        sense_change,
     )
 
     # terms from mixing variables and parameters
@@ -240,26 +241,27 @@ function add_scalar_affine_terms_from_quad_obj(
     },
     primal_var_dual_quad_slack::Dict{MOI.VariableIndex,MOI.VariableIndex},
     primal_objective::PrimalObjective{T},
+    sense_change::T,
 ) where {T}
     for term in primal_objective.obj.quadratic_terms
         if term.variable_1 == term.variable_2
             dual_vi = primal_var_dual_quad_slack[term.variable_1]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_1],
-                -MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi,
             )
         else
             dual_vi_1 = primal_var_dual_quad_slack[term.variable_1]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_2],
-                -MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi_1,
             )
             dual_vi_2 = primal_var_dual_quad_slack[term.variable_2]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_1],
-                -MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi_2,
             )
         end
