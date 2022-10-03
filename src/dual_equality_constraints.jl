@@ -235,20 +235,20 @@ function add_scalar_affine_terms_from_quad_obj(
             dual_vi = primal_var_dual_quad_slack[term.variable_1]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_1],
-                -sense_change*MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi,
             )
         else
             dual_vi_1 = primal_var_dual_quad_slack[term.variable_1]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_2],
-                -sense_change*MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi_1,
             )
             dual_vi_2 = primal_var_dual_quad_slack[term.variable_2]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_1],
-                -sense_change*MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi_2,
             )
         end
