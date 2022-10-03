@@ -111,3 +111,6 @@ include("Solvers/scs_test.jl")
 include("Tests/test_JuMP_dualize.jl")
 include("Tests/test_MOI_wrapper.jl")
 include("Tests/test_modify.jl")
+
+# Test that dual feasibility of quadratic min and max is equivalent (see issue #142)
+include("Tests/test_max_min_dual_equal_feasibility_quadratic.jl")
