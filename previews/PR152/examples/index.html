@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · Dualization.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Dualization.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Dualization.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../manual/">Manual</a></li><li class="is-active"><a class="tocitem" href>Examples</a><ul class="internal"><li><a class="tocitem" href="#Dualize-a-JuMP-model-1"><span>Dualize a JuMP model</span></a></li><li><a class="tocitem" href="#Naming-the-dual-variables-and-dual-constraints-1"><span>Naming the dual variables and dual constraints</span></a></li><li><a class="tocitem" href="#Solving-a-problem-using-its-dual-formulation-1"><span>Solving a problem using its dual formulation</span></a></li></ul></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Examples</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jump-dev/Dualization.jl/blob/master/docs/src/examples.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Examples-1"><a class="docs-heading-anchor" href="#Examples-1">Examples</a><a class="docs-heading-anchor-permalink" href="#Examples-1" title="Permalink"></a></h1><p>Here we discuss some useful examples of usage.</p><h2 id="Dualize-a-JuMP-model-1"><a class="docs-heading-anchor" href="#Dualize-a-JuMP-model-1">Dualize a JuMP model</a><a class="docs-heading-anchor-permalink" href="#Dualize-a-JuMP-model-1" title="Permalink"></a></h2><p>Let us dualize the following Second Order Cone program</p><div>\[\begin{align}
+    &amp; \min_{x, y, z} &amp; y + z &amp;
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;x &amp; = 1\\
+    &amp;&amp; x &amp; = 1\\
+    &amp;&amp;x &amp; \geq ||(y,z)||_2\\
+\end{align}\]</div><p>The corresponding code in JuMP is</p><pre><code class="language-julia">using JuMP, Dualization
+model = Model()
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)</code></pre><p>You can dualize the model by doing</p><pre><code class="language-julia">dual_model = dualize(model)</code></pre><p>And you should get the model</p><div>\[\begin{align}
+    &amp; \max_{eqcon, soccon} &amp; eqcon &amp;
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;eqcon + soccon_1 &amp; = 0\\
+    &amp;&amp; soccon_2 &amp; = 1\\
+    &amp;&amp; soccon_3 &amp; = 1\\
+    &amp;&amp;soccon_1 &amp; \geq ||(soccon_2,soccon_3)||_2\\
+\end{align}\]</div><p>Note that if you declare the model with an optimizer attached you will lose the optimizer during the dualization. To dualize the model and attach the optimizer to the dual model you should do <code>dualize(dual_model, SolverName.Optimizer)</code></p><pre><code class="language-julia">using JuMP, Dualization, ECOS
+model = Model(ECOS.Optimizer)
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)
+
+dual_model = dualize(model, ECOS.Optimizer)</code></pre><h2 id="Naming-the-dual-variables-and-dual-constraints-1"><a class="docs-heading-anchor" href="#Naming-the-dual-variables-and-dual-constraints-1">Naming the dual variables and dual constraints</a><a class="docs-heading-anchor-permalink" href="#Naming-the-dual-variables-and-dual-constraints-1" title="Permalink"></a></h2><p>You can provide prefixes for the name of the variables and the name of the constraints using the a <code>DualNames</code> variable. Every time you use the dualize function you can provide a <code>DualNames</code> as keyword argument. Consider the following example.</p><p>You want to dualize this JuMP problem and add a prefix to the name of each constraint to be more clear on what the variables represent. For instance you want to put <code>&quot;dual&quot;</code> before the name of the constraint.</p><pre><code class="language-julia">using JuMP, Dualization
+model = Model()
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)
+
+# The first field of DualNames is the prefix of the dual variables
+# and the second field is the prefix of the dual constraint
+dual_model = dualize(model; dual_names = DualNames(&quot;dual&quot;, &quot;&quot;))</code></pre><p>The dual_model will be registered as</p><div>\[\begin{align}
+    &amp; \max_{dualeqcon, dualsoccon} &amp; dualeqcon &amp;
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;dualeqcon + dualsoccon_1 &amp; = 0\\
+    &amp;&amp; dualsoccon_2 &amp; = 1\\
+    &amp;&amp; dualsoccon_3 &amp; = 1\\
+    &amp;&amp;dualsoccon_1 &amp; \geq ||(dualsoccon_2, dualsoccon_3)||_2\\
+\end{align}\]</div><h2 id="Solving-a-problem-using-its-dual-formulation-1"><a class="docs-heading-anchor" href="#Solving-a-problem-using-its-dual-formulation-1">Solving a problem using its dual formulation</a><a class="docs-heading-anchor-permalink" href="#Solving-a-problem-using-its-dual-formulation-1" title="Permalink"></a></h2><p>Depending on the solver and on the type of formulation, solving the dual problem could be faster than solving the primal. To solve the problem via its dual formulation can be done using the <code>DualOptimizer</code>.</p><pre><code class="language-julia">using JuMP, Dualization, ECOS
+
+# Solving a problem the standard way
+model = Model(ECOS.Optimizer)
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)
+
+# Solving a problem by providing its dual representation
+model = Model(dual_optimizer(ECOS.Optimizer))
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)
+
+# You can pass arguments to the solver by attaching them to the solver constructor.
+model = Model(dual_optimizer(optimizer_with_attributes(ECOS.Optimizer, &quot;maxit&quot; =&gt; 5)))
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../manual/">« Manual</a><a class="docs-footer-nextpage" href="../reference/">Reference »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 4 October 2022 13:29">Tuesday 4 October 2022</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
