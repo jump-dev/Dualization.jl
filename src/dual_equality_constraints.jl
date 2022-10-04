@@ -54,6 +54,7 @@ function add_dual_equality_constraints(
         scalar_affine_terms,
         primal_dual_map.primal_parameter,
         primal_objective,
+        sense_change,
     )
 
     # Constrained variables
@@ -276,13 +277,14 @@ function add_scalar_affine_terms_from_quad_params(
     },
     primal_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex},
     primal_objective::PrimalObjective{T},
+    sense_change::T,
 ) where {T}
     for (key, val) in primal_objective.quad_cross_parameters
         for term in val
             dual_vi = primal_parameter[term.variable]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[key],
-                -MOI.coefficient(term),
+                -sense_change * MOI.coefficient(term),
                 dual_vi,
             )
         end
