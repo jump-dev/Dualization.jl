@@ -2,8 +2,9 @@ function get_DualMinModel_no_bounds()
     MinModel = Model()
     @variable(MinModel, Q₁)
     @variable(MinModel, Q₂)
+    @variable(MinModel, param)
 
-    @objective(MinModel, Min, (Q₁ + Q₂)^2)
+    @objective(MinModel, Min, (Q₁ + Q₂)^2 + (Q₁ + Q₂) * param)
     @constraint(MinModel, C₁, Q₁ + 1 >= 0)
     @constraint(MinModel, C₂, Q₂ + 1 >= 0)
 
@@ -15,7 +16,9 @@ function get_DualMaxModel_no_bounds()
     MaxModel = Model()
     @variable(MaxModel, Q₁)
     @variable(MaxModel, Q₂)
-    @objective(MaxModel, Max, -(Q₁ + Q₂)^2)
+    @variable(MaxModel, param)
+
+    @objective(MaxModel, Max, -((Q₁ + Q₂)^2 + (Q₁ + Q₂) * param))
     @constraint(MaxModel, C₁, Q₁ + 1 >= 0)
     @constraint(MaxModel, C₂, Q₂ + 1 >= 0)
 
@@ -27,8 +30,9 @@ function get_DualMinModel_with_bounds()
     MinModel = Model()
     @variable(MinModel, Q₁ >= 0)
     @variable(MinModel, Q₂ >= 0)
+    @variable(MinModel, param)
 
-    @objective(MinModel, Min, (Q₁ + Q₂)^2)
+    @objective(MinModel, Min, (Q₁ + Q₂)^2 + (Q₁ + Q₂) * param)
     @constraint(MinModel, C₁, Q₁ + 1 >= 0)
     @constraint(MinModel, C₂, Q₂ + 1 >= 0)
 
@@ -41,7 +45,9 @@ function get_DualMaxModel_with_bounds()
 
     @variable(MaxModel, Q₁ >= 0)
     @variable(MaxModel, Q₂ >= 0)
-    @objective(MaxModel, Max, -(Q₁ + Q₂)^2)
+    @variable(MaxModel, param)
+
+    @objective(MaxModel, Max, -((Q₁ + Q₂)^2 + (Q₁ + Q₂) * param))
     @constraint(MaxModel, C₁, Q₁ + 1 >= 0)
     @constraint(MaxModel, C₂, Q₂ + 1 >= 0)
 
