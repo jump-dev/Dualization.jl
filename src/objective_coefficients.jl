@@ -11,7 +11,7 @@ Set the dual model objective sense.
 function set_dual_model_sense(
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
-)::Nothing where {T}
+)::Nothing
     # Get model sense
     primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
     # Set dual model sense
