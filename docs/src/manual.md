@@ -338,7 +338,11 @@ Standard form has variables in cones
 | SDPNAL | SCS |
 | CSDP | ECOS |
 | SDPA | SeDuMi |
-| Mosek |
+| Mosek v9 |
+
+!!! note 
+
+    Mosek v10 now supports both affine constraints in cones and variables in cones hence both the standard and geometric form at the same time.
 
 !!! note 
 
