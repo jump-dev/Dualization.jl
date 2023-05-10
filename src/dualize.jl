@@ -194,11 +194,7 @@ function dualize(
     return dual_problem
 end
 
-function dualize(
-    model::JuMP.Model,
-    optimizer_constructor = nothing;
-    kwargs...
-)
+function dualize(model::JuMP.Model, optimizer_constructor = nothing; kwargs...)
     mode = JuMP.mode(model)
     if mode != JuMP.AUTOMATIC
         error("Dualization does not support solvers in $(mode) mode")
