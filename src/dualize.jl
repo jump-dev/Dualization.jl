@@ -197,7 +197,7 @@ end
 function dualize(
     model::JuMP.Model,
     optimizer_constructor = nothing;
-    dual_names::DualNames = EMPTY_DUAL_NAMES,
+    kwargs...
 )
     mode = JuMP.mode(model)
     if mode != JuMP.AUTOMATIC
@@ -207,7 +207,7 @@ function dualize(
     dualize(
         JuMP.backend(model),
         DualProblem(JuMP.backend(dual_model));
-        dual_names = dual_names,
+        kwargs...,
     )
     _fill_obj_dict_with_variables!(dual_model)
     _fill_obj_dict_with_constraints!(dual_model)
