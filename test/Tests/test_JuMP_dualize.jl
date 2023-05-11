@@ -67,4 +67,18 @@ end
         @test typeof(dual_model[:dualeqcon_1]) == VariableRef
         @test !haskey(dual_model, Symbol(""))
     end
+    @testset "JuMP_dualize_kwargs" begin
+        model = Model()
+        @variable(model, x >= 0)
+        @constraint(model, x <= 2)
+        @objective(model, Max, 2 * x + 1)
+        dual_model = Dualization.dualize(
+            model;
+            dual_names = DualNames("dual_", "dual_"),
+            ignore_objective = true,
+            consider_constrained_variables = false,
+        )
+        @test dual_model isa Model
+        @test num_variables(dual_model) == 2
+    end
 end
