@@ -178,7 +178,7 @@ function set_dual_variable_name(
     i::Int,
     ci_name::String,
     prefix::String,
-    unique_var::Bool=false,
+    unique_var::Bool = false,
 )
     isempty(ci_name) && return
     name = prefix * ci_name
