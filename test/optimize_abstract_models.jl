@@ -10,7 +10,7 @@ solve it and retrieve the termination status and objective value
 function solve_abstract_model(
     model::MOI.ModelLike,
     optimizer_constructor,
-) where {T}
+)
     JuMP_model = JuMP.Model()
     MOI.copy_to(JuMP.backend(JuMP_model), model)
     set_optimizer(JuMP_model, optimizer_constructor)
