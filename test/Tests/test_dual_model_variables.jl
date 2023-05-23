@@ -34,6 +34,8 @@
         vi = MOI.VariableIndex(1)
         Dualization.set_dual_variable_name(primal_model, vi, 1, "con", "")
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "con_1"
+        Dualization.set_dual_variable_name(primal_model, vi, 1, "con", "", true)
+        @test MOI.get(primal_model, MOI.VariableName(), vi) == "con"
         Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "")
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "con_2"
         Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "oi")
