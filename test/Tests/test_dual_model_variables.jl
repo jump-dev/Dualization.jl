@@ -32,13 +32,13 @@
     @testset "set_dual_variable_name" begin
         primal_model = soc1_test()
         vi = MOI.VariableIndex(1)
-        Dualization.set_dual_variable_name(primal_model, vi, 1, "con", "")
+        Dualization.set_dual_variable_name(primal_model, vi, 1, "con", "", false)
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "con_1"
         Dualization.set_dual_variable_name(primal_model, vi, 1, "con", "", true)
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "con"
-        Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "")
+        Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "", false)
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "con_2"
-        Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "oi")
+        Dualization.set_dual_variable_name(primal_model, vi, 2, "con", "oi", false)
         @test MOI.get(primal_model, MOI.VariableName(), vi) == "oicon_2"
     end
 end

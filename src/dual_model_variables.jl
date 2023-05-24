@@ -148,8 +148,8 @@ function add_dual_variable(
     # Add each vi to the dictionary
     func = get_function(primal_model, ci)
     set = get_set(primal_model, ci)
+    unique_var = length(vis) == 1
     for (i, vi) in enumerate(vis)
-        unique_var = length(vis) == 1
         push_to_dual_obj_aff_terms!(
             primal_model,
             dual_obj_affine_terms,
@@ -178,7 +178,7 @@ function set_dual_variable_name(
     i::Int,
     ci_name::String,
     prefix::String,
-    unique_var::Bool = false,
+    unique_var::Bool,
 )
     isempty(ci_name) && return
     name = prefix * ci_name
