@@ -148,7 +148,7 @@ function add_dual_variable(
     # Add each vi to the dictionary
     func = get_function(primal_model, ci)
     set = get_set(primal_model, ci)
-    unique_var = length(vis) == 1
+    is_unique_var = length(vis) == 1
     for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(
             primal_model,
@@ -165,7 +165,7 @@ function add_dual_variable(
                 i,
                 ci_name,
                 dual_names.dual_variable_name_prefix,
-                unique_var,
+                ensure_unique = !is_unique_var,
             )
         end
     end
@@ -177,12 +177,12 @@ function set_dual_variable_name(
     vi::MOI.VariableIndex,
     i::Int,
     ci_name::String,
-    prefix::String,
-    unique_var::Bool,
+    prefix::String;
+    ensure_unique::Bool = true,
 )
     isempty(ci_name) && return
     name = prefix * ci_name
-    if !unique_var
+    if ensure_unique
         name *= "_$i"
     end
     MOI.set(dual_model, MOI.VariableName(), vi, name)
