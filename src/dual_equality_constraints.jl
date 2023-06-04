@@ -84,13 +84,13 @@ function add_dual_equality_constraints(
             continue # constrained variable
         end
         # Add equality constraint
-        # these are constraints associated to primal variables that# are not
+        # these are constraints associated to primal variables that are not
         # treated as constrained variables, that is "free variables" (x \in R)
         # therefore their associated dual constraints are equalities.
         dual_ci = MOI.Utilities.normalize_and_add_constraint(
             dual_model,
             MOI.ScalarAffineFunction(
-                # TODO: flip these two signs bellow to mathc _add_constrained_variable_constraint
+                # TODO: flip these two signs bellow to match _add_constrained_variable_constraint
                 # MOI.Utilities.operate_terms(-, scalar_affine_terms[primal_vi]),
                 # sense_change * get(scalar_terms, primal_vi, zero(T))),
                 MOI.Utilities.operate_terms(+, scalar_affine_terms[primal_vi]),
