@@ -349,7 +349,6 @@ function _variable_dual_attribute(attr::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
-
 function MOI.set(
     optimizer::DualOptimizer,
     ::MOI.VariablePrimalStart,
@@ -358,7 +357,9 @@ function MOI.set(
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     if vi in keys(primal_dual_map.constrained_var_idx)
-        error("Setting starting value for variables constrained at creation is not supported yet")
+        error(
+            "Setting starting value for variables constrained at creation is not supported yet",
+        )
     else
         MOI.set(
             optimizer.dual_problem.dual_model,
@@ -403,7 +404,9 @@ function MOI.set(
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     if ci in keys(primal_dual_map.constrained_var_dual)
-        error("Setting starting value for variables constrained at creation is not supported yet")
+        error(
+            "Setting starting value for variables constrained at creation is not supported yet",
+        )
     else
         MOI.set(
             optimizer.dual_problem.dual_model,
@@ -494,7 +497,9 @@ function MOI.set(
 ) where {F<:MOI.AbstractScalarFunction}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     if ci in keys(primal_dual_map.constrained_var_dual)
-        error("Setting starting value for variables constrained at creation is not supported yet")
+        error(
+            "Setting starting value for variables constrained at creation is not supported yet",
+        )
     elseif haskey(primal_dual_map.primal_con_dual_con, ci)
         # If it has no key then there is no dual constraint
         ci_dual_problem = get_ci_dual_problem(optimizer, ci)
