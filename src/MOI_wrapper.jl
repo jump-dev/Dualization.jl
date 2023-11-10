@@ -349,6 +349,8 @@ function _variable_dual_attribute(attr::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
+MOI.supports(::DualOptimizer, ::MOI.VariablePrimalStart, ::Type{MOI.VariableIndex}) = true
+
 function MOI.set(
     optimizer::DualOptimizer,
     ::MOI.VariablePrimalStart,
@@ -394,6 +396,14 @@ function MOI.get(
             get_ci_dual_problem(optimizer, vi),
         )
     end
+end
+
+function MOI.supports(
+        ::DualOptimizer,
+        ::Union{MOI.ConstraintDualStart,MOI.ConstraintPrimalStart},
+        ::Type{<:MOI.ConstraintIndex},
+)
+    return true
 end
 
 function MOI.set(
