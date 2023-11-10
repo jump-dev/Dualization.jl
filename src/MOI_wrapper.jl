@@ -407,11 +407,15 @@ function MOI.get(
 end
 
 function MOI.supports(
-    ::DualOptimizer,
-    ::Union{MOI.ConstraintDualStart,MOI.ConstraintPrimalStart},
+    optimizer::DualOptimizer,
+    attr::MOI.ConstraintDualStart,
     ::Type{<:MOI.ConstraintIndex},
 )
-    return true
+    return MOI.supports(
+        optimizer.dual_problem.dual_model,
+        _variable_dual_attribute(attr),
+        MOI.VariableIndex,
+    )
 end
 
 function MOI.set(
@@ -505,6 +509,18 @@ function MOI.get(
             get_vis_dual_problem(optimizer, ci),
         )
     end
+end
+
+function MOI.supports(
+    ::DualOptimizer,
+    attr::MOI.ConstraintPrimalStart,
+    C::Type{<:MOI.ConstraintIndex},
+)
+    return MOI.supports(
+        optimizer.dual_problem.dual_model,
+        _dual_attribute(attr),
+        C,
+    )
 end
 
 function MOI.set(
