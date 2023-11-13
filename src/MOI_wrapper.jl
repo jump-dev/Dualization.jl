@@ -209,9 +209,11 @@ end
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike)
     dualize(src, dest.dual_problem)
     idx_map = MOI.Utilities.IndexMap()
-    for vi in MOI.get(src, MOI.ListOfVariableIndices())
+    vis_src = MOI.get(src, MOI.ListOfVariableIndices())
+    for vi in vis_src
         setindex!(idx_map, vi, vi)
     end
+    MOI.Utilities.pass_attributes(dest, src, idx_map, vis_src)
     for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
         for con in MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
             setindex!(idx_map, con, con)
