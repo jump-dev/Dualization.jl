@@ -628,20 +628,20 @@ function dual_status(term::MOI.TerminationStatusCode)
     return term
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.ObjectiveValue)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualObjectiveValue())
+function MOI.get(optimizer::DualOptimizer, attr::MOI.ObjectiveValue)
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualObjectiveValue(attr.result_index))
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.DualObjectiveValue)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveValue())
+function MOI.get(optimizer::DualOptimizer, attr::MOI.DualObjectiveValue)
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveValue(attr.result_index))
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.PrimalStatus)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualStatus())
+function MOI.get(optimizer::DualOptimizer, attr::MOI.PrimalStatus)
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualStatus(attr.result_index))
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.DualStatus)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.PrimalStatus())
+function MOI.get(optimizer::DualOptimizer, attr::MOI.DualStatus)
+    return MOI.get(optimizer.dual_problem.dual_model, MOI.PrimalStatus(attr.result_index))
 end
 
 function MOI.set(
