@@ -7,7 +7,7 @@ export DualOptimizer, dual_optimizer
 
 function dual_optimizer(
     optimizer_constructor;
-    coefficients_type::Type{T} = Float64,
+    coefficient_type::Type{T} = Float64,
 ) where {T<:Number}
     return () -> DualOptimizer{T}(MOI.instantiate(optimizer_constructor))
 end
