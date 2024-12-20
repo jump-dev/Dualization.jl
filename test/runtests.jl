@@ -5,7 +5,6 @@
 
 using Dualization
 using JuMP
-using LinearAlgebra
 using Test
 
 MOI.Utilities.@model(
