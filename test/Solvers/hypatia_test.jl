@@ -3,21 +3,22 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-using Hypatia
-using LinearAlgebra
+import Hypatia
 
-@testset "Solve problems with differetn coefficient type" begin
+@testset "Solve problems with different coefficient_type" begin
     function mineig(::Type{T}) where {T}
-        model = GenericModel{T}()
-        d = 3
-        @variable(model, x[1:d,1:d] in PSDCone())
-        @constraint(model, tr(x) == 1)
-        @objective(model, Min, real(dot(I,x)))
-        set_optimizer(model, Dualization.dual_optimizer(Hypatia.Optimizer{T}; coefficient_type = T))
+        model = GenericModel{T}(
+            Dualization.dual_optimizer(
+                Hypatia.Optimizer{T};
+                coefficient_type = T,
+            ),
+        )
         JuMP.set_silent(model)
+        @variable(model, x[1:3, 1:3] in PSDCone())
+        @constraint(model, sum(x[i, i] for i in 1:3) == 1)
+        @objective(model, Min, sum(x[i, i] for i in 1:3))
         optimize!(model)
         return objective_value(model)
     end
-    
     @test mineig(Float64) ≈ mineig(Float32)
 end
