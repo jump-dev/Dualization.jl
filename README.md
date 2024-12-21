@@ -1,6 +1,6 @@
 # Dualization.jl
 
-[![Build Status](https://github.com/jump-dev/Dualization.jl/workflows/CI/badge.svg?branch=master)](https://github.com/jump-dev/Dualization.jl/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/jump-dev/Dualization.jl/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jump-dev/Dualization.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/jump-dev/Dualization.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jump-dev/Dualization.jl)
 [![DOI](https://zenodo.org/badge/182854997.svg)](https://zenodo.org/badge/latestdoi/182854997)
 
