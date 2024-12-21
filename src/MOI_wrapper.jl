@@ -5,8 +5,11 @@
 
 export DualOptimizer, dual_optimizer
 
-function dual_optimizer(optimizer_constructor)
-    return () -> DualOptimizer(MOI.instantiate(optimizer_constructor))
+function dual_optimizer(
+    optimizer_constructor;
+    coefficient_type::Type{T} = Float64,
+) where {T<:Number}
+    return () -> DualOptimizer{T}(MOI.instantiate(optimizer_constructor))
 end
 
 struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
