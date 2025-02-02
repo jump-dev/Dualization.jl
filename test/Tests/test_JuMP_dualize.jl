@@ -64,7 +64,7 @@ end
 
         dual_model = dualize(model; dual_names = DualNames("dual", ""))
 
-        @test typeof(dual_model[:dualeqcon_1]) == VariableRef
+        @test typeof(dual_model[:dualeqcon]) == VariableRef
         @test !haskey(dual_model, Symbol(""))
     end
     @testset "JuMP_dualize_kwargs" begin
