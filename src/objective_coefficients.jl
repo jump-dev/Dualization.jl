@@ -19,8 +19,10 @@ function set_dual_model_sense(
         MOI.MAX_SENSE
     elseif primal_sense == MOI.MAX_SENSE
         MOI.MIN_SENSE
-    else # primal_sense == MOI.FEASIBILITY_SENSE
-        error(primal_sense, " is not supported")
+    elseif primal_sense == MOI.FEASIBILITY_SENSE 
+        # We assume fesibility sense is a Min 0
+        # so the dual would be Max ...
+        MOI.MAX_SENSE
     end
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
     return
