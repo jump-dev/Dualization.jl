@@ -369,17 +369,15 @@ function MOI.set(
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     if vi in keys(primal_dual_map.constrained_var_idx)
-        error(
-            "Setting starting value for variables constrained at creation is not supported yet",
-        )
-    else
-        MOI.set(
-            optimizer.dual_problem.dual_model,
-            _dual_attribute(attr),
-            get_ci_dual_problem(optimizer, vi),
-            _minus(value),
-        )
+        msg = "Setting starting value for variables constrained at creation is not supported yet"
+        throw(MOI.SetAttributeNotAllowed(attr, msg))
     end
+    MOI.set(
+        optimizer.dual_problem.dual_model,
+        _dual_attribute(attr),
+        get_ci_dual_problem(optimizer, vi),
+        _minus(value),
+    )
     return
 end
 
@@ -399,13 +397,16 @@ function MOI.get(
             ci_dual,
             idx,
         )
-    else
-        return -MOI.get(
-            optimizer.dual_problem.dual_model,
-            _dual_attribute(attr),
-            get_ci_dual_problem(optimizer, vi),
-        )
     end
+    ret = MOI.get(
+        optimizer.dual_problem.dual_model,
+        _dual_attribute(attr),
+        get_ci_dual_problem(optimizer, vi),
+    )
+    if ret === nothing
+        return ret
+    end
+    return -ret
 end
 
 function MOI.supports(
@@ -428,17 +429,15 @@ function MOI.set(
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     if ci in keys(primal_dual_map.constrained_var_dual)
-        error(
-            "Setting starting value for variables constrained at creation is not supported yet",
-        )
-    else
-        MOI.set(
-            optimizer.dual_problem.dual_model,
-            _variable_dual_attribute(attr),
-            get_vi_dual_problem(optimizer, ci),
-            value,
-        )
+        msg = "Setting starting value for variables constrained at creation is not supported yet"
+        throw(MOI.SetAttributeNotAllowed(attr, msg))
     end
+    MOI.set(
+        optimizer.dual_problem.dual_model,
+        _variable_dual_attribute(attr),
+        get_vi_dual_problem(optimizer, ci),
+        value,
+    )
     return
 end
 
