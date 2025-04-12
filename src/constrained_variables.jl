@@ -50,6 +50,8 @@ function _add_constrained_variables(
     for ci in cis
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
         if all(
+            # no element of the VectorOfVariables is a constrained variable
+            # and not a parameter
             vi -> !haskey(m.constrained_var_idx, vi) && !(vi in params),
             f.variables,
         )
@@ -76,6 +78,8 @@ function _add_constrained_variable(
     )
     for ci in cis
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+        # no element of the VectorOfVariables is a constrained variable
+        # and not a parameter
         if !haskey(m.constrained_var_idx, f) && !(f in params)
             set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
             if !iszero(MOI.constant(set))
