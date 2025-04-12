@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Manual · Dualization.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Dualization.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit">Dualization.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Manual</a><ul class="internal"><li><a class="tocitem" href="#Conic-Duality-1"><span>Conic Duality</span></a></li><li><a class="tocitem" href="#Supported-constraints-1"><span>Supported constraints</span></a></li><li><a class="tocitem" href="#Supported-objective-functions-1"><span>Supported objective functions</span></a></li><li><a class="tocitem" href="#Dualize-a-model-1"><span>Dualize a model</span></a></li><li><a class="tocitem" href="#DualOptimizer-1"><span>DualOptimizer</span></a></li><li><a class="tocitem" href="#Adding-new-sets-1"><span>Adding new sets</span></a></li><li><a class="tocitem" href="#Advanced-1"><span>Advanced</span></a></li></ul></li><li><a class="tocitem" href="../examples/">Examples</a></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Manual</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Manual</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/jump-dev/Dualization.jl/blob/master/docs/src/manual.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Manual-1"><a class="docs-heading-anchor" href="#Manual-1">Manual</a><a class="docs-heading-anchor-permalink" href="#Manual-1" title="Permalink"></a></h1><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>This package only works for optimization models that can be written in the conic-form.</p></div></div><h2 id="Conic-Duality-1"><a class="docs-heading-anchor" href="#Conic-Duality-1">Conic Duality</a><a class="docs-heading-anchor-permalink" href="#Conic-Duality-1" title="Permalink"></a></h2><h3 id="MOI-standard-form-and-duality-1"><a class="docs-heading-anchor" href="#MOI-standard-form-and-duality-1">MOI standard form and duality</a><a class="docs-heading-anchor-permalink" href="#MOI-standard-form-and-duality-1" title="Permalink"></a></h3><p>Conic duality is the starting point for MOI&#39;s duality conventions. When all functions are affine (or coordinate projections), and all constraint sets are closed convex cones, the model may be called a conic optimization problem.</p><p>The following formulations follow strictly MOI´s definition of duality we shall refer to them as <em>MOI standard form</em>.</p><p>For minimization problems, the primal is:</p><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp; a_0^T x + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><p>and the dual is:</p><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m} &amp; -\sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; a_0 - \sum_{i=1}^m A_i^T y_i &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><p>where each <span>$\mathcal{C}_i$</span> is a closed convex cone and <span>$\mathcal{C}_i^*$</span> is its dual cone.</p><p>For maximization problems, the primal is:</p><div>\[\begin{align}
+&amp; \max_{x \in \mathbb{R}^n} &amp; a_0^T x + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><p>and the dual is:</p><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m} &amp; \sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - a_0 - \sum_{i=1}^m A_i^T y_i &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><p>Note that the equality constraints have minus signs that could be flipped for simplicity. However, for generality, we keep the minus signs so that the models displayed here precisely match the outputs of the package.</p><p>A linear inequality constraint <span>$a^T x + b \ge c$</span> should be interpreted as <span>$a^T x + b - c \in \mathbb{R}_+$</span>, and similarly <span>$a^T x + b \le c$</span> should be interpreted as <span>$a^T x + b - c \in \mathbb{R}_-$</span>. Variable-wise constraints should be interpreted as affine constraints with the appropriate identity mapping in place of <span>$A_i$</span>.</p><p>We will always present the maximization forms after the minimization form for completeness. However, it is possible to obtain the maximizatio dual by flipping the objective signs of a maximization problem, converting it in a minimization problem, then apply minimization duality and flip the signs again to obtain the dual as a minimization problem.</p><p>For the special case of minimization LPs, the MOI primal form can be stated as</p><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp; a_0^T x &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp;A_1 x &amp; \ge b_1\\
+&amp;&amp; A_2 x &amp; \le b_2\\
+&amp;&amp; A_3 x &amp; = b_3
+\end{align}\]</div><p>By applying the stated transformations to conic form, taking the dual, and transforming back into linear inequality form, one obtains the following dual:</p><div>\[\begin{align}
+&amp; \max_{y_1,y_2,y_3} &amp; b_1^Ty_1 + b_2^Ty_2 + b_3^Ty_3 &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp; -A_1^Ty_1 -A_2^Ty_2 -A_3^Ty_3 &amp; = -a_0\\
+&amp;&amp; y_1 &amp;\ge 0\\
+&amp;&amp; y_2 &amp;\le 0
+\end{align}\]</div><p>For maximization LPs, the MOI primal form can be stated as:</p><div>\[\begin{align}
+&amp; \max_{x \in \mathbb{R}^n} &amp; a_0^T x &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp;A_1 x &amp; \ge b_1\\
+&amp;&amp; A_2 x &amp; \le b_2\\
+&amp;&amp; A_3 x &amp; = b_3
+\end{align}\]</div><p>and similarly, the dual is:</p><div>\[\begin{align}
+&amp; \min_{y_1,y_2,y_3} &amp; -b_1^Ty_1 - b_2^Ty_2 - b_3^Ty_3 &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp; -A_1^Ty_1 - A_2^Ty_2 - A_3^Ty_3 &amp; = a_0\\
+&amp;&amp; y_1 &amp;\ge 0\\
+&amp;&amp; y_2 &amp;\le 0
+\end{align}\]</div><h3 id="MOI-compact-form-and-duality-1"><a class="docs-heading-anchor" href="#MOI-compact-form-and-duality-1">MOI compact form and duality</a><a class="docs-heading-anchor-permalink" href="#MOI-compact-form-and-duality-1" title="Permalink"></a></h3><p>An equivalent formulation for conic duality explicitly constrains variables into cones. The implicit version can be achieved with the above formulation (MOI standard form) by considering the <code>A_i</code> that are projections onto some of the canonical axis.</p><p>The explicit constraints on variables convey additional structural information that can be exploited by some solver. Therefore, MOI includes the method <code>add_constrained_variables</code> for such purpose. These constraints are special because they are created together with the corresponding constrained variables. Hence, each variable can only belong to one of such.</p><p>Next, we precisely define the <em>MOI compact form</em> and present their respective dual problems. The reader will notice that the models are more verbose than the MOI standard form, but actually the solvers receives fewer constraints and slack variables are avoided. Consequently, the dual will have fewer variables and fewer constraints.</p><h4 id="Minimization-problem-in-MOI-compact-form-1"><a class="docs-heading-anchor" href="#Minimization-problem-in-MOI-compact-form-1">Minimization problem in MOI compact form</a><a class="docs-heading-anchor-permalink" href="#Minimization-problem-in-MOI-compact-form-1" title="Permalink"></a></h4><p>The primal is:</p><div>\[\begin{align}
+&amp; \min_{x_1, \dots, x_n} &amp; \sum_{j=1}^n a_j^T x_j + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><p>and the dual is:</p><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m} &amp; -\sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - \sum_{i=1}^m A_{ij}^T y_i + a_j &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><p>where each <span>$\mathcal{C}_i$</span> and <span>$\mathcal{V}_j$</span> are closed convex cones and <span>$\mathcal{C}_i^*$</span> and <span>$\mathcal{V}_j^*$</span> the respective dual cones.</p><h4 id="Maximization-problem-in-MOI-compact-form-1"><a class="docs-heading-anchor" href="#Maximization-problem-in-MOI-compact-form-1">Maximization problem in MOI compact form</a><a class="docs-heading-anchor-permalink" href="#Maximization-problem-in-MOI-compact-form-1" title="Permalink"></a></h4><p>The primal is:</p><div>\[\begin{align}
+&amp; \max_{x_1, \dots, x_n} &amp; \sum_{j=1}^n a_j^T x_j + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><p>and the dual is:</p><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m} &amp; \sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - \sum_{i=1}^m A_{ij}^T y_i - a_j &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><p>Note that signs changed in the constraints of the dual compared to the standard form. This is because the standard form would have negative signs in all terms in a equality constraint, which were inverted for simplicity. However, in the compact form, this operation is not allowed because it would change a nontrivial cone <span>$\mathcal{C}_i$</span>.</p><h5 id="Linear-Programming-1"><a class="docs-heading-anchor" href="#Linear-Programming-1">Linear Programming</a><a class="docs-heading-anchor-permalink" href="#Linear-Programming-1" title="Permalink"></a></h5><h6 id="Minimization-1"><a class="docs-heading-anchor" href="#Minimization-1">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-1" title="Permalink"></a></h6><h6 id="Primal-1"><a class="docs-heading-anchor" href="#Primal-1">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-1" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x_{I}, x_{II}, x_{III}} &amp; a_{I}^T x_{I} + a_{II}^T x_{II}  + a_{III}^T x_{III} &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp; A_{1,I} x_{I} +A_{1,II} x_{II} + A_{1,III} x_{III} &amp; \ge b_1\\
+&amp;&amp;A_{2,I} x_{I} +A_{2,II} x_{II} + A_{2,III} x_{III} &amp; \le b_2\\
+&amp;&amp;A_{3,I} x_{I} +A_{3,II} x_{II} + A_{3,III} x_{III} &amp; = b_3\\
+&amp;&amp; x_{I}  &amp; \ge 0\\
+&amp;&amp; x_{II} &amp; \le 0
+\end{align}\]</div><h6 id="Dual-1"><a class="docs-heading-anchor" href="#Dual-1">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-1" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{y_1, y_2, y_3} &amp; b_1^T y_1 + b_2^T y_2 + b_3^T y_3 &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp;  - A_{1,I}^T y_1   -A_{2,I}^T y_2   - A_{3,I}^T y_3   &amp; \ge - a_{I}\\
+&amp;&amp; - A_{1,II}^T y_1  -A_{2,II}^T y_2  - A_{3,II}^T y_3  &amp; \le - a_{II}\\
+&amp;&amp; - A_{1,III}^T y_1 -A_{2,III}^T y_2 - A_{3,III}^T y_3 &amp; =   - a_{III}\\
+&amp;&amp; y_1 &amp; \ge 0\\
+&amp;&amp; y_2 &amp; \le 0
+\end{align}\]</div><h6 id="Maximization-1"><a class="docs-heading-anchor" href="#Maximization-1">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-1" title="Permalink"></a></h6><h6 id="Primal-2"><a class="docs-heading-anchor" href="#Primal-2">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-2" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x_{I}, x_{II}, x_{III}} &amp; a_{I}^T x_{I} + a_{II}^T x_{II}  + a_{III}^T x_{III} &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp; A_{1,I} x_{I} +A_{1,II} x_{II} + A_{1,III} x_{III} &amp; \ge b_1\\
+&amp;&amp;A_{2,I} x_{I} +A_{2,II} x_{II} + A_{2,III} x_{III} &amp; \le b_2\\
+&amp;&amp;A_{3,I} x_{I} +A_{3,II} x_{II} + A_{3,III} x_{III} &amp; = b_3\\
+&amp;&amp; x_{I}  &amp; \ge 0\\
+&amp;&amp; x_{II} &amp; \le 0
+\end{align}\]</div><h6 id="Dual-2"><a class="docs-heading-anchor" href="#Dual-2">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-2" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{y_1, y_2, y_3} &amp; -b_1^T y_1 - b_2^T y_2 - b_3^T y_3 &amp;+ b_0
+\\
+&amp; \;\;\text{s.t.}
+&amp;  -A_{1,I}^T y_1   - A_{2,I}^T y_2   - A_{3,I}^T y_3   &amp; \ge a_{I}\\
+&amp;&amp; -A_{1,II}^T y_1  - A_{2,II}^T y_2  - A_{3,II}^T y_3  &amp; \le a_{II}\\
+&amp;&amp; -A_{1,III}^T y_1 - A_{2,III}^T y_2 - A_{3,III}^T y_3 &amp; =   a_{III}\\
+&amp;&amp; y_1 &amp; \ge 0\\
+&amp;&amp; y_2 &amp; \le 0
+\end{align}\]</div><h2 id="Supported-constraints-1"><a class="docs-heading-anchor" href="#Supported-constraints-1">Supported constraints</a><a class="docs-heading-anchor-permalink" href="#Supported-constraints-1" title="Permalink"></a></h2><p>This is the list of supported <code>Function-in-Set</code> constraints of the package. If you try to dualize a constraint not listed here, it will return an unsupported error.</p><table><tr><th style="text-align: left">MOI Function</th><th style="text-align: left">MOI Set</th></tr><tr><td style="text-align: left"><code>VariableIndex</code></td><td style="text-align: left"><code>GreaterThan</code></td></tr><tr><td style="text-align: left"><code>VariableIndex</code></td><td style="text-align: left"><code>LessThan</code></td></tr><tr><td style="text-align: left"><code>VariableIndex</code></td><td style="text-align: left"><code>EqualTo</code></td></tr><tr><td style="text-align: left"><code>ScalarAffineFunction</code></td><td style="text-align: left"><code>GreaterThan</code></td></tr><tr><td style="text-align: left"><code>ScalarAffineFunction</code></td><td style="text-align: left"><code>LessThan</code></td></tr><tr><td style="text-align: left"><code>ScalarAffineFunction</code></td><td style="text-align: left"><code>EqualTo</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>Nonnegatives</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>Nonpositives</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>Zeros</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>SecondOrderCone</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>RotatedSecondOrderCone</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>PositiveSemidefiniteConeTriangle</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>ExponentialCone</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>DualExponentialCone</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>PowerCone</code></td></tr><tr><td style="text-align: left"><code>VectorOfVariables</code></td><td style="text-align: left"><code>DualPowerCone</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>Nonnegatives</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>Nonpositives</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>Zeros</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>SecondOrderCone</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>RotatedSecondOrderCone</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>PositiveSemidefiniteConeTriangle</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>ExponentialCone</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>DualExponentialCone</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>PowerCone</code></td></tr><tr><td style="text-align: left"><code>VectorAffineFunction</code></td><td style="text-align: left"><code>DualPowerCone</code></td></tr></table><p>Note that some of MOI constraints can be bridged, see <a href="http://jump.dev/MathOptInterface.jl/stable/apireference/#Bridges-1">Bridges</a>, to constraints in this list.</p><h2 id="Supported-objective-functions-1"><a class="docs-heading-anchor" href="#Supported-objective-functions-1">Supported objective functions</a><a class="docs-heading-anchor-permalink" href="#Supported-objective-functions-1" title="Permalink"></a></h2><table><tr><th style="text-align: center">MOI Function</th></tr><tr><td style="text-align: center"><code>VariableIndex</code></td></tr><tr><td style="text-align: center"><code>ScalarAffineFunction</code></td></tr><tr><td style="text-align: center"><code>ScalarQuadraticFunction</code></td></tr></table><h2 id="Dualize-a-model-1"><a class="docs-heading-anchor" href="#Dualize-a-model-1">Dualize a model</a><a class="docs-heading-anchor-permalink" href="#Dualize-a-model-1" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="Dualization.dualize" href="#Dualization.dualize"><code>Dualization.dualize</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">dualize(args...; kwargs...)</code></pre><p>The <code>dualize</code> function works in three different ways. The user can provide:</p><ul><li><p>A <code>MathOptInterface.ModelLike</code></p><p>The function will return a <code>DualProblem</code> struct that has the dualized model and <code>PrimalDualMap{Float64}</code> for users to identify the links between primal and dual model. The <code>PrimalDualMap{Float64}</code> maps variables and constraints from the original primal model into the respective objects of the dual model.</p></li><li><p>A <code>MathOptInterface.ModelLike</code> and a <code>DualProblem{T}</code></p></li><li><p>A <code>JuMP.Model</code></p><p>The function will return a JuMP model with the dual representation of the problem.</p></li><li><p>A <code>JuMP.Model</code> and an optimizer constructor</p><p>The function will return a JuMP model with the dual representation of the problem with the optimizer constructor attached.</p></li></ul><p>On each of these methods, the user can provide the following keyword arguments:</p><ul><li><p><code>dual_names</code>: of type <code>DualNames</code> struct. It allows users to set more intuitive names for the dual variables and dual constraints created.</p></li><li><p><code>variable_parameters</code>: A vector of MOI.VariableIndex containing the variables that should not be considered model variables during dualization. These variables will behave like constants during dualization. This is especially useful for the case of bi-level modelling, where the second level depends on some decisions from the upper level.</p></li><li><p><code>ignore_objective</code>: a boolean indicating if the objective function should be added to the dual model. This is also useful for bi-level modelling, where the second level model is represented as a KKT in the upper level model.</p></li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jump-dev/Dualization.jl/blob/a27cdc3de503b887222e88c98021e39d1e4bde3a/src/dualize.jl#L8-L47">source</a></section></article><h2 id="DualOptimizer-1"><a class="docs-heading-anchor" href="#DualOptimizer-1">DualOptimizer</a><a class="docs-heading-anchor-permalink" href="#DualOptimizer-1" title="Permalink"></a></h2><p>You can solve a primal problem by using its dual formulation using the <code>DualOptimizer</code>.</p><article class="docstring"><header><a class="docstring-binding" id="Dualization.DualOptimizer" href="#Dualization.DualOptimizer"><code>Dualization.DualOptimizer</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia">DualOptimizer(dual_optimizer::OT) where {OT &lt;: MOI.ModelLike}</code></pre><p>The DualOptimizer finds the solution for a problem by solving its dual representation. It builds the dual model internally and solve it using the <code>dual_optimizer</code> as the solver.</p><p>Primal results are obtained by querying dual results of the internal problem solved by <code>dual_optimizer</code>. Analogously, dual results are obtained by querying primal results of the internal problem.</p><p>The user can define the model providing the <code>DualOptimizer</code> and the solver of its choice.</p><p><strong>Example</strong></p><pre><code class="language-julia">julia&gt; using Dualization, JuMP, HiGHS
+
+julia&gt; model = Model(dual_optimizer(HiGHS.Optimizer))
+A JuMP Model
+Feasibility problem with:
+Variables: 0
+Model mode: AUTOMATIC
+CachingOptimizer state: EMPTY_OPTIMIZER
+Solver name: Dual model with HiGHS attached</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jump-dev/Dualization.jl/blob/a27cdc3de503b887222e88c98021e39d1e4bde3a/src/MOI_wrapper.jl#L25-L52">source</a></section></article><p>Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.</p><p>Geometric form has affine expressions in cones</p><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp; c^T x
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><p>Standard form has variables in cones</p><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp; c^T x
+\\
+&amp; \;\;\text{s.t.} &amp; A x + s &amp; = b
+\\
+&amp; &amp; s &amp; \in \mathcal{C}
+\end{align}\]</div><table><tr><th style="text-align: center">Standard form</th><th style="text-align: center">Geometric form</th></tr><tr><td style="text-align: center">SDPT3</td><td style="text-align: center">CDCS</td></tr><tr><td style="text-align: center">SDPNAL</td><td style="text-align: center">SCS</td></tr><tr><td style="text-align: center">CSDP</td><td style="text-align: center">ECOS</td></tr><tr><td style="text-align: center">SDPA</td><td style="text-align: center">SeDuMi</td></tr><tr><td style="text-align: center">Mosek v9</td><td style="text-align: center"></td></tr></table><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>Mosek v10 now supports both affine constraints in cones and variables in cones hence both the standard and geometric form at the same time.</p></div></div><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>MOI standard form is the Geometric form and not the &quot;textbook&quot; Standard form.</p></div></div><h2 id="Adding-new-sets-1"><a class="docs-heading-anchor" href="#Adding-new-sets-1">Adding new sets</a><a class="docs-heading-anchor-permalink" href="#Adding-new-sets-1" title="Permalink"></a></h2><p>Dualization.jl can automatically dualize models with custom sets. To do this, the user needs to define the set and its dual set and provide the functions:</p><ul><li><code>supported_constraint</code></li><li><code>dual_set</code> </li></ul><p>If the custom set has some special scalar product (see the <a href="https://jump.dev/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle">link</a>), the user also needs to provide a <code>set_dot</code> function.</p><p>For example, let us define a fake cone and its dual, the fake dual cone. We will write a JuMP model with the fake cone and dualize it.</p><pre><code class="language-julia">using Dualization, JuMP, MathOptInterface, LinearAlgebra
+
+# Rename MathOptInterface to simplify the code
+const MOI = MathOptInterface
+
+# Define the custom cone and its dual
+struct FakeCone &lt;: MOI.AbstractVectorSet
+    dimension::Int
+end
+
+struct FakeDualCone &lt;: MOI.AbstractVectorSet
+    dimension::Int
+end
+
+# Define a model with your FakeCone
+model = Model()
+@variable(model, x[1:3])
+@constraint(model, con, x in FakeCone(3)) # Note that the constraint name is &quot;con&quot;
+@objective(model, Min, sum(x))</code></pre><p>The resulting JuMP model is</p><div>\[\begin{align}
+    &amp; \min_{x} &amp; x_1 + x_2 + x_3 &amp;
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;x \in FakeCone(3)\\
+\end{align}\]</div><p>Now in order to dualize we must overload the methods as described above.</p><pre><code class="language-julia"># Overload the methods dual_set and supported_constraints
+Dualization.dual_set(s::FakeCone) = FakeDualCone(MOI.dimension(s))
+Dualization.supported_constraint(::Type{MOI.VectorOfVariables}, ::Type{&lt;:FakeCone}) = true
+
+# If your set has some specific scalar product you also need to define a new set_dot function
+# Our FakeCone has this weird scalar product
+MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = 2dot(x, y)
+
+# Dualize the model
+dual_model = dualize(model)</code></pre><p>The resulting dual model is </p><div>\[\begin{align}
+    &amp; \max_{con} &amp; 0 &amp;
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;2con_1 &amp; = 1\\
+    &amp;&amp;2con_2 &amp; = 1\\
+    &amp;&amp;2con_3 &amp; = 1\\
+    &amp;&amp; con &amp; \in FakeDualCone(3)\\
+\end{align}\]</div><p>If the model has constraints that are <code>MOI.VectorAffineFunction</code></p><pre><code class="language-julia">model = Model()
+@variable(model, x[1:3])
+@constraint(model, con, x + 3 in FakeCone(3))
+@objective(model, Min, sum(x))</code></pre><div>\[\begin{align}
+    &amp; \min_{x} &amp; x_1 + x_2 + x_3 &amp;
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;[x_1 + 3, x_2 + 3, x_3 + 3] &amp; \in FakeCone(3)\\
+\end{align}\]</div><p>the user only needs to extend the <code>supported_constraints</code> function.</p><pre><code class="language-julia"># Overload the supported_constraints for VectorAffineFunction
+Dualization.supported_constraint(::Type{&lt;:MOI.VectorAffineFunction}, ::Type{&lt;:FakeCone}) = true
+
+# Dualize the model
+dual_model = dualize(model)</code></pre><p>The resulting dual model is</p><div>\[\begin{align}
+    &amp; \max_{con} &amp; - 3con_1&amp; - 3con_2 - 3con_3 
+    \\
+    &amp; \;\;\text{s.t.}
+    &amp;2con_1 &amp; = 1\\
+    &amp;&amp;2con_2 &amp; = 1\\
+    &amp;&amp;2con_3 &amp; = 1\\
+    &amp;&amp; con &amp; \in FakeDualCone(3)\\
+\end{align}\]</div><h2 id="Advanced-1"><a class="docs-heading-anchor" href="#Advanced-1">Advanced</a><a class="docs-heading-anchor-permalink" href="#Advanced-1" title="Permalink"></a></h2><h3 id="KKT-Conditions-1"><a class="docs-heading-anchor" href="#KKT-Conditions-1">KKT Conditions</a><a class="docs-heading-anchor-permalink" href="#KKT-Conditions-1" title="Permalink"></a></h3><p>The KKT conditions are a set of inequalities for which the feasible solution is equivalent to the optimal solution of an optimization problem, as long as strong duality holds and constraint qualification rules such as Slater&#39;s are valid. The KKT is used in many branches of optimization and it might be interesting to write them programmatically.</p><h4 id="MOI-standard-form-1"><a class="docs-heading-anchor" href="#MOI-standard-form-1">MOI standard form</a><a class="docs-heading-anchor-permalink" href="#MOI-standard-form-1" title="Permalink"></a></h4><h5 id="Minimization-2"><a class="docs-heading-anchor" href="#Minimization-2">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-2" title="Permalink"></a></h5><p>The KKT conditions of the minimization problem of the first section are the following:</p><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i  \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><p>Note that &quot;Dual Feasibility&quot; and &quot;Stationarity&quot; correspond to the two constraints of the dual problem. Therefore, after writing the primal problem, Dualization.jl can obtain the dual problem automatically and then we simply have to write the &quot;Complementary slackness&quot; to complete the KKT conditions.</p><p>One important use case is Bilevel optimization, see <a href="https://github.com/joaquimg/BilevelJuMP.jl">BilevelJuMP.jl</a>. In this case, variables of an upstream model are considered as parameters in a lower level model. One classical solution method for bilevel programs is to write the KKT conditions of the lower (or inner) problem and consider them as (non-linear) constraints of the upper (or outer) problem. Dualization can be used to derive parts of KKT conditions.</p><h5 id="Maximization-2"><a class="docs-heading-anchor" href="#Maximization-2">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-2" title="Permalink"></a></h5><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i  \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[- a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h4 id="MOI-compact-form-1"><a class="docs-heading-anchor" href="#MOI-compact-form-1">MOI compact form</a><a class="docs-heading-anchor-permalink" href="#MOI-compact-form-1" title="Permalink"></a></h4><h5 id="Minimization-3"><a class="docs-heading-anchor" href="#Minimization-3">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-3" title="Permalink"></a></h5><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[ - \sum_{i=1}^m A_{ij}^T y_i + a_j = u_j, \ \ j = 1 \ldots n\]</div><p>We keep the <span>$u_j$</span> variable explicit to make Dual Feasibility and Complementary Slackness very clear. However, in the final model it is possible to replace the latter using the stationarity constraint.</p><h5 id="Maximization-3"><a class="docs-heading-anchor" href="#Maximization-3">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-3" title="Permalink"></a></h5><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[ - \sum_{i=1}^m A_{ij}^T y_i - a_j = u_j, \ \ j = 1 \ldots n\]</div><h3 id="Parametric-problems-1"><a class="docs-heading-anchor" href="#Parametric-problems-1">Parametric problems</a><a class="docs-heading-anchor-permalink" href="#Parametric-problems-1" title="Permalink"></a></h3><p>It is also possible to deal with parametric models. In regular optimization problems we only have a single (vector) variable represented by <span>$x$</span> in the duality section, there are many use cases in which we can represent parameters that will not be considered in the optimization, these are treated as constants and, hence, not &quot;dualized&quot;.</p><p>In the following, we will use <span>$x$</span> to denote primal optimization variables, <span>$y$</span> for dual optimization variables and <span>$z$</span> for parameters.</p><h4 id="MOI-standard-form-2"><a class="docs-heading-anchor" href="#MOI-standard-form-2">MOI standard form</a><a class="docs-heading-anchor-permalink" href="#MOI-standard-form-2" title="Permalink"></a></h4><h5 id="Minimization-4"><a class="docs-heading-anchor" href="#Minimization-4">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-4" title="Permalink"></a></h5><h6 id="Primal-3"><a class="docs-heading-anchor" href="#Primal-3">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-3" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp; a_0^T x + b_0 + d_0^Tz
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i + D_i z &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="Dual-3"><a class="docs-heading-anchor" href="#Dual-3">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-3" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m} &amp; -\sum_{i=1}^m (b_i + D_iz)^T y_i + b_0 + d_0^Tz
+\\
+&amp; \;\;\; \text{s.t.} &amp; a_0 - \sum_{i=1}^m A_i^T y_i &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-1"><a class="docs-heading-anchor" href="#KKT-1">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-1" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h5 id="Maximization-4"><a class="docs-heading-anchor" href="#Maximization-4">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-4" title="Permalink"></a></h5><h6 id="Primal-4"><a class="docs-heading-anchor" href="#Primal-4">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-4" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x \in \mathbb{R}^n} &amp; a_0^T x + b_0 + d_0^Tz
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i + D_i z &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="Dual-4"><a class="docs-heading-anchor" href="#Dual-4">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-4" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m} &amp; \sum_{i=1}^m (b_i + D_iz)^T y_i + b_0 + d_0^Tz
+\\
+&amp; \;\;\; \text{s.t.} &amp; - a_0 - \sum_{i=1}^m A_i^T y_i &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-2"><a class="docs-heading-anchor" href="#KKT-2">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-2" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[- a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h4 id="MOI-compact-form-2"><a class="docs-heading-anchor" href="#MOI-compact-form-2">MOI compact form</a><a class="docs-heading-anchor-permalink" href="#MOI-compact-form-2" title="Permalink"></a></h4><h5 id="Minimization-5"><a class="docs-heading-anchor" href="#Minimization-5">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-5" title="Permalink"></a></h5><h6 id="Primal-5"><a class="docs-heading-anchor" href="#Primal-5">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-5" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x_1, \dots, x_n} &amp; \sum_{j=1}^n a_j^T x_j + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + D_i z + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><h6 id="Dual-5"><a class="docs-heading-anchor" href="#Dual-5">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-5" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m} &amp; - \sum_{i=1}^m (D_i z + b_i)^T y_i + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - \sum_{i=1}^m A_{ij}^T y_i + a_j &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-3"><a class="docs-heading-anchor" href="#KKT-3">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-3" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[- \sum_{i=1}^m A_{ij}^T y_i + a_j  = u_j, \ \ j = 1 \ldots n\]</div><h5 id="Maximization-5"><a class="docs-heading-anchor" href="#Maximization-5">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-5" title="Permalink"></a></h5><h6 id="Primal-6"><a class="docs-heading-anchor" href="#Primal-6">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-6" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x_1, \dots, x_n} &amp; \sum_{j=1}^n a_j^T x_j + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + D_i z + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><h6 id="Dual-6"><a class="docs-heading-anchor" href="#Dual-6">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-6" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m} &amp; \sum_{i=1}^m (D_i z + b_i)^T y_i + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - \sum_{i=1}^m A_{ij}^T y_i - a_j &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-4"><a class="docs-heading-anchor" href="#KKT-4">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-4" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[- \sum_{i=1}^m A_{ij}^T y_i - a_j  = u_j, \ \ j = 1 \ldots n\]</div><h3 id="Quadratic-problems-1"><a class="docs-heading-anchor" href="#Quadratic-problems-1">Quadratic problems</a><a class="docs-heading-anchor-permalink" href="#Quadratic-problems-1" title="Permalink"></a></h3><p>Optimization problems with conic constraints and quadratic objective are straightforward extensions to the conic problems with linear constraints usually defined in MOI. More information <a href="http://www.seas.ucla.edu/~vandenbe/publications/coneprog.pdf">here</a>.</p><h4 id="MOI-standard-form-3"><a class="docs-heading-anchor" href="#MOI-standard-form-3">MOI standard form</a><a class="docs-heading-anchor-permalink" href="#MOI-standard-form-3" title="Permalink"></a></h4><h5 id="Minimization-6"><a class="docs-heading-anchor" href="#Minimization-6">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-6" title="Permalink"></a></h5><h6 id="Primal-7"><a class="docs-heading-anchor" href="#Primal-7">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-7" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp; \frac{1}{2} x^T P x + a_0^T x + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><p>Where <code>P</code> is a positive semidefinite matrix.</p><h6 id="Dual-7"><a class="docs-heading-anchor" href="#Dual-7">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-7" title="Permalink"></a></h6><p>A compact formulation for the dual problem requires pseudo-inverses, however, we can add an extra slack variable <code>w</code> to the dual problem and obtain the following dual problem:</p><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m} &amp; - \frac{1}{2} w^T P w - \sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; a_0 - \sum_{i=1}^m A_i^T y_i + P w &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><p>note that, in the constraint, the sign in front of the <code>P</code> matrix can be changed because <code>w</code> is free and the only other term depending in <code>w</code> is quadratic and symmetric. The sign choice is interesting to keep the dual problem closer to the KKT conditions that reads as follows.</p><h6 id="KKT-5"><a class="docs-heading-anchor" href="#KKT-5">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-5" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[P x + a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h5 id="Maximization-6"><a class="docs-heading-anchor" href="#Maximization-6">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-6" title="Permalink"></a></h5><h6 id="Primal-8"><a class="docs-heading-anchor" href="#Primal-8">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-8" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x \in \mathbb{R}^n} &amp; \frac{1}{2} x^T N x + a_0^T x + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><p>Where <code>N</code> is negative semidefinite, i.e., <code>-N</code> is a positive semidefinite matrix.</p><h6 id="Dual-8"><a class="docs-heading-anchor" href="#Dual-8">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-8" title="Permalink"></a></h6><p>Just like in the minimization case we can add an extra slack variable <code>w</code> to the dual problem and obtain the following dual problem:</p><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m} &amp; - \frac{1}{2} w^T N w + \sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - a_0 - \sum_{i=1}^m A_i^T y_i - N w &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><p>note that, in the constraint, the sign in front of the <code>N</code> matrix can be changed because <code>w</code> is free and the only other term depending in <code>w</code> is quadratic and symmetric. The sign choice is interesting to keep the dual problem closer to the KKT conditions that reads as follows.</p><h6 id="KKT-6"><a class="docs-heading-anchor" href="#KKT-6">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-6" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[- N x - a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h4 id="MOI-compact-form-3"><a class="docs-heading-anchor" href="#MOI-compact-form-3">MOI compact form</a><a class="docs-heading-anchor-permalink" href="#MOI-compact-form-3" title="Permalink"></a></h4><h5 id="Minimization-7"><a class="docs-heading-anchor" href="#Minimization-7">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-7" title="Permalink"></a></h5><h6 id="Primal-9"><a class="docs-heading-anchor" href="#Primal-9">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-9" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x_1, \dots, x_n} &amp;  \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n x_j^T P_{j,k} x_k + \sum_{j=1}^n a_j^T x_j + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><h6 id="Dual-9"><a class="docs-heading-anchor" href="#Dual-9">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-9" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m, w_1, \ldots, w_n} &amp; - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T P_{j,k} w_k - \sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{k=1}^n P_{j,k} w_k - \sum_{i=1}^m A_{ij}^T y_i + a_j &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-7"><a class="docs-heading-anchor" href="#KKT-7">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-7" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[\sum_{k=1}^n P_{j,k} x_k - \sum_{i=1}^m A_{ij}^T y_i + a_j = u_j, \ \ j = 1 \ldots n\]</div><h5 id="Maximization-7"><a class="docs-heading-anchor" href="#Maximization-7">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-7" title="Permalink"></a></h5><h6 id="Primal-10"><a class="docs-heading-anchor" href="#Primal-10">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-10" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x_1, \dots, x_n} &amp;  \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n x_j^T N_{j,k} x_k + \sum_{j=1}^n a_j^T x_j + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><h6 id="Dual-10"><a class="docs-heading-anchor" href="#Dual-10">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-10" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m, w_1, \ldots, w_n} &amp; - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T N_{j,k} w_k + \sum_{i=1}^m b_i^T y_i + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - \sum_{k=1}^n N_{j,k} w_k - \sum_{i=1}^m A_{ij}^T y_i - a_j &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-8"><a class="docs-heading-anchor" href="#KKT-8">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-8" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[- \sum_{k=1}^n N_{j,k} x_k - \sum_{i=1}^m A_{ij}^T y_i - a_j = u_j, \ \ j = 1 \ldots n\]</div><h3 id="Parametric-quadratic-problems-1"><a class="docs-heading-anchor" href="#Parametric-quadratic-problems-1">Parametric quadratic problems</a><a class="docs-heading-anchor-permalink" href="#Parametric-quadratic-problems-1" title="Permalink"></a></h3><p>Just like the conic linear problems, these quadratic programs can be parametric.</p><h4 id="MOI-standard-form-4"><a class="docs-heading-anchor" href="#MOI-standard-form-4">MOI standard form</a><a class="docs-heading-anchor-permalink" href="#MOI-standard-form-4" title="Permalink"></a></h4><h5 id="Minimization-8"><a class="docs-heading-anchor" href="#Minimization-8">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-8" title="Permalink"></a></h5><h6 id="Primal-11"><a class="docs-heading-anchor" href="#Primal-11">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-11" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} &amp;  + \frac{1}{2} x^T P_1 x + x^T P_2 z + \frac{1}{2} z^T P_3 z
+\\
+&amp; &amp;  + a_0^T x + b_0 + d_0^T z \notag
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i + D_i z &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="Dual-11"><a class="docs-heading-anchor" href="#Dual-11">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-11" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m} &amp; - \frac{1}{2} w^T P_1 w + \frac{1}{2} z^T P_3 z 
+\\
+&amp; &amp; -\sum_{i=1}^m (b_i + D_i z)^T y_i + d_0^T z + b_0 \notag
+\\
+&amp; \;\;\text{s.t.} &amp; a_0 + P_2 z - \sum_{i=1}^m A_i^T y_i + P_1 w &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-9"><a class="docs-heading-anchor" href="#KKT-9">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-9" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[P_1 x + P_2 z + a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h5 id="Maximization-8"><a class="docs-heading-anchor" href="#Maximization-8">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-8" title="Permalink"></a></h5><h6 id="Primal-12"><a class="docs-heading-anchor" href="#Primal-12">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-12" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x \in \mathbb{R}^n} &amp;  + \frac{1}{2} x^T N_1 x + x^T N_2 z + \frac{1}{2} z^T N_3 z
+\\
+&amp; &amp;  + a_0^T x + b_0 + d_0^T z \notag
+\\
+&amp; \;\;\text{s.t.} &amp; A_i x + b_i + D_i z &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="Dual-12"><a class="docs-heading-anchor" href="#Dual-12">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-12" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m} &amp; - \frac{1}{2} w^T N_1 w + \frac{1}{2} z^T N_3 z 
+\\
+&amp; &amp; +\sum_{i=1}^m (b_i + D_i z)^T y_i + d_0^T z + b_0 \notag
+\\
+&amp; \;\;\text{s.t.} &amp; - a_0 - N_2 z - \sum_{i=1}^m A_i^T y_i - N_1 w &amp; = 0
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-10"><a class="docs-heading-anchor" href="#KKT-10">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-10" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[A_i x + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (A_i x + b_i + D_i z) = 0, \ \ i = 1 \ldots m\]</div><ul><li>Stationarity:</li></ul><div>\[- N_1 x - N_2 z - a_0 - \sum_{i=1}^m A_i^T y_i  = 0\]</div><h4 id="MOI-compact-form-4"><a class="docs-heading-anchor" href="#MOI-compact-form-4">MOI compact form</a><a class="docs-heading-anchor-permalink" href="#MOI-compact-form-4" title="Permalink"></a></h4><h5 id="Minimization-9"><a class="docs-heading-anchor" href="#Minimization-9">Minimization</a><a class="docs-heading-anchor-permalink" href="#Minimization-9" title="Permalink"></a></h5><h6 id="Primal-13"><a class="docs-heading-anchor" href="#Primal-13">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-13" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{x_1, \dots, x_n} &amp;  \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n x_j^T P_{j,k} x_k + \sum_{j=1}^n x_j^T P_{j,0} z \\
+&amp; &amp; + \frac{1}{2} z^T P_{0,0} z + \sum_{j=1}^n a_j^T x_j + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + D_i z + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><h6 id="Dual-13"><a class="docs-heading-anchor" href="#Dual-13">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-13" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{y_1, \ldots, y_m, w_1, \ldots, w_n} &amp; - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T P_{j,k} w_k - \sum_{i=1}^m (D_i z + b_i)^T y_i\\
+&amp; &amp; + \frac{1}{2} z^T P_{0,0} z + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{k=1}^n P_{j,k} w_k - \sum_{i=1}^m A_{ij}^T y_i + a_j + P_{j,0} z &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-11"><a class="docs-heading-anchor" href="#KKT-11">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-11" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[\sum_{k=1}^n P_{j,k} x_k - \sum_{i=1}^m A_{ij}^T y_i + a_j + P_{j,0} z  = u_j, \ \ j = 1 \ldots n\]</div><h5 id="Maximization-9"><a class="docs-heading-anchor" href="#Maximization-9">Maximization</a><a class="docs-heading-anchor-permalink" href="#Maximization-9" title="Permalink"></a></h5><h6 id="Primal-14"><a class="docs-heading-anchor" href="#Primal-14">Primal</a><a class="docs-heading-anchor-permalink" href="#Primal-14" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \max_{x_1, \dots, x_n} &amp;  \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n x_j^T N_{j,k} x_k + \sum_{j=1}^n x_j^T N_{j,0} z \\
+&amp; &amp; + \frac{1}{2} z^T N_{0,0} z + \sum_{j=1}^n a_j^T x_j + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; \sum_{j=1}^n A_{ij} x_j + D_i z + b_i &amp; \in \mathcal{C}_i &amp; i = 1 \ldots m
+\\
+&amp; &amp; x_j &amp; \in \mathcal{V}_j &amp; j = 1 \ldots n
+\end{align}\]</div><h6 id="Dual-14"><a class="docs-heading-anchor" href="#Dual-14">Dual</a><a class="docs-heading-anchor-permalink" href="#Dual-14" title="Permalink"></a></h6><div>\[\begin{align}
+&amp; \min_{y_1, \ldots, y_m, w_1, \ldots, w_n} &amp; - \frac{1}{2} \sum_{k=1}^n\sum_{j=1}^n w_j^T N_{j,k} w_k + \sum_{i=1}^m (D_i z + b_i)^T y_i\\
+&amp; &amp; + \frac{1}{2} z^T N_{0,0} z + d^T z + b_0
+\\
+&amp; \;\;\text{s.t.} &amp; - \sum_{k=1}^n N_{j,k} w_k - \sum_{i=1}^m A_{ij}^T y_i - a_j - N_{j,0} z &amp; \in \mathcal{V}_j^* &amp; j = 1 \ldots n
+\\
+&amp; &amp; y_i &amp; \in \mathcal{C}_i^* &amp; i = 1 \ldots m
+\end{align}\]</div><h6 id="KKT-12"><a class="docs-heading-anchor" href="#KKT-12">KKT</a><a class="docs-heading-anchor-permalink" href="#KKT-12" title="Permalink"></a></h6><ul><li>Primal Feasibility:</li></ul><div>\[\sum_{j=1}^n A_{ij} x_j + b_i + D_i z \in \mathcal{C}_i , \ \ i = 1 \ldots m \\
+x_j \in \mathcal{V}_j , \ \ j = 1 \ldots n\]</div><ul><li>Dual Feasibility:</li></ul><div>\[y_i \in \mathcal{C}_i^*, \ \ i = 1 \ldots m \\
+u_j \in \mathcal{V}_j^*, \ \ j = 1 \ldots n\]</div><ul><li>Complementary slackness:</li></ul><div>\[y_i^T (\sum_{j=1}^n A_{ij} x_j + b_i + D_i z) = 0, \ \ i = 1 \ldots m \\
+u_j^T x_j = 0, \ \ j = 1 \ldots n\]</div><ul><li>Stationarity:</li></ul><div>\[- \sum_{k=1}^n N_{j,k} x_k - \sum_{i=1}^m A_{ij}^T y_i - a_j - N_{j,0} z  = u_j, \ \ j = 1 \ldots n\]</div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../examples/">Examples »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 12 April 2025 07:58">Saturday 12 April 2025</span>. Using Julia version 1.10.9.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
