@@ -159,7 +159,7 @@ function MOI.modify(
         constant = -constant
     end
     vi = obj_change.variable
-    if vi in keys(primal_dual_map.constrained_var_idx)
+    if haskey(primal_dual_map.constrained_var_idx, vi)
         ci_primal, index = primal_dual_map.constrained_var_idx[vi]
         ci_dual = primal_dual_map.constrained_var_dual[ci_primal]
         if ci_dual === NO_CONSTRAINT
@@ -328,7 +328,7 @@ function MOI.get(
     vi::MOI.VariableIndex,
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if vi in keys(primal_dual_map.constrained_var_idx)
+    if haskey(primal_dual_map.constrained_var_idx, vi)
         ci_primal, idx = primal_dual_map.constrained_var_idx[vi]
         ci_dual = primal_dual_map.constrained_var_dual[ci_primal]
         return _get_at_index(
@@ -353,7 +353,7 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
+    if haskey(primal_dual_map.constrained_var_dual, ci)
         ci_dual = primal_dual_map.constrained_var_dual[ci]
         if ci_dual === NO_CONSTRAINT
             return MOI.Utilities.eval_variables(
@@ -391,7 +391,7 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
+    if haskey(primal_dual_map.constrained_var_dual, ci)
         ci_dual = primal_dual_map.constrained_var_dual[ci]
         if ci_dual === NO_CONSTRAINT
             return MOI.Utilities.eval_variables(
@@ -424,7 +424,7 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
+    if haskey(primal_dual_map.constrained_var_dual, ci)
         return _get(
             optimizer,
             MOI.ConstraintDual(),
@@ -452,7 +452,7 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
+    if haskey(primal_dual_map.constrained_var_dual, ci)
         return _get(
             optimizer,
             MOI.ConstraintDual(),
