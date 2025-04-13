@@ -80,7 +80,7 @@ function add_dual_equality_constraints(
 
     # Free variables
     for primal_vi in non_parameter_variables
-        if primal_vi in keys(primal_dual_map.constrained_var_idx)
+        if haskey(primal_dual_map.constrained_var_idx, primal_vi)
             continue # constrained variable
         end
         # Add equality constraint
