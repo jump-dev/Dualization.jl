@@ -49,12 +49,12 @@ function _add_constrained_variables(
     )
     for ci in cis
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+        # try to add variables as constrained variables
         if all(
             # no element of the VectorOfVariables is a constrained variable
             # and not a parameter
-            vi ->
-                !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) &&
-                    !(vi in params),
+            !(vi in params) &&
+            vi -> !haskey(m.primal_convar_to_primal_convarcon_and_index, vi),
             f.variables,
         )
             for (i, vi) in enumerate(f.variables)
