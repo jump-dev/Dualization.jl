@@ -4,23 +4,12 @@
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
 # Some useful wrappers
-function get_function(model::MOI.ModelLike, ci::MOI.ConstraintIndex)
-    return MOI.get(model, MOI.ConstraintFunction(), ci)
-end
-
-function get_set(model::MOI.ModelLike, ci::MOI.ConstraintIndex)
-    return MOI.get(model, MOI.ConstraintSet(), ci)
-end
-
-function get_ci_row_dimension(model::MOI.ModelLike, ci::MOI.ConstraintIndex)
-    return MOI.output_dimension(get_function(model, ci))
-end
 
 function get_scalar_term(
     model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.VariableIndex,S},
 ) where {S<:MOI.AbstractScalarSet}
-    return [-MOI.constant(get_set(model, ci))]
+    return [-MOI.constant(MOI.get(model, MOI.ConstraintSet(), ci))]
 end
 
 function get_scalar_term(
@@ -28,8 +17,8 @@ function get_scalar_term(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     return [
-        MOI.constant(get_function(model, ci)) -
-        MOI.constant(get_set(model, ci)),
+        MOI.constant(MOI.get(model, MOI.ConstraintFunction(), ci)) -
+        MOI.constant(MOI.get(model, MOI.ConstraintSet(), ci)),
     ]
 end
 

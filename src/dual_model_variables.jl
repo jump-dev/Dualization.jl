@@ -146,14 +146,14 @@ function add_dual_variable(
     dual_obj_affine_terms::Dict{MOI.VariableIndex,T},
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractFunction,S<:MOI.AbstractSet}
-    vis, con_index = add_dual_cone_constraint(dual_model, primal_model, ci)
+    vis, con_index = _add_dual_cone_constraint(dual_model, primal_model, ci)
     # Add the map of the added dual variable to the relationated constraint
     push!(primal_con_to_dual_var_vec, ci => vis)
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary
-    func = get_function(primal_model, ci)
-    set = get_set(primal_model, ci)
+    func = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     for (i, vi) in enumerate(vis)
         push_to_dual_obj_aff_terms!(
             primal_model,

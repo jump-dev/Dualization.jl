@@ -403,7 +403,7 @@ function fill_scalar_affine_terms!(
     primal_model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.ScalarAffineFunction{T},S},
 ) where {T,S<:Union{MOI.GreaterThan{T},MOI.LessThan{T},MOI.EqualTo{T}}}
-    moi_function = get_function(primal_model, ci)
+    moi_function = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     for term in moi_function.terms
         dual_vi = primal_con_to_dual_var_vec[ci][1] # In this case we only have one vi
         push_to_scalar_affine_terms!(
@@ -434,7 +434,7 @@ function fill_scalar_affine_terms!(
         # the dual constraint associated to that primal variable.
         return
     end
-    moi_function = get_function(primal_model, ci)
+    moi_function = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     dual_vi = dual_var[1] # In this case we only have one vi
     push_to_scalar_affine_terms!(
         scalar_affine_terms[moi_function],
@@ -456,8 +456,8 @@ function fill_scalar_affine_terms!(
     primal_model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.VectorAffineFunction{T},S},
 ) where {T,S<:MOI.AbstractVectorSet}
-    moi_function = get_function(primal_model, ci)
-    set = get_set(primal_model, ci)
+    moi_function = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     for term in moi_function.terms
         dual_vi = primal_con_to_dual_var_vec[ci][term.output_index]
         # term.output_index is the row of the MOI.VectorAffineFunction,
@@ -490,8 +490,8 @@ function fill_scalar_affine_terms!(
         # the dual constraint associated to that primal variable.
         return
     end
-    moi_function = get_function(primal_model, ci)
-    set = get_set(primal_model, ci)
+    moi_function = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+    set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     for (i, variable) in enumerate(moi_function.variables)
         dual_vi = dual_vars[i]
         push_to_scalar_affine_terms!(
