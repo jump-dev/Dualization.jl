@@ -71,7 +71,10 @@ function push_to_primal_con_to_primal_constants_vec!(
     primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}},
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
-    push!(primal_con_to_primal_constants_vec, ci => get_scalar_term(primal_model, ci))
+    push!(
+        primal_con_to_primal_constants_vec,
+        ci => get_scalar_term(primal_model, ci),
+    )
     return
 end
 
@@ -136,7 +139,10 @@ function add_dual_variable(
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
     dual_names::DualNames,
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     dual_obj_affine_terms::Dict{MOI.VariableIndex,T},
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractFunction,S<:MOI.AbstractSet}
@@ -251,7 +257,10 @@ end
 
 # Save mapping between primal parameter and dual parameter
 function push_to_primal_parameter_to_dual_parameter!(
-    primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex},
+    primal_parameter_to_dual_parameter::Dict{
+        MOI.VariableIndex,
+        MOI.VariableIndex,
+    },
     vi::MOI.VariableIndex,
     vi_dual::MOI.VariableIndex,
 )

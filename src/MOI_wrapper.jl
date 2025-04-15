@@ -160,7 +160,8 @@ function MOI.modify(
     end
     vi = obj_change.variable
     if vi in keys(primal_dual_map.primal_convar_to_primal_convarcon_and_index)
-        ci_primal, index = primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi]
+        ci_primal, index =
+            primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi]
         ci_dual = primal_dual_map.primal_convarcon_to_dual_con[ci_primal]
         if ci_dual === NO_CONSTRAINT
             return
@@ -329,7 +330,8 @@ function MOI.get(
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     if vi in keys(primal_dual_map.primal_convar_to_primal_convarcon_and_index)
-        ci_primal, idx = primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi]
+        ci_primal, idx =
+            primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi]
         ci_dual = primal_dual_map.primal_convarcon_to_dual_con[ci_primal]
         return _get_at_index(
             optimizer,

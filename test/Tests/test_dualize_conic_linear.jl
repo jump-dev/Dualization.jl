@@ -81,7 +81,8 @@
         for i in 1:3
             vi = MOI.VariableIndex(i)
             @test !haskey(primal_dual_map.primal_var_to_dual_con, vi)
-            @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi] == (ci_nneg, i)
+            @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi] ==
+                  (ci_nneg, i)
         end
     end
 
@@ -234,11 +235,14 @@
             vi = MOI.VariableIndex(i)
             @test !haskey(primal_var_to_dual_con, vi)
         end
-        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(2)] ==
-              (ci_npos, 1)
-        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(3)] ==
-              (ci_nneg, 1)
-        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(4)] ==
-              (ci_zero, 1)
+        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
+            2,
+        )] == (ci_npos, 1)
+        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
+            3,
+        )] == (ci_nneg, 1)
+        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
+            4,
+        )] == (ci_zero, 1)
     end
 end

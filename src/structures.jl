@@ -113,19 +113,31 @@ Main maps:
     Future name: primal_var_in_quad_obj_to_dual_slack_var
 """
 mutable struct PrimalDualMap{T}
-    primal_convar_to_primal_convarcon_and_index::Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}
+    primal_convar_to_primal_convarcon_and_index::Dict{
+        MOI.VariableIndex,
+        Tuple{MOI.ConstraintIndex,Int},
+    }
     primal_convarcon_to_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}
     primal_var_to_dual_con::Dict{MOI.VariableIndex,MOI.ConstraintIndex}
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    }
     primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}
 
     primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}}
-    primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex}
+    primal_parameter_to_dual_parameter::Dict{
+        MOI.VariableIndex,
+        MOI.VariableIndex,
+    }
     primal_convarcon_to_dual_function::Dict{
         MOI.ConstraintIndex,
         Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
     }
-    primal_var_in_quad_obj_to_dual_slack_var::Dict{MOI.VariableIndex,MOI.VariableIndex}
+    primal_var_in_quad_obj_to_dual_slack_var::Dict{
+        MOI.VariableIndex,
+        MOI.VariableIndex,
+    }
 
     function PrimalDualMap{T}() where {T}
         return new(
@@ -179,7 +191,9 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
 end
 
 function is_empty(primal_dual_map::PrimalDualMap{T}) where {T}
-    return isempty(primal_dual_map.primal_convar_to_primal_convarcon_and_index) &&
+    return isempty(
+               primal_dual_map.primal_convar_to_primal_convarcon_and_index,
+           ) &&
            isempty(primal_dual_map.primal_convarcon_to_dual_con) &&
            isempty(primal_dual_map.primal_convarcon_to_dual_function) &&
            isempty(primal_dual_map.primal_var_to_dual_con) &&

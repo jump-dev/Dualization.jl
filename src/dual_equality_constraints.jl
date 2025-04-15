@@ -80,7 +80,8 @@ function add_dual_equality_constraints(
 
     # Free variables
     for primal_vi in non_parameter_variables
-        if primal_vi in keys(primal_dual_map.primal_convar_to_primal_convarcon_and_index)
+        if primal_vi in
+           keys(primal_dual_map.primal_convar_to_primal_convarcon_and_index)
             continue # constrained variable
         end
         # Add equality constraint
@@ -240,7 +241,10 @@ function add_scalar_affine_terms_from_quad_obj(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_var_in_quad_obj_to_dual_slack_var::Dict{MOI.VariableIndex,MOI.VariableIndex},
+    primal_var_in_quad_obj_to_dual_slack_var::Dict{
+        MOI.VariableIndex,
+        MOI.VariableIndex,
+    },
     primal_objective::PrimalObjective{T},
     sense_change::T,
 ) where {T}
@@ -253,13 +257,15 @@ function add_scalar_affine_terms_from_quad_obj(
                 dual_vi,
             )
         else
-            dual_vi_1 = primal_var_in_quad_obj_to_dual_slack_var[term.variable_1]
+            dual_vi_1 =
+                primal_var_in_quad_obj_to_dual_slack_var[term.variable_1]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_2],
                 -sense_change * MOI.coefficient(term),
                 dual_vi_1,
             )
-            dual_vi_2 = primal_var_in_quad_obj_to_dual_slack_var[term.variable_2]
+            dual_vi_2 =
+                primal_var_in_quad_obj_to_dual_slack_var[term.variable_2]
             push_to_scalar_affine_terms!(
                 scalar_affine_terms[term.variable_1],
                 -sense_change * MOI.coefficient(term),
@@ -275,7 +281,10 @@ function add_scalar_affine_terms_from_quad_params(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex},
+    primal_parameter_to_dual_parameter::Dict{
+        MOI.VariableIndex,
+        MOI.VariableIndex,
+    },
     primal_objective::PrimalObjective{T},
     sense_change::T,
 ) where {T}
@@ -324,7 +333,10 @@ function fill_scalar_affine_terms!(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     primal_model::MOI.ModelLike,
     ::Type{F},
     ::Type{S},
@@ -342,7 +354,10 @@ end
 
 function get_scalar_affine_terms(
     primal_model::MOI.ModelLike,
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     variables::Vector{MOI.VariableIndex},
     con_types::Vector{Tuple{Type,Type}},
     ::Type{T},
@@ -379,7 +394,10 @@ function fill_scalar_affine_terms!(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     primal_model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.ScalarAffineFunction{T},S},
 ) where {T,S<:Union{MOI.GreaterThan{T},MOI.LessThan{T},MOI.EqualTo{T}}}
@@ -400,7 +418,10 @@ function fill_scalar_affine_terms!(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     primal_model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.VariableIndex,S},
 ) where {T,S<:Union{MOI.GreaterThan{T},MOI.LessThan{T},MOI.EqualTo{T}}}
@@ -426,7 +447,10 @@ function fill_scalar_affine_terms!(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     primal_model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.VectorAffineFunction{T},S},
 ) where {T,S<:MOI.AbstractVectorSet}
@@ -450,7 +474,10 @@ function fill_scalar_affine_terms!(
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},
     },
-    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{
+        MOI.ConstraintIndex,
+        Vector{MOI.VariableIndex},
+    },
     primal_model::MOI.ModelLike,
     ci::MOI.ConstraintIndex{MOI.VectorOfVariables,S},
 ) where {T,S<:MOI.AbstractVectorSet}
