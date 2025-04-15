@@ -8,7 +8,7 @@ function _add_dual_equality_constraints(
     primal_model::MOI.ModelLike,
     primal_dual_map::PrimalDualMap,
     dual_names::DualNames,
-    primal_objective::PrimalObjective{T},
+    primal_objective::_PrimalObjective{T},
     con_types::Vector{Tuple{Type,Type}},
     variable_parameters::Vector{MOI.VariableIndex},
 ) where {T}
@@ -34,7 +34,7 @@ function _add_dual_equality_constraints(
     )
 
     # get constants (rhs) of dual constraints from primal objective coefficients
-    scalar_terms = _get_scalar_terms(primal_objective)
+    scalar_terms = _get_dual_constraint_constants(primal_objective)
 
     # Collect affine terms of dual constraints that come from the quadratic
     # part of the primal objective function, and add them into
@@ -248,7 +248,7 @@ function _add_scalar_affine_terms_from_quad_obj(
         MOI.VariableIndex,
         MOI.VariableIndex,
     },
-    primal_objective::PrimalObjective{T},
+    primal_objective::_PrimalObjective{T},
     sense_change::T,
 ) where {T}
     for term in primal_objective.obj.quadratic_terms
@@ -288,7 +288,7 @@ function _add_scalar_affine_terms_from_quad_params(
         MOI.VariableIndex,
         MOI.VariableIndex,
     },
-    primal_objective::PrimalObjective{T},
+    primal_objective::_PrimalObjective{T},
     sense_change::T,
 ) where {T}
     for (key, val) in primal_objective.quad_cross_parameters
@@ -319,9 +319,11 @@ function _set_dual_constraint_name(
     return
 end
 
-function _get_scalar_terms(primal_objective::PrimalObjective{T}) where {T}
+function _get_dual_constraint_constants(
+    primal_objective::_PrimalObjective{T},
+) where {T}
     scalar_terms = Dict{MOI.VariableIndex,T}()
-    for term in get_affine_terms(primal_objective)
+    for term in primal_objective.obj.affine_terms
         if haskey(scalar_terms, term.variable)
             scalar_terms[term.variable] += MOI.coefficient(term)
         else

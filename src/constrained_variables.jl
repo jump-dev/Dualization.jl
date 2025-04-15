@@ -3,7 +3,7 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-function _add_all_constrained_variables(
+function _select_constrained_variables(
     dual_problem,
     primal_model,
     variable_parameters,
@@ -15,21 +15,12 @@ function _add_all_constrained_variables(
         )
     params = Set(variable_parameters)
     for S in single_or_vector_variables_types
-        if S <: MOI.AbstractVectorSet
-            _add_constrained_variables(
-                dual_problem.primal_dual_map,
-                primal_model,
-                S,
-                params,
-            )
-        elseif S <: MOI.AbstractScalarSet
-            _add_constrained_variable(
-                dual_problem.primal_dual_map,
-                primal_model,
-                S,
-                params,
-            )
-        end
+        _select_constrained_variables(
+            dual_problem.primal_dual_map,
+            primal_model,
+            S,
+            params,
+        )
     end
     return
 end
@@ -37,7 +28,7 @@ end
 const NO_CONSTRAINT = MOI.ConstraintIndex{Nothing,Nothing}(0)
 
 # Function barrier for the type instability of `F` and `S`.
-function _add_constrained_variables(
+function _select_constrained_variables(
     m::PrimalDualMap,
     primal_model,
     ::Type{S},
@@ -69,7 +60,7 @@ function _add_constrained_variables(
     return
 end
 
-function _add_constrained_variable(
+function _select_constrained_variables(
     m::PrimalDualMap,
     primal_model,
     ::Type{S},
