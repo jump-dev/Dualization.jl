@@ -259,20 +259,20 @@ function MOI.get(
                 optimizer.dual_problem.dual_model,
                 MOI.ConstraintDual(),
                 ci_dual,
-            )[idx]::Number
+            )[idx]
         else
             return MOI.get(
                 optimizer.dual_problem.dual_model,
                 MOI.ConstraintDual(),
                 ci_dual,
-            )::Number
+            )
         end
     else
         return -MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.ConstraintDual(),
             primal_dual_map.primal_var_to_dual_con[vi],
-        )::Number
+        )
     end
 end
 
@@ -310,7 +310,7 @@ function MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.VariablePrimal(),
             primal_dual_map.primal_con_to_dual_var_vec[ci][],
-        )::Number
+        )
     end
 end
 
@@ -362,7 +362,7 @@ function MOI.get(
                 optimizer.dual_problem.dual_model,
                 MOI.ConstraintDual(),
                 ci_dual,
-            )::Number
+            )
         end
     else
         primal_ci_constant =

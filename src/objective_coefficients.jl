@@ -32,6 +32,7 @@ function _scalar_quadratic_function(
 ) where {T}
     return MOI.Utilities.canonical(func)
 end
+
 function _scalar_quadratic_function(
     func::MOI.ScalarAffineFunction{T},
     ::Type{T},
@@ -244,7 +245,7 @@ function _get_dual_objective(
     end
 
     # parametric part
-    # if some varaibles were marked to be parameters then their final
+    # if some variables were marked to be parameters then their final
     # processing occurs here.
     if nothing !== primal_objective.obj_parametric
 
