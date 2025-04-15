@@ -75,27 +75,32 @@ Main maps:
   * `primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}`:
     maps primal constraint indices to vectors of dual variable indices. For
     scalar constraints those vectors will be single element vectors.
-    Primal Constrained variables constraints (the main ones) are not in this
-    map.
+    Primal constrained variables constraints (the main ones) are not in this
+    map. However, `VariableIndex`-in-set and `VectorOfVariables`-in-set might
+    appear in this map if they were not chosen as the main ones.
 
-    note: possibly change this to
+    note: possibly change this to:
+    primal_con_to_dual_var_vec_and_convarcon
 
-  * `primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`: maps
-    primal constraints to dual constrained variable. If the primal
+  * `primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`:
+    maps regular primal constraints to dual constrained variable. If the primal
     constraint's set is EqualTo or Zeros, no constraint is added in the dual
     variable (the dual variable is said to be free).
+    Primal constrained variables constraints (the main ones) are not in this
+    map. However, `VariableIndex`-in-set and `VectorOfVariables`-in-set might
+    appear in this map if they were not chosen as the main ones.
     The keys are similar to the (# primal_con_to_dual_var_vec) map, except
     that `VariableIndex`-in-`EqualTo(zero(T))` and `VectorOfVariables`-in-`Zeros`
-    are not in this map.
+    are not in this map, as the dual constraint would belong to the `Reals` set,
+    and would be innocuous (hence, not added).
 
   Additional helper maps:
 
   * `primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}}`: maps primal
     constraints to their respective constants, which might be inside the set.
     This map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
-    that requires extra information in the case that the scalar set constrains
+    that requires extra information in the case that the scalar set constains
     a constant (`EqualtTo`, `GreaterThan`, `LessThan`).
-    # TODO is the vec ever really used???
 
   * `primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex}`: maps
     parameters in the primal to parameters in the dual model.

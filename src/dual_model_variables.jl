@@ -13,7 +13,7 @@ function _add_dual_vars_in_dual_cones(
     ::Type{S},
 ) where {T,F,S}
     for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
-        # If `F` not one of these two, we can skip the `in` check.
+        # If `F` not one of these two, we can skip the `haskey` check.
         if (F === MOI.VectorOfVariables || F === MOI.VariableIndex) &&
            haskey(primal_dual_map.primal_convarcon_to_dual_con, ci)
             continue
