@@ -89,9 +89,9 @@ function dualize(
         get_primal_objective(primal_model, variable_parameters, T)
 
     # Cache information of which primal variables are `constrained_variables`
-    # creating a map: constrained_var_idx, from original primal vars to original
+    # creating a map: primal_convar_to_primal_convarcon_and_index, from original primal vars to original
     # constrains and their internal index (if vector constrains), 1 otherwise.
-    # Also, initializes the map: `constrained_var_dual`, from original primal ci
+    # Also, initializes the map: `primal_convarcon_to_dual_con`, from original primal ci
     # to the dual constraint (latter is initilized as empty at this point).
     # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
     # the respective primal variable will not be a constrained variable (with
@@ -112,14 +112,14 @@ function dualize(
     # * creates the dual variable associated with the primal constraint
     # * fills `dual_obj_affine_terms`, since we are already looping through
     #   all constraints that might have constants.
-    # * fills `primal_con_dual_var` mapping the primal constraint and the dual
+    # * fills `primal_con_to_dual_var_vec` mapping the primal constraint and the dual
     #   variable
-    # * fills `primal_con_dual_con` to map the primal constraint to a
+    # * fills `primal_con_to_dual_convarcon` to map the primal constraint to a
     #   constraint in the dual variable (if there is such constraint the dual
     #   dual variable is said to be constrained). If the primal constraint's set
     #   is EqualTo or Zeros, no constraint is added in the dual variable (the
     #   dual variable is said to be free).
-    # * fills `primal_con_constants` mapping primal constraints to their
+    # * fills `primal_con_to_primal_constants_vec` mapping primal constraints to their
     #   respective constants, which might be inside the set.
     #   this map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
     #   that requires extra information in the case that the scalar set
@@ -134,7 +134,7 @@ function dualize(
 
     # Creates variables in the dual problem that represent parameters in the
     # primal model.
-    # Fills `primal_parameter` mapping parameters in the primal to parameters
+    # Fills `primal_parameter_to_dual_parameter` mapping parameters in the primal to parameters
     # in the dual model.
     add_primal_parameter_vars(
         dual_problem.dual_model,
@@ -149,7 +149,7 @@ function dualize(
     # Add dual slack variables that are associated to the primal quadratic terms
     # All primal variables that appear in the objective products will have an
     # associated dual slack variable that is created here.
-    # also, `primal_var_dual_quad_slack` is filled, mapping primal variables
+    # also, `primal_var_in_quad_obj_to_dual_slack_var` is filled, mapping primal variables
     # (that appear in quadritc objective terms) to dual "slack" variables.
     add_quadratic_slack_vars(
         dual_problem.dual_model,

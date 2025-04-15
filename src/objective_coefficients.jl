@@ -256,8 +256,8 @@ function get_dual_objective(
             quad_terms,
             MOI.ScalarQuadraticTerm{T}(
                 -MOI.coefficient(term),
-                map.primal_var_dual_quad_slack[term.variable_1],
-                map.primal_var_dual_quad_slack[term.variable_2],
+                map.primal_var_in_quad_obj_to_dual_slack_var[term.variable_1],
+                map.primal_var_in_quad_obj_to_dual_slack_var[term.variable_2],
             ),
         )
     end
@@ -275,7 +275,7 @@ function get_dual_objective(
                 lin_terms,
                 MOI.ScalarAffineTerm{T}(
                     MOI.coefficient(term),
-                    map.primal_parameter[term.variable],
+                    map.primal_parameter_to_dual_parameter[term.variable],
                 ),
             )
         end
@@ -288,8 +288,8 @@ function get_dual_objective(
                 quad_terms,
                 MOI.ScalarQuadraticTerm{T}(
                     MOI.coefficient(term),
-                    map.primal_parameter[term.variable_1],
-                    map.primal_parameter[term.variable_2],
+                    map.primal_parameter_to_dual_parameter[term.variable_1],
+                    map.primal_parameter_to_dual_parameter[term.variable_2],
                 ),
             )
         end
@@ -301,7 +301,7 @@ function get_dual_objective(
         # and, thus, the go to the obj of the dual.
         # TODO? set_dot
         for vi in variable_parameters
-            param = map.primal_parameter[vi]
+            param = map.primal_parameter_to_dual_parameter[vi]
             for term in scalar_affine_terms[vi]
                 push!(
                     quad_terms,

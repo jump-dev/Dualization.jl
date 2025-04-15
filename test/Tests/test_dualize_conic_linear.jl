@@ -55,7 +55,7 @@
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
               MOI.Nonnegatives(3)
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
+        primal_con_to_dual_var_vec = primal_dual_map.primal_con_to_dual_var_vec
         ci_zero = first(
             MOI.get(
                 primal_model,
@@ -65,7 +65,7 @@
                 }(),
             ),
         )
-        @test primal_con_dual_var[ci_zero] == MOI.VariableIndex.(1:2)
+        @test primal_con_to_dual_var_vec[ci_zero] == MOI.VariableIndex.(1:2)
         ci_nneg = first(
             MOI.get(
                 primal_model,
@@ -75,13 +75,13 @@
                 }(),
             ),
         )
-        @test !haskey(primal_con_dual_var, ci_nneg)
-        @test primal_dual_map.constrained_var_dual[ci_nneg] == ci
+        @test !haskey(primal_con_to_dual_var_vec, ci_nneg)
+        @test primal_dual_map.primal_convarcon_to_dual_con[ci_nneg] == ci
 
         for i in 1:3
             vi = MOI.VariableIndex(i)
-            @test !haskey(primal_dual_map.primal_var_dual_con, vi)
-            @test primal_dual_map.constrained_var_idx[vi] == (ci_nneg, i)
+            @test !haskey(primal_dual_map.primal_var_to_dual_con, vi)
+            @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi] == (ci_nneg, i)
         end
     end
 
@@ -187,14 +187,14 @@
         @test MOI.coefficient.(eq_con3_fun.terms) == -[1.0]
         @test MOI.constant(eq_con3_fun) == [-4.0]
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
+        primal_con_to_dual_var_vec = primal_dual_map.primal_con_to_dual_var_vec
         ci_zero = first(
             MOI.get(
                 primal_model,
                 MOI.ListOfConstraintIndices{MOI.VectorOfVariables,MOI.Zeros}(),
             ),
         )
-        @test !haskey(primal_con_dual_var, ci_zero)
+        @test !haskey(primal_con_to_dual_var_vec, ci_zero)
         ci_nneg = first(
             MOI.get(
                 primal_model,
@@ -204,8 +204,8 @@
                 }(),
             ),
         )
-        @test !haskey(primal_con_dual_var, ci_nneg)
-        @test primal_dual_map.constrained_var_dual[ci_nneg] == ci_nn
+        @test !haskey(primal_con_to_dual_var_vec, ci_nneg)
+        @test primal_dual_map.primal_convarcon_to_dual_con[ci_nneg] == ci_nn
         ci_npos = first(
             MOI.get(
                 primal_model,
@@ -215,8 +215,8 @@
                 }(),
             ),
         )
-        @test !haskey(primal_con_dual_var, ci_npos)
-        @test primal_dual_map.constrained_var_dual[ci_npos] == ci_np
+        @test !haskey(primal_con_to_dual_var_vec, ci_npos)
+        @test primal_dual_map.primal_convarcon_to_dual_con[ci_npos] == ci_np
         ci_aff_zero = first(
             MOI.get(
                 primal_model,
@@ -226,19 +226,19 @@
                 }(),
             ),
         )
-        @test primal_con_dual_var[ci_aff_zero] == MOI.VariableIndex.(1:3)
+        @test primal_con_to_dual_var_vec[ci_aff_zero] == MOI.VariableIndex.(1:3)
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[MOI.VariableIndex(1)] == ci_eq
+        primal_var_to_dual_con = primal_dual_map.primal_var_to_dual_con
+        @test primal_var_to_dual_con[MOI.VariableIndex(1)] == ci_eq
         for i in 2:4
             vi = MOI.VariableIndex(i)
-            @test !haskey(primal_var_dual_con, vi)
+            @test !haskey(primal_var_to_dual_con, vi)
         end
-        @test primal_dual_map.constrained_var_idx[MOI.VariableIndex(2)] ==
+        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(2)] ==
               (ci_npos, 1)
-        @test primal_dual_map.constrained_var_idx[MOI.VariableIndex(3)] ==
+        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(3)] ==
               (ci_nneg, 1)
-        @test primal_dual_map.constrained_var_idx[MOI.VariableIndex(4)] ==
+        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(4)] ==
               (ci_zero, 1)
     end
 end

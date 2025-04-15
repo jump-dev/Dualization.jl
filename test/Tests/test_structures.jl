@@ -7,7 +7,7 @@
     primal_dual_map = Dualization.PrimalDualMap{Float64}()
     @test Dualization.is_empty(primal_dual_map)
     push!(
-        primal_dual_map.primal_var_dual_con,
+        primal_dual_map.primal_var_to_dual_con,
         MOI.VariableIndex(1) =>
             MOI.ConstraintIndex{MOI.VariableIndex,MOI.EqualTo}(1),
     )

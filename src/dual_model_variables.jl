@@ -15,28 +15,28 @@ function _add_dual_vars_in_dual_cones(
     for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
         # If `F` not one of these two, we can skip the `in` check.
         if (F === MOI.VectorOfVariables || F === MOI.VariableIndex) &&
-           haskey(primal_dual_map.constrained_var_dual, ci)
+           haskey(primal_dual_map.primal_convarcon_to_dual_con, ci)
             continue
         end
         # Add dual variable to dual cone
         # Fill a dual objective dictionary
-        # Fill the primal_con_dual_var dictionary
+        # Fill the primal_con_to_dual_var_vec dictionary
         ci_dual = add_dual_variable(
             dual_model,
             primal_model,
             dual_names,
-            primal_dual_map.primal_con_dual_var,
+            primal_dual_map.primal_con_to_dual_var_vec,
             dual_obj_affine_terms,
             ci,
         )
-        push_to_primal_con_dual_con!(
-            primal_dual_map.primal_con_dual_con,
+        push_to_primal_con_to_dual_convarcon!(
+            primal_dual_map.primal_con_to_dual_convarcon,
             ci,
             ci_dual,
         )
-        push_to_primal_con_constants!(
+        push_to_primal_con_to_primal_constants_vec!(
             primal_model,
-            primal_dual_map.primal_con_constants,
+            primal_dual_map.primal_con_to_primal_constants_vec,
             ci,
         )
     end
@@ -65,19 +65,19 @@ function add_dual_vars_in_dual_cones(
     return dual_obj_affine_terms
 end
 
-# Utils for primal_con_constants dict
-function push_to_primal_con_constants!(
+# Utils for primal_con_to_primal_constants_vec dict
+function push_to_primal_con_to_primal_constants_vec!(
     primal_model::MOI.ModelLike,
-    primal_con_constants::Dict{MOI.ConstraintIndex,Vector{T}},
+    primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}},
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
-    push!(primal_con_constants, ci => get_scalar_term(primal_model, ci))
+    push!(primal_con_to_primal_constants_vec, ci => get_scalar_term(primal_model, ci))
     return
 end
 
-function push_to_primal_con_constants!(
+function push_to_primal_con_to_primal_constants_vec!(
     primal_model::MOI.ModelLike,
-    primal_con_constants::Dict{MOI.ConstraintIndex,Vector{T}},
+    primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}},
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     # No constants need to be passed to the DualOptimizer in this case,
@@ -87,18 +87,18 @@ function push_to_primal_con_constants!(
     return
 end
 
-# Utils for primal_con_dual_con dict
-function push_to_primal_con_dual_con!(
-    primal_con_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex},
+# Utils for primal_con_to_dual_convarcon dict
+function push_to_primal_con_to_dual_convarcon!(
+    primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex},
     ci::MOI.ConstraintIndex,
     ci_dual::MOI.ConstraintIndex,
 )
-    push!(primal_con_dual_con, ci => ci_dual)
+    push!(primal_con_to_dual_convarcon, ci => ci_dual)
     return
 end
 
-function push_to_primal_con_dual_con!(
-    primal_con_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex},
+function push_to_primal_con_to_dual_convarcon!(
+    primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex},
     ci::MOI.ConstraintIndex,
     ci_dual::Nothing,
 )
@@ -136,13 +136,13 @@ function add_dual_variable(
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
     dual_names::DualNames,
-    primal_con_dual_var::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
+    primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}},
     dual_obj_affine_terms::Dict{MOI.VariableIndex,T},
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractFunction,S<:MOI.AbstractSet}
     vis, con_index = add_dual_cone_constraint(dual_model, primal_model, ci)
     # Add the map of the added dual variable to the relationated constraint
-    push!(primal_con_dual_var, ci => vis)
+    push!(primal_con_to_dual_var_vec, ci => vis)
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary
@@ -205,8 +205,8 @@ function add_primal_parameter_vars(
                 else
                     push!(added, ind)
                     vi = MOI.add_variable(dual_model)
-                    push_to_primal_parameter!(
-                        primal_dual_map.primal_parameter,
+                    push_to_primal_parameter_to_dual_parameter!(
+                        primal_dual_map.primal_parameter_to_dual_parameter,
                         ind,
                         vi,
                     )
@@ -226,8 +226,8 @@ function add_primal_parameter_vars(
     elseif length(variable_parameters) > 0
         vis = MOI.add_variables(dual_model, length(variable_parameters))
         for i in eachindex(vis)
-            push_to_primal_parameter!(
-                primal_dual_map.primal_parameter,
+            push_to_primal_parameter_to_dual_parameter!(
+                primal_dual_map.primal_parameter_to_dual_parameter,
                 variable_parameters[i],
                 vis[i],
             )
@@ -250,12 +250,12 @@ function add_primal_parameter_vars(
 end
 
 # Save mapping between primal parameter and dual parameter
-function push_to_primal_parameter!(
-    primal_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex},
+function push_to_primal_parameter_to_dual_parameter!(
+    primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex},
     vi::MOI.VariableIndex,
     vi_dual::MOI.VariableIndex,
 )
-    push!(primal_parameter, vi => vi_dual)
+    push!(primal_parameter_to_dual_parameter, vi => vi_dual)
     return
 end
 
@@ -291,7 +291,7 @@ function add_quadratic_slack_vars(
                 push!(added, ind)
                 vi = MOI.add_variable(dual_model)
                 push_to_quad_slack!(
-                    primal_dual_map.primal_var_dual_quad_slack,
+                    primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var,
                     ind,
                     vi,
                 )

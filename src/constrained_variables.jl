@@ -52,15 +52,15 @@ function _add_constrained_variables(
         if all(
             # no element of the VectorOfVariables is a constrained variable
             # and not a parameter
-            vi -> !haskey(m.constrained_var_idx, vi) && !(vi in params),
+            vi -> !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) && !(vi in params),
             f.variables,
         )
             for (i, vi) in enumerate(f.variables)
-                m.constrained_var_idx[vi] = (ci, i)
+                m.primal_convar_to_primal_convarcon_and_index[vi] = (ci, i)
             end
             # Placeholder to indicate this constraint is part of constrained variables,
             # it will be replaced later with a dual constraints
-            m.constrained_var_dual[ci] = NO_CONSTRAINT
+            m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
         end
     end
     return
@@ -80,15 +80,15 @@ function _add_constrained_variable(
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
         # no element of the VectorOfVariables is a constrained variable
         # and not a parameter
-        if !haskey(m.constrained_var_idx, f) && !(f in params)
+        if !haskey(m.primal_convar_to_primal_convarcon_and_index, f) && !(f in params)
             set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
             if !iszero(MOI.constant(set))
                 continue
             end
-            m.constrained_var_idx[f] = (ci, 1)
+            m.primal_convar_to_primal_convarcon_and_index[f] = (ci, 1)
             # Placeholder to indicate this constraint is part of constrained variables,
             # it will be replaced later with a dual constraints
-            m.constrained_var_dual[ci] = NO_CONSTRAINT
+            m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
         end
     end
     return
