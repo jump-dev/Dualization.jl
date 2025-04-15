@@ -127,4 +127,18 @@
                   DualOptimizer{Float32,Caching_OptimizerType}
         end
     end
+
+    @testset "Start" begin
+        model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
+        x = MOI.add_variable(model)
+        c = MOI.add_constraint(model, 2.0 * x, MOI.GreaterThan(0.0))
+        MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+        MOI.set(model, MOI.VariablePrimalStart(), x, 1.0)
+        MOI.set(model, MOI.ConstraintPrimalStart(), c, 3.0)
+        MOI.set(model, MOI.ConstraintDualStart(), c, 4.0)
+        dual_problem = Dualization.DualProblem{Float64}(TestModel{Float64}())
+        OptimizerType = typeof(dual_problem.dual_model)
+        dual = DualOptimizer{Float64,OptimizerType}(dual_problem)
+        index_map = MOI.copy_to(dual, model)
+    end
 end
