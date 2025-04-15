@@ -97,7 +97,7 @@ function dualize(
     # the respective primal variable will not be a constrained variable (with
     # respect to that constraint).
     if consider_constrained_variables
-        add_constrained_variables(
+        _add_all_constrained_variables(
             dual_problem,
             primal_model,
             variable_parameters,
@@ -167,7 +167,7 @@ function dualize(
     # returns `scalar_affine_terms`
     # because the terms associated to variables that are parameters will be used
     # in `get_dual_objective`
-    scalar_affine_terms = add_dual_equality_constraints(
+    scalar_affine_terms = _add_dual_equality_constraints(
         dual_problem.dual_model,
         primal_model,
         dual_problem.primal_dual_map,

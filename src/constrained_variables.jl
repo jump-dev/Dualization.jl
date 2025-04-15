@@ -3,7 +3,7 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-function add_constrained_variables(
+function _add_all_constrained_variables(
     dual_problem,
     primal_model,
     variable_parameters,
@@ -53,8 +53,9 @@ function _add_constrained_variables(
         if all(
             # no element of the VectorOfVariables is a constrained variable
             # and not a parameter
-            !(vi in params) &&
-            vi -> !haskey(m.primal_convar_to_primal_convarcon_and_index, vi),
+            vi ->
+                !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) &&
+                    !(vi in params),
             f.variables,
         )
             for (i, vi) in enumerate(f.variables)
