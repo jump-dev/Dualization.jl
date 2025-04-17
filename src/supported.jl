@@ -8,6 +8,11 @@
 
 Returns `true` if `Function-in-Set` is supported for Dualization and throws an
 error if it is not.
+
+    supported_constraints(F::MOI.AbstractFunction, S::MOI.AbstractSet)
+
+Returns `true` if `Function-in-Set` is supported for Dualization and `false`
+if it is not.
 """
 function supported_constraints(con_types::Vector{Tuple{Type,Type}})
     for (F, S) in con_types
@@ -18,7 +23,7 @@ function supported_constraints(con_types::Vector{Tuple{Type,Type}})
             )
         end
     end
-    return
+    return true
 end
 
 supported_constraint(::Type, ::Type) = false
@@ -42,19 +47,24 @@ end
 
 Returns `true` if `MOI.ObjectiveFunctionType()` is supported for Dualization and
 throws an error if it is not.
+
+    supported_objective(obj_func_type::Type)
+
+Returns `true` if `obj_func_type` is supported for Dualization and throws an
+error if it is not.
 """
 function supported_objective(primal_model::MOI.ModelLike)
     obj_func_type = MOI.get(primal_model, MOI.ObjectiveFunctionType())
-    if !supported_obj(obj_func_type)
+    if !supported_objective(obj_func_type)
         error("Objective functions of type $obj_func_type are not implemented")
     end
-    return
+    return true
 end
 
-supported_obj(::Type) = false
+supported_objective(::Type) = false
 
-supported_obj(::Type{MOI.VariableIndex}) = true
+supported_objective(::Type{MOI.VariableIndex}) = true
 
-supported_obj(::Type{<:MOI.ScalarAffineFunction}) = true
+supported_objective(::Type{<:MOI.ScalarAffineFunction}) = true
 
-supported_obj(::Type{<:MOI.ScalarQuadraticFunction}) = true
+supported_objective(::Type{<:MOI.ScalarQuadraticFunction}) = true

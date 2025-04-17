@@ -3,7 +3,7 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-function add_constrained_variables(
+function _select_constrained_variables(
     dual_problem,
     primal_model,
     variable_parameters,
@@ -15,21 +15,12 @@ function add_constrained_variables(
         )
     params = Set(variable_parameters)
     for S in single_or_vector_variables_types
-        if S <: MOI.AbstractVectorSet
-            _add_constrained_variables(
-                dual_problem.primal_dual_map,
-                primal_model,
-                S,
-                params,
-            )
-        elseif S <: MOI.AbstractScalarSet
-            _add_constrained_variable(
-                dual_problem.primal_dual_map,
-                primal_model,
-                S,
-                params,
-            )
-        end
+        _select_constrained_variables(
+            dual_problem.primal_dual_map,
+            primal_model,
+            S,
+            params,
+        )
     end
     return
 end
@@ -37,7 +28,7 @@ end
 const NO_CONSTRAINT = MOI.ConstraintIndex{Nothing,Nothing}(0)
 
 # Function barrier for the type instability of `F` and `S`.
-function _add_constrained_variables(
+function _select_constrained_variables(
     m::PrimalDualMap,
     primal_model,
     ::Type{S},
@@ -49,22 +40,27 @@ function _add_constrained_variables(
     )
     for ci in cis
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+        # try to add variables as constrained variables
         if all(
-            vi -> !haskey(m.constrained_var_idx, vi) && !(vi in params),
+            # no element of the VectorOfVariables is a constrained variable
+            # and not a parameter
+            vi ->
+                !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) &&
+                    !(vi in params),
             f.variables,
         )
             for (i, vi) in enumerate(f.variables)
-                m.constrained_var_idx[vi] = (ci, i)
+                m.primal_convar_to_primal_convarcon_and_index[vi] = (ci, i)
             end
             # Placeholder to indicate this constraint is part of constrained variables,
             # it will be replaced later with a dual constraints
-            m.constrained_var_dual[ci] = NO_CONSTRAINT
+            m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
         end
     end
     return
 end
 
-function _add_constrained_variable(
+function _select_constrained_variables(
     m::PrimalDualMap,
     primal_model,
     ::Type{S},
@@ -76,15 +72,18 @@ function _add_constrained_variable(
     )
     for ci in cis
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
-        if !haskey(m.constrained_var_idx, f) && !(f in params)
+        # no element of the VectorOfVariables is a constrained variable
+        # and not a parameter
+        if !haskey(m.primal_convar_to_primal_convarcon_and_index, f) &&
+           !(f in params)
             set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
             if !iszero(MOI.constant(set))
                 continue
             end
-            m.constrained_var_idx[f] = (ci, 1)
+            m.primal_convar_to_primal_convarcon_and_index[f] = (ci, 1)
             # Placeholder to indicate this constraint is part of constrained variables,
             # it will be replaced later with a dual constraints
-            m.constrained_var_dual[ci] = NO_CONSTRAINT
+            m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
         end
     end
     return

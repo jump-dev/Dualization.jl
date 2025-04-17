@@ -124,46 +124,50 @@
         @test MOI.constant.(eq_con3_fun) == 0.0
         @test MOI.constant(eq_con3_set) == 0.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        primal_con_to_dual_var_vec = primal_dual_map.primal_con_to_dual_var_vec
+        @test primal_con_to_dual_var_vec[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.GreaterThan{Float64},
         }(
             1,
         )] == [MOI.VariableIndex(1)]
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        @test primal_con_to_dual_var_vec[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.GreaterThan{Float64},
         }(
             2,
         )] == [MOI.VariableIndex(2)]
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[MOI.VariableIndex(1)] == MOI.ConstraintIndex{
+        primal_var_to_dual_con = primal_dual_map.primal_var_to_dual_con
+        @test primal_var_to_dual_con[MOI.VariableIndex(1)] ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             1,
         )
-        @test primal_var_dual_con[MOI.VariableIndex(2)] == MOI.ConstraintIndex{
+        @test primal_var_to_dual_con[MOI.VariableIndex(2)] ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             2,
         )
-        @test primal_var_dual_con[MOI.VariableIndex(3)] == MOI.ConstraintIndex{
+        @test primal_var_to_dual_con[MOI.VariableIndex(3)] ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             3,
         )
 
-        primal_var_dual_quad_slack = primal_dual_map.primal_var_dual_quad_slack
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(1)] ==
+        primal_var_in_quad_obj_to_dual_slack_var =
+            primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(1)] ==
               MOI.VariableIndex(2 + 1)
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(2)] ==
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(2)] ==
               MOI.VariableIndex(2 + 2)
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(3)] ==
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(3)] ==
               MOI.VariableIndex(2 + 3)
     end
     @testset "qp2_test" begin

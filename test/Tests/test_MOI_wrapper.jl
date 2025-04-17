@@ -108,12 +108,12 @@
         end
     end
 
-    @testset "dual_status" begin
-        @test Dualization.dual_status(MOI.INFEASIBLE) == MOI.DUAL_INFEASIBLE
-        @test Dualization.dual_status(MOI.DUAL_INFEASIBLE) == MOI.INFEASIBLE
-        @test Dualization.dual_status(MOI.ALMOST_INFEASIBLE) ==
+    @testset "_dual_status" begin
+        @test Dualization._dual_status(MOI.INFEASIBLE) == MOI.DUAL_INFEASIBLE
+        @test Dualization._dual_status(MOI.DUAL_INFEASIBLE) == MOI.INFEASIBLE
+        @test Dualization._dual_status(MOI.ALMOST_INFEASIBLE) ==
               MOI.ALMOST_DUAL_INFEASIBLE
-        @test Dualization.dual_status(MOI.ALMOST_DUAL_INFEASIBLE) ==
+        @test Dualization._dual_status(MOI.ALMOST_DUAL_INFEASIBLE) ==
               MOI.ALMOST_INFEASIBLE
     end
 
