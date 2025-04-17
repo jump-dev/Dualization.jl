@@ -45,10 +45,6 @@ Main maps:
     their internal index from 1 to dimension(set) (if vector constraints:
     VectorOfVariables-in-Set), 1 otherwise (scalar: VariableIndex-in-Set).
 
-    note: this set is important to dualization can keep track of what it 
-    decided to define as a constrained variable.
-    - consider index 0 to highlight scalars
-
   * `primal_convarcon_to_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`: maps
     the primal constraint index of constrained variables to the dual
     model's constraint index of the associated dual constraint. This dual
@@ -57,20 +53,11 @@ Main maps:
     are not in this map, as they are not dualized (See
     primal_convarcon_to_dual_function).
 
-    note: from the above two maps, we can get primal_convar_to_dual_con_and_index
-
   * `primal_var_to_dual_con::Dict{MOI.VariableIndex,MOI.ConstraintIndex}`: maps
     "free" primal variables to their associated dual (equality) constraints.
     Free variables as opposed to constrained variables. Note that Dualization
     will select automatically which variables are free and which are
     constrained.
-
-    note: from the above three maps, we can get primal_var_to_dual_con_and_index
-
-    # TODO: idea, for simmetry, keep only
-    - primal_convarcon_to_dual_con (as is), analogous to primal_con_to_dual_convarcon
-    - primal_var_to_dual_con_and_index, analogous to primal_con_to_dual_var_vec
-    -- the second implicitly tracks which vars were decided to be convar's
 
   * `primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}`:
     maps primal constraint indices to vectors of dual variable indices. For
@@ -78,9 +65,6 @@ Main maps:
     Primal constrained variables constraints (the main ones) are not in this
     map. However, `VariableIndex`-in-set and `VectorOfVariables`-in-set might
     appear in this map if they were not chosen as the main ones.
-
-    note: possibly change this to:
-    primal_con_to_dual_var_vec_and_convarcon
 
   * `primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`:
     maps regular primal constraints to dual constrained variable. If the primal

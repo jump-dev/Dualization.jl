@@ -46,7 +46,7 @@ function _select_constrained_variables(
             # and not a parameter
             vi ->
                 !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) &&
-                    !(vi in params),
+                !(vi in params),
             f.variables,
         )
             for (i, vi) in enumerate(f.variables)
