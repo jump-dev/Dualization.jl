@@ -81,10 +81,11 @@ function _add_dual_equality_constraints(
 
     # Free variables
     for primal_vi in non_parameter_variables
-        if haskey(
-            primal_dual_map.primal_convar_to_primal_convarcon_and_index,
-            primal_vi,
-        )
+        if is_constrained(primal_dual_map, primal_vi)
+            #     haskey(
+            #     primal_dual_map.primal_convar_to_primal_convarcon_and_index,
+            #     primal_vi,
+            # )
             continue # constrained variable
         end
         # Add equality constraint

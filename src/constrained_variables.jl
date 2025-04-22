@@ -45,16 +45,21 @@ function _select_constrained_variables(
             # no element of the VectorOfVariables is a constrained variable
             # and not a parameter
             vi ->
-                !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) &&
-                !(vi in params),
+                # !haskey(m.primal_convar_to_primal_convarcon_and_index, vi) &&
+                !is_constrained(m, vi) && !(vi in params),
             f.variables,
         )
+            # for (i, vi) in enumerate(f.variables)
+            #     m.primal_convar_to_primal_convarcon_and_index[vi] = (ci, i)
+            # end
+            # # Placeholder to indicate this constraint is part of constrained variables,
+            # # it will be replaced later with a dual constraints
+            # m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
+            #
             for (i, vi) in enumerate(f.variables)
-                m.primal_convar_to_primal_convarcon_and_index[vi] = (ci, i)
+                m.primal_variable_data[vi] = VariableData(ci, i, NO_CONSTRAINT)
             end
-            # Placeholder to indicate this constraint is part of constrained variables,
-            # it will be replaced later with a dual constraints
-            m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
+            
         end
     end
     return
@@ -74,16 +79,18 @@ function _select_constrained_variables(
         f = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
         # no element of the VectorOfVariables is a constrained variable
         # and not a parameter
-        if !haskey(m.primal_convar_to_primal_convarcon_and_index, f) &&
+        if is_constrained(m, vi)
+            #!haskey(m.primal_convar_to_primal_convarcon_and_index, f) &&
            !(f in params)
             set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
             if !iszero(MOI.constant(set))
                 continue
             end
-            m.primal_convar_to_primal_convarcon_and_index[f] = (ci, 1)
-            # Placeholder to indicate this constraint is part of constrained variables,
-            # it will be replaced later with a dual constraints
-            m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
+            # m.primal_convar_to_primal_convarcon_and_index[f] = (ci, 1)
+            # # Placeholder to indicate this constraint is part of constrained variables,
+            # # it will be replaced later with a dual constraints
+            # m.primal_convarcon_to_dual_con[ci] = NO_CONSTRAINT
+            m.primal_variable_data = VariableData(ci, 0, NO_CONSTRAINT)
         end
     end
     return

@@ -96,6 +96,15 @@ function dualize(
     # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
     # the respective primal variable will not be a constrained variable (with
     # respect to that constraint).
+    #
+    # Cache information of which primal variables are `constrained_variables`
+    # filling the a map: primal_variable_data, from original primal vars to:
+    # 1) constrained variable constraint (if constrained) and 2) index (if
+    # vector and constrained) and 3) dual constraint (always).
+    # the latter is only initialized with a marker NO_CONSTRAINT.
+    # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
+    # the respective primal variable will not be a constrained variable (with
+    # respect to that constraint).
     if consider_constrained_variables
         _select_constrained_variables(
             dual_problem,

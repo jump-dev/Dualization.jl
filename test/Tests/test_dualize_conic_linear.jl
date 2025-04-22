@@ -80,9 +80,15 @@
 
         for i in 1:3
             vi = MOI.VariableIndex(i)
-            @test !haskey(primal_dual_map.primal_var_to_dual_con, vi)
-            @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi] ==
-                  (ci_nneg, i)
+            # @test !haskey(primal_dual_map.primal_var_to_dual_con, vi)
+            # @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi] ==
+            #       (ci_nneg, i)
+            @test primal_dual_map.primal_variable_data[vi] ==
+                Dualization.VariableData(
+                    ci_nneg,
+                    i,
+                    NO_CONSTRAINT, #?
+                )
         end
     end
 
@@ -229,20 +235,35 @@
         )
         @test primal_con_to_dual_var_vec[ci_aff_zero] == MOI.VariableIndex.(1:3)
 
-        primal_var_to_dual_con = primal_dual_map.primal_var_to_dual_con
-        @test primal_var_to_dual_con[MOI.VariableIndex(1)] == ci_eq
+        # primal_var_to_dual_con = primal_dual_map.primal_var_to_dual_con
+        # @test primal_var_to_dual_con[MOI.VariableIndex(1)] == ci_eq
+        # for i in 2:4
+        #     vi = MOI.VariableIndex(i)
+        #     @test !haskey(primal_var_to_dual_con, vi)
+        # end
+        data = primal_dual_map.primal_variable_data[MOI.VariableIndex(1)]
+        @test data.dual_constraint == ci_eq
         for i in 2:4
-            vi = MOI.VariableIndex(i)
-            @test !haskey(primal_var_to_dual_con, vi)
+            data = primal_dual_map.primal_variable_data[MOI.VariableIndex(i)]
+            @test data.dual_constraint != Dualization.NO_CONSTRAINT
         end
-        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
-            2,
-        )] == (ci_npos, 1)
-        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
-            3,
-        )] == (ci_nneg, 1)
-        @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
-            4,
-        )] == (ci_zero, 1)
+        # @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
+        #     2,
+        # )] == (ci_npos, 1)
+        # @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
+        #     3,
+        # )] == (ci_nneg, 1)
+        # @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
+        #     4,
+        # )] == (ci_zero, 1)
+        data = primal_dual_map.primal_variable_data[MOI.VariableIndex(2)]
+        @test data.primal_constrained_variable_constraint == ci_npos
+        @test data.primal_constrained_variable_index == 1
+        data = primal_dual_map.primal_variable_data[MOI.VariableIndex(3)]
+        @test data.primal_constrained_variable_constraint == ci_nneg
+        @test data.primal_constrained_variable_index == 1
+        data = primal_dual_map.primal_variable_data[MOI.VariableIndex(4)]
+        @test data.primal_constrained_variable_constraint == ci_zero
+        @test data.primal_constrained_variable_index == 1
     end
 end

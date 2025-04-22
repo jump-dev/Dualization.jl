@@ -25,10 +25,41 @@ MOI.Utilities.@model(
     (MOI.VectorAffineFunction,)
 )
 
+mutable struct VariableData
+    # if primal variable is chosen to be a constrained variable by
+    # Dualization.jl, then this value is different from nothing
+    primal_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}
+    # if variable is a scalar constrained variable then it is 0
+    # if variable is not a constrained variable then it is -1
+    # if variable is part of a vector constrained variable, the this is the 
+    # position in that vector
+    primal_constrained_variable_index::Int
+    # dual constraint associated with the variable
+    # if the variable is not constrained then the set is EqualTo
+    # if the variable is a constrained variable then the set is the dual set
+    # of the constrained variable set
+    dual_constraint::MOI.ConstraintIndex
+end
+
+# constraints of primal constrained variables are not here
+mutable struct ConstraintData
+    # a vector of primal set constants that are used in MOI getters
+    primal_set_constants::Vector
+    # vector of dual variables
+    # if primal constraint is scalat then, the vector has length = 1
+    dual_variables::Vector{MOI.VariableIndex}
+    dual_constrained_variable_constraint::MOI.ConstraintIndex
+end
+
 """
     PrimalDualMap{T}
 
 Maps information from all structures of the primal to the dual model.
+
+Main maps:
+
+  * `primal_variable_data::Dict{MOI.VariableIndex,Dualization.VariableData}`:
+    
 
 The following abbreviations are used in the maps:
 
@@ -99,9 +130,10 @@ Main maps:
   * `primal_var_in_quad_obj_to_dual_slack_var::Dict{MOI.VariableIndex,MOI.VariableIndex}`:
     maps primal variables (that appear in quadratic objective terms) to dual
     "slack" variables. These primal variables might appear in other maps.
-    Future name: primal_var_in_quad_obj_to_dual_slack_var
 """
 mutable struct PrimalDualMap{T}
+    primal_variable_data::Dict{MOI.VariableIndex,VariableData}
+    primal_constraint_data::Dict{MOI.VariableIndex,ConstraintData}
     primal_convar_to_primal_convarcon_and_index::Dict{
         MOI.VariableIndex,
         Tuple{MOI.ConstraintIndex,Int},
@@ -130,6 +162,9 @@ mutable struct PrimalDualMap{T}
 
     function PrimalDualMap{T}() where {T}
         return new(
+            Dict{MOI.VariableIndex,VariableData}(),
+            Dict{MOI.ConstraintIndex,ConstraintData}(),
+            #
             Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}(),
             Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}(),
             Dict{MOI.VariableIndex,MOI.ConstraintIndex}(),
@@ -144,6 +179,15 @@ mutable struct PrimalDualMap{T}
             Dict{MOI.VariableIndex,MOI.VariableIndex}(),
         )
     end
+end
+
+function is_constrained(map::PrimalDualMap, vi::MOI.VariableIndex)
+    data = get(map.primal_variable_data, vi, nothing)
+    if data !== nothing &&
+        data.primal_constrained_variable_constraint === nothing
+        return true
+    end
+    return false
 end
 
 function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
@@ -180,7 +224,10 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
 end
 
 function is_empty(primal_dual_map::PrimalDualMap{T}) where {T}
-    return isempty(
+    return isempty(primal_dual_map.primal_variable_data) &&
+    isempty(primal_dual_map.primal_constraint_data) &&
+    #
+    isempty(
                primal_dual_map.primal_convar_to_primal_convarcon_and_index,
            ) &&
            isempty(primal_dual_map.primal_convarcon_to_dual_con) &&
@@ -189,11 +236,15 @@ function is_empty(primal_dual_map::PrimalDualMap{T}) where {T}
            isempty(primal_dual_map.primal_con_to_dual_var_vec) &&
            isempty(primal_dual_map.primal_con_to_dual_convarcon) &&
            isempty(primal_dual_map.primal_con_to_primal_constants_vec) &&
+           #
            isempty(primal_dual_map.primal_parameter_to_dual_parameter) &&
            isempty(primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var)
 end
 
 function empty!(primal_dual_map::PrimalDualMap)
+    Base.empty!(primal_dual_map.primal_variable_data)
+    Base.empty!(primal_dual_map.primal_constraint_data)
+    #
     Base.empty!(primal_dual_map.primal_convar_to_primal_convarcon_and_index)
     Base.empty!(primal_dual_map.primal_convarcon_to_dual_con)
     Base.empty!(primal_dual_map.primal_convarcon_to_dual_function)
@@ -201,6 +252,7 @@ function empty!(primal_dual_map::PrimalDualMap)
     Base.empty!(primal_dual_map.primal_con_to_dual_var_vec)
     Base.empty!(primal_dual_map.primal_con_to_dual_convarcon)
     Base.empty!(primal_dual_map.primal_con_to_primal_constants_vec)
+    #
     Base.empty!(primal_dual_map.primal_parameter_to_dual_parameter)
     Base.empty!(primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var)
     return
