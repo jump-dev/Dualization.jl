@@ -89,22 +89,15 @@ function dualize(
         _get_primal_objective(primal_model, variable_parameters, T)
 
     # Cache information of which primal variables are `constrained_variables`
-    # creating a map: primal_convar_to_primal_convarcon_and_index, from original primal vars to original
-    # constrains and their internal index (if vector constrains), 1 otherwise.
-    # Also, initializes the map: `primal_convarcon_to_dual_con`, from original primal ci
-    # to the dual constraint (latter is initilized as empty at this point).
-    # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
-    # the respective primal variable will not be a constrained variable (with
-    # respect to that constraint).
-    #
-    # Cache information of which primal variables are `constrained_variables`
     # filling the a map: primal_variable_data, from original primal vars to:
     # 1) constrained variable constraint (if constrained) and 2) index (if
-    # vector and constrained) and 3) dual constraint (always).
-    # the latter is only initialized with a marker NO_CONSTRAINT.
+    # vector and constrained) and 3) dual constraint (if dual set not `Reals`),
+    # 4) dual function (if dual set is `Reals`).
+    # Items 3 and 4 are initialized with `nothing` at this point.
     # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
     # the respective primal variable will not be a constrained variable (with
     # respect to that constraint).
+    # Constrained variables are registered in `primal_constrained_variables`.
     if consider_constrained_variables
         _select_constrained_variables(
             dual_problem,

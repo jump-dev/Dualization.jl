@@ -55,7 +55,7 @@
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) ==
               MOI.Nonnegatives(3)
 
-        primal_con_to_dual_var_vec = primal_dual_map.primal_con_to_dual_var_vec
+        primal_constraint_data = primal_dual_map.primal_constraint_data
         ci_zero = first(
             MOI.get(
                 primal_model,
@@ -65,7 +65,8 @@
                 }(),
             ),
         )
-        @test primal_con_to_dual_var_vec[ci_zero] == MOI.VariableIndex.(1:2)
+        @test primal_constraint_data[ci_zero].dual_variables ==
+              MOI.VariableIndex.(1:2)
         ci_nneg = first(
             MOI.get(
                 primal_model,
@@ -75,20 +76,19 @@
                 }(),
             ),
         )
-        @test !haskey(primal_con_to_dual_var_vec, ci_nneg)
-        @test primal_dual_map.primal_convarcon_to_dual_con[ci_nneg] == ci
+        @test !haskey(primal_dual_map.primal_constraint_data, ci_nneg)
+        vis = primal_dual_map.primal_constrained_variables[ci_nneg]
+        for vi in vis
+            @test primal_dual_map.primal_variable_data[vi].dual_constraint == ci
+        end
 
         for i in 1:3
             vi = MOI.VariableIndex(i)
-            # @test !haskey(primal_dual_map.primal_var_to_dual_con, vi)
-            # @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[vi] ==
-            #       (ci_nneg, i)
-            @test primal_dual_map.primal_variable_data[vi] ==
-                Dualization.VariableData(
-                    ci_nneg,
-                    i,
-                    NO_CONSTRAINT, #?
-                )
+            data = primal_dual_map.primal_variable_data[vi]
+            @test data.primal_constrained_variable_constraint == ci_nneg
+            @test data.primal_constrained_variable_index == i
+            @test data.dual_constraint == ci
+            @test data.primal_function === nothing
         end
     end
 
@@ -194,14 +194,13 @@
         @test MOI.coefficient.(eq_con3_fun.terms) == -[1.0]
         @test MOI.constant(eq_con3_fun) == [-4.0]
 
-        primal_con_to_dual_var_vec = primal_dual_map.primal_con_to_dual_var_vec
         ci_zero = first(
             MOI.get(
                 primal_model,
                 MOI.ListOfConstraintIndices{MOI.VectorOfVariables,MOI.Zeros}(),
             ),
         )
-        @test !haskey(primal_con_to_dual_var_vec, ci_zero)
+        @test !haskey(primal_dual_map.primal_constraint_data, ci_zero)
         ci_nneg = first(
             MOI.get(
                 primal_model,
@@ -211,8 +210,12 @@
                 }(),
             ),
         )
-        @test !haskey(primal_con_to_dual_var_vec, ci_nneg)
-        @test primal_dual_map.primal_convarcon_to_dual_con[ci_nneg] == ci_nn
+        @test !haskey(primal_dual_map.primal_constraint_data, ci_nneg)
+        vis = primal_dual_map.primal_constrained_variables[ci_nneg]
+        for vi in vis
+            @test primal_dual_map.primal_variable_data[vi].dual_constraint ==
+                  ci_nn
+        end
         ci_npos = first(
             MOI.get(
                 primal_model,
@@ -222,8 +225,12 @@
                 }(),
             ),
         )
-        @test !haskey(primal_con_to_dual_var_vec, ci_npos)
-        @test primal_dual_map.primal_convarcon_to_dual_con[ci_npos] == ci_np
+        @test !haskey(primal_dual_map.primal_constraint_data, ci_npos)
+        vis = primal_dual_map.primal_constrained_variables[ci_npos]
+        for vi in vis
+            @test primal_dual_map.primal_variable_data[vi].dual_constraint ==
+                  ci_np
+        end
         ci_aff_zero = first(
             MOI.get(
                 primal_model,
@@ -233,19 +240,14 @@
                 }(),
             ),
         )
-        @test primal_con_to_dual_var_vec[ci_aff_zero] == MOI.VariableIndex.(1:3)
+        @test primal_dual_map.primal_constraint_data[ci_aff_zero].dual_variables ==
+              MOI.VariableIndex.(1:3)
 
-        # primal_var_to_dual_con = primal_dual_map.primal_var_to_dual_con
-        # @test primal_var_to_dual_con[MOI.VariableIndex(1)] == ci_eq
-        # for i in 2:4
-        #     vi = MOI.VariableIndex(i)
-        #     @test !haskey(primal_var_to_dual_con, vi)
-        # end
         data = primal_dual_map.primal_variable_data[MOI.VariableIndex(1)]
         @test data.dual_constraint == ci_eq
         for i in 2:4
             data = primal_dual_map.primal_variable_data[MOI.VariableIndex(i)]
-            @test data.dual_constraint != Dualization.NO_CONSTRAINT
+            @test data.dual_constraint !== nothing
         end
         # @test primal_dual_map.primal_convar_to_primal_convarcon_and_index[MOI.VariableIndex(
         #     2,
