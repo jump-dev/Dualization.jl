@@ -160,7 +160,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             In the data structures returned the constraint can be found at
             `primal_constrained_variable_constraint` and the index at
             `primal_constrained_variable_index`.
-            """
+            """,
         )
     elseif name === :constrained_var_dual
         error(
@@ -172,7 +172,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             `primal_variable_data`.
             In the data structures returned, the constraint can be found at
             `dual_constraint`.
-            """
+            """,
         )
     elseif name === :primal_var_dual_con
         error(
@@ -181,7 +181,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             From a primal variable index, use the field `primal_variable_data`.
             In the data structures returned, the constraint can be found at
             `dual_constraint`.
-            """
+            """,
         )
     elseif name === :primal_con_dual_var
         error(
@@ -191,7 +191,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             `primal_constraint_data`.
             In the data structure returned, the dual variables can be found at
             `dual_varaibles`.
-            """
+            """,
         )
     elseif name === :primal_con_dual_con
         error(
@@ -201,7 +201,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             `primal_constraint_data`.
             In the data structure returned, the dual constrained variable
             constraint can be found at `dual_constrained_variable_constraint`.
-            """
+            """,
         )
     elseif name === :primal_con_constants
         error(
@@ -210,7 +210,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             From a primal constraint index, use the field `primal_constraint_data`.
             In the data structure returned, the primal set constants can be found
             at `primal_set_constants`.
-            """
+            """,
         )
     elseif name === :constrained_var_zero
         error(
@@ -222,7 +222,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             `primal_variable_data`.
             In the data structure returned, the primal function can be found at
             `dual_function`.
-            """
+            """,
         )
     elseif name === :primal_parameter
         @warn "primal_parameter field is deprecated, use primal_parameter_to_dual_parameter instead"
