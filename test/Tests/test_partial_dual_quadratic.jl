@@ -252,7 +252,7 @@
             )
             @test data.primal_constrained_variable_index == 0
             @test data.dual_constraint !== nothing
-            @test data.primal_function === nothing
+            @test data.dual_function === nothing
         end
 
         primal_parameter_to_dual_parameter =
@@ -370,7 +370,7 @@
             )
             @test data.primal_constrained_variable_index == 0
             @test data.dual_constraint !== nothing
-            @test data.primal_function === nothing
+            @test data.dual_function === nothing
         end
 
         primal_parameter_to_dual_parameter =

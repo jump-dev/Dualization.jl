@@ -88,7 +88,7 @@
             @test data.primal_constrained_variable_constraint == ci_nneg
             @test data.primal_constrained_variable_index == i
             @test data.dual_constraint == ci
-            @test data.primal_function === nothing
+            @test data.dual_function === nothing
         end
     end
 

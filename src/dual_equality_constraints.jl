@@ -81,11 +81,9 @@ function _add_dual_equality_constraints(
 
     # Free variables
     for primal_vi in non_parameter_variables
-        if is_constrained(primal_dual_map, primal_vi)
-            #     haskey(
-            #     primal_dual_map.primal_convar_to_primal_convarcon_and_index,
-            #     primal_vi,
-            # )
+        data = get(primal_dual_map.primal_variable_data, primal_vi, nothing)
+        if data !== nothing &&
+           data.primal_constrained_variable_constraint !== nothing
             continue # constrained variable
         end
         # Add equality constraint
@@ -136,12 +134,12 @@ function _add_constrained_variable_constraint(
     # to not adding any constraint.
     vis = primal_dual_map.primal_constrained_variables[ci]
     for (i, vi) in enumerate(vis)
-        primal_function = MOI.ScalarAffineFunction(
+        dual_function = MOI.ScalarAffineFunction(
             MOI.Utilities.operate_terms(-, scalar_affine_terms[vi]),
             sense_change * get(scalar_terms, vi, zero(T)),
         )
         primal_dual_map.primal_variable_data[vi] =
-            VariableData{T}(ci, i, nothing, primal_function)
+            VariableData{T}(ci, i, nothing, dual_function)
     end
     return
 end
@@ -196,12 +194,12 @@ function _add_constrained_variable_constraint(
 ) where {T}
     vi = primal_dual_map.primal_constrained_variables[ci][]
     # Nothing to add as the set is `EqualTo`.
-    primal_function = MOI.ScalarAffineFunction(
+    dual_function = MOI.ScalarAffineFunction(
         MOI.Utilities.operate_terms(-, scalar_affine_terms[vi]),
         sense_change * get(scalar_terms, vi, zero(T)),
     )
     primal_dual_map.primal_variable_data[vi] =
-        VariableData{T}(ci, 0, nothing, primal_function)
+        VariableData{T}(ci, 0, nothing, dual_function)
     return
 end
 

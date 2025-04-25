@@ -193,7 +193,7 @@
             @test data.primal_constrained_variable_constraint == vgt2
             @test data.primal_constrained_variable_index == 0
             @test data.dual_constraint !== nothing
-            @test data.primal_function === nothing
+            @test data.dual_function === nothing
         end
     end
 

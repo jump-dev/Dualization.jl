@@ -282,7 +282,7 @@ function MOI.get(
         ci_dual = primal_dual_map.primal_variable_data[vi].dual_constraint
         if ci_dual === nothing
             return MOI.Utilities.eval_variables(
-                primal_dual_map.primal_variable_data[vi].primal_function,
+                primal_dual_map.primal_variable_data[vi].dual_function,
             ) do inner_vi
                 return MOI.get(
                     optimizer.dual_problem.dual_model,
@@ -322,7 +322,7 @@ function MOI.get(
         if ci_dual === nothing
             return [
                 MOI.Utilities.eval_variables(
-                    primal_dual_map.primal_variable_data[vi].primal_function,
+                    primal_dual_map.primal_variable_data[vi].dual_function,
                 ) do inner_vi
                     return MOI.get(
                         optimizer.dual_problem.dual_model,
