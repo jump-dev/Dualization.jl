@@ -26,137 +26,126 @@ MOI.Utilities.@model(
 )
 
 """
+    VariableData{T}
+
+Data structure used in `PrimalDualMap` to hold information about primal
+variables and their dual counterparts.
+
+  * `primal_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}`:
+    if primal variable is chosen to be a constrained variable by
+    Dualization.jl, then this value is different from nothing.
+
+  * `primal_constrained_variable_index::Int`: if variable is a scalar
+    constrained variable then it is 0. If variable is not a constrained variable
+    then it is -1. If variable is part of a vector constrained variable, then
+    this is the position in that vector.
+
+  * `dual_constraint::Union{Nothing,MOI.ConstraintIndex}`: dual constraint
+    associated with the variable. If the variable is not constrained then the
+    set is EqualTo{T}(zero(T)). If the variable is a constrained variable then
+    the set is the dual set of the constrained variable set. If the dual set is
+    `Reals` then the field is kept as `nothing` as teh constraint is not added.
+
+  * `dual_function::Union{Nothing,MOI.ScalarAffineFunction{T}}`: if the
+    constrained variable is `VectorOfVariables`-in-`Zeros` or
+    `VariableIndex`-in-`EqualTo(zero(T))` then the dual is `func`-in-`Reals`,
+    which is "irrelevant" to the model. But this information is cached for
+    completeness of the `DualOptimizer` for `get`ting `ConstraintDuals`.
+
+To got from the constrained variable constraint to the primal variable, use the
+`primal_constrained_variables` field of `PrimalDualMap`.
+
+See also `PrimalDualMap` and `ConstraintData`.
+"""
+struct VariableData{T}
+    primal_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}
+    primal_constrained_variable_index::Int
+    dual_constraint::Union{Nothing,MOI.ConstraintIndex}
+    dual_function::Union{Nothing,MOI.ScalarAffineFunction{T}}
+end
+
+# constraints of primal constrained variables are not here
+"""
+    ConstraintData{T}
+
+Data structure used in `PrimalDualMap` to hold information about primal
+constraints and their dual counterparts.
+
+Constraint indices for constrained variables are not in this structure. They are
+added in the `primal_constrained_variables` field of `PrimalDualMap`.
+
+  * `primal_set_constants::Vector{T}`: a vector of primal set constants that are
+    used in MOI getters. This is used to get the primal constants of the primal
+    constraints.
+
+  * `dual_variables::Vector{MOI.VariableIndex}`: vector of dual variables. If
+    primal constraint is scalar then, the vector has length = 1.
+
+  * `dual_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}`:
+    if primal set is `EqualTo` or `Zeros`, then the dual constraint is `Reals`
+    then the dual variable is free (no constraint in the dual model).
+"""
+struct ConstraintData{T}
+    primal_set_constants::Vector{T}
+    dual_variables::Vector{MOI.VariableIndex}
+    dual_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}
+end
+
+"""
     PrimalDualMap{T}
 
 Maps information from all structures of the primal to the dual model.
 
-The following abbreviations are used in the maps:
-
-* `var`: variable index
-* `con`: constraint index
-* `convar`: constrained variable, variable index
-* `convarcon`: constrained variable, constraint index
-
 Main maps:
 
-  * `primal_convar_to_primal_convarcon_and_index::Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}`:
-    maps primal constrained variables to their primal
-    constraints (the special ones that makes them constrained variables) and
-    their internal index from 1 to dimension(set) (if vector constraints:
-    VectorOfVariables-in-Set), 1 otherwise (scalar: VariableIndex-in-Set).
+  * `primal_variable_data::Dict{MOI.VariableIndex,Dualization.VariableData{T}}`:
+    maps primal variable indices to their data. The data is a structure that
+    contains information about the primal variable and its dual counterpart.
+    In particular, it contains the primal constrained variable constraint index,
+    the primal constrained variable index, the dual constraint index and the
+    primal function for the case of constraints that are not added in the dual.
 
-    note: this set is important to dualization can keep track of what it 
-    decided to define as a constrained variable.
-    - consider index 0 to highlight scalars
+  * `primal_constraint_data::Dict{MOI.ConstraintIndex,Dualization.ConstraintData{T}}`:
+    maps primal constraint indices to their data. The data is a structure that
+    contains information about the primal constraint and its dual counterpart.
+    In particular, it contains the primal set constants, the dual variables and
+    the dual constrained variable constraint index.
 
-  * `primal_convarcon_to_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`: maps
-    the primal constraint index of constrained variables to the dual
-    model's constraint index of the associated dual constraint. This dual
-    constraint is a regular constraint (not a constrained variable constraint).
-    `VectorOfVariables`-in-`Zeros` and `VariableIndex`-in-`EqualTo(zero(T))`
-    are not in this map, as they are not dualized (See
-    primal_convarcon_to_dual_function).
+  * `primal_constrained_variables::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}`:
+    maps primal constrained variable constraint indices to their primal
+    constrained variables.
 
-    note: from the above two maps, we can get primal_convar_to_dual_con_and_index
+Addtional maps
 
-  * `primal_var_to_dual_con::Dict{MOI.VariableIndex,MOI.ConstraintIndex}`: maps
-    "free" primal variables to their associated dual (equality) constraints.
-    Free variables as opposed to constrained variables. Note that Dualization
-    will select automatically which variables are free and which are
-    constrained.
-
-    note: from the above three maps, we can get primal_var_to_dual_con_and_index
-
-    # TODO: idea, for simmetry, keep only
-    - primal_convarcon_to_dual_con (as is), analogous to primal_con_to_dual_convarcon
-    - primal_var_to_dual_con_and_index, analogous to primal_con_to_dual_var_vec
-    -- the second implicitly tracks which vars were decided to be convar's
-
-  * `primal_con_to_dual_var_vec::Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}`:
-    maps primal constraint indices to vectors of dual variable indices. For
-    scalar constraints those vectors will be single element vectors.
-    Primal constrained variables constraints (the main ones) are not in this
-    map. However, `VariableIndex`-in-set and `VectorOfVariables`-in-set might
-    appear in this map if they were not chosen as the main ones.
-
-    note: possibly change this to:
-    primal_con_to_dual_var_vec_and_convarcon
-
-  * `primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}`:
-    maps regular primal constraints to dual constrained variable. If the primal
-    constraint's set is EqualTo or Zeros, no constraint is added in the dual
-    variable (the dual variable is said to be free).
-    Primal constrained variables constraints (the main ones) are not in this
-    map. However, `VariableIndex`-in-set and `VectorOfVariables`-in-set might
-    appear in this map if they were not chosen as the main ones.
-    The keys are similar to the (# primal_con_to_dual_var_vec) map, except
-    that `VariableIndex`-in-`EqualTo(zero(T))` and `VectorOfVariables`-in-`Zeros`
-    are not in this map, as the dual constraint would belong to the `Reals` set,
-    and would be innocuous (hence, not added).
-
-  Additional helper maps:
-
-  * `primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}}`: maps primal
-    constraints to their respective constants, which might be inside the set.
-    This map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
-    that requires extra information in the case that the scalar set constains
-    a constant (`EqualtTo`, `GreaterThan`, `LessThan`).
-
-  * `primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex}`: maps
-    parameters in the primal to parameters in the dual model.
-
-  * `primal_convarcon_to_dual_function::Dict{MOI.ConstraintIndex,Unions{MOI.ScalarAffineFunction,MOI.VectorAffineFunction}}`:
-    caches scalar affine functions or vector affine functions associated with
-    constrained variables of type `VectorOfVariables`-in-`Zeros` or
-    `VariableIndex`-in-`EqualTo(zero(T))` as their duals would be `func`-in-`Reals`,
-    which are "irrelevant" to the model. This information is cached for
-    completeness of the `DualOptimizer` for `get`ting `ConstraintDuals`.
+  * `primal_parameter_to_dual_parameter::Dict{MOI.VariableIndex,MOI.VariableIndex}`:
+    maps parameters in the primal model to parameters in the dual model.
 
   * `primal_var_in_quad_obj_to_dual_slack_var::Dict{MOI.VariableIndex,MOI.VariableIndex}`:
     maps primal variables (that appear in quadratic objective terms) to dual
     "slack" variables. These primal variables might appear in other maps.
-    Future name: primal_var_in_quad_obj_to_dual_slack_var
 """
 mutable struct PrimalDualMap{T}
-    primal_convar_to_primal_convarcon_and_index::Dict{
-        MOI.VariableIndex,
-        Tuple{MOI.ConstraintIndex,Int},
-    }
-    primal_convarcon_to_dual_con::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}
-    primal_var_to_dual_con::Dict{MOI.VariableIndex,MOI.ConstraintIndex}
-    primal_con_to_dual_var_vec::Dict{
+    primal_variable_data::Dict{MOI.VariableIndex,VariableData{T}}
+    primal_constraint_data::Dict{MOI.ConstraintIndex,ConstraintData{T}}
+    primal_constrained_variables::Dict{
         MOI.ConstraintIndex,
         Vector{MOI.VariableIndex},
     }
-    primal_con_to_dual_convarcon::Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}
-
-    primal_con_to_primal_constants_vec::Dict{MOI.ConstraintIndex,Vector{T}}
     primal_parameter_to_dual_parameter::Dict{
         MOI.VariableIndex,
         MOI.VariableIndex,
-    }
-    primal_convarcon_to_dual_function::Dict{
-        MOI.ConstraintIndex,
-        Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
     }
     primal_var_in_quad_obj_to_dual_slack_var::Dict{
         MOI.VariableIndex,
         MOI.VariableIndex,
     }
-
     function PrimalDualMap{T}() where {T}
         return new(
-            Dict{MOI.VariableIndex,Tuple{MOI.ConstraintIndex,Int}}(),
-            Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}(),
-            Dict{MOI.VariableIndex,MOI.ConstraintIndex}(),
+            Dict{MOI.VariableIndex,VariableData{T}}(),
+            Dict{MOI.ConstraintIndex,ConstraintData{T}}(),
             Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}(),
-            Dict{MOI.ConstraintIndex,MOI.ConstraintIndex}(),
-            Dict{MOI.ConstraintIndex,Vector{T}}(),
+            #
             Dict{MOI.VariableIndex,MOI.VariableIndex}(),
-            Dict{
-                MOI.ConstraintIndex,
-                Union{MOI.VectorAffineFunction{T},MOI.ScalarAffineFunction{T}},
-            }(),
             Dict{MOI.VariableIndex,MOI.VariableIndex}(),
         )
     end
@@ -164,29 +153,80 @@ end
 
 function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
     if name === :constrained_var_idx
-        @warn "constrained_var_idx field is deprecated, use primal_convar_to_primal_convarcon_and_index instead"
-        return getfield(m, :primal_convar_to_primal_convarcon_and_index)
+        error(
+            """
+            Field `constrained_var_idx` was removed.
+            From a primal variable index, use the field `primal_variable_data`.
+            In the data structures returned the constraint can be found at
+            `primal_constrained_variable_constraint` and the index at
+            `primal_constrained_variable_index`.
+            """,
+        )
     elseif name === :constrained_var_dual
-        @warn "constrained_var_dual field is deprecated, use primal_convarcon_to_dual_con instead"
-        return getfield(m, :primal_convarcon_to_dual_con)
+        error(
+            """
+            Field `constrained_var_dual` was removed.
+            From a primal constrained variable constraint index, use the field
+            `primal_constrained_variables` to obtain the primal varaibles.
+            Then, from the primal variable index, use the field
+            `primal_variable_data`.
+            In the data structures returned, the constraint can be found at
+            `dual_constraint`.
+            """,
+        )
     elseif name === :primal_var_dual_con
-        @warn "primal_var_dual_con field is deprecated, use primal_var_to_dual_con instead"
-        return getfield(m, :primal_var_to_dual_con)
+        error(
+            """
+            Field `primal_var_dual_con` was removed.
+            From a primal variable index, use the field `primal_variable_data`.
+            In the data structures returned, the constraint can be found at
+            `dual_constraint`.
+            """,
+        )
     elseif name === :primal_con_dual_var
-        @warn "primal_con_dual_var field is deprecated, use primal_con_to_dual_var_vec instead"
-        return getfield(m, :primal_con_to_dual_var_vec)
+        error(
+            """
+            Field `primal_con_dual_var` was removed.
+            From a primal constraint index, use the field
+            `primal_constraint_data`.
+            In the data structure returned, the dual variables can be found at
+            `dual_varaibles`.
+            """,
+        )
     elseif name === :primal_con_dual_con
-        @warn "primal_con_dual_con field is deprecated, use primal_con_to_dual_convarcon instead"
-        return getfield(m, :primal_con_to_dual_convarcon)
+        error(
+            """
+            Field `primal_con_dual_con` was removed.
+            From a primal constraint index, use the field
+            `primal_constraint_data`.
+            In the data structure returned, the dual constrained variable
+            constraint can be found at `dual_constrained_variable_constraint`.
+            """,
+        )
     elseif name === :primal_con_constants
-        @warn "primal_con_constants field is deprecated, use primal_con_to_primal_constants_vec instead"
-        return getfield(m, :primal_con_to_primal_constants_vec)
+        error(
+            """
+            Field `primal_con_constants` was removed.
+            From a primal constraint index, use the field `primal_constraint_data`.
+            In the data structure returned, the primal set constants can be found
+            at `primal_set_constants`.
+            """,
+        )
+    elseif name === :constrained_var_zero
+        error(
+            """
+            Field `constrained_var_zero` was removed.
+            From a primal constrained variable constraint index, use the field
+            `primal_constrained_variables` to obtain the primal varaibles.
+            Then, from the primal variable index, use the field
+            `primal_variable_data`.
+            In the data structure returned, the primal function can be found at
+            `dual_function`.
+            """,
+        )
     elseif name === :primal_parameter
         @warn "primal_parameter field is deprecated, use primal_parameter_to_dual_parameter instead"
         return getfield(m, :primal_parameter_to_dual_parameter)
-    elseif name === :constrained_var_zero
-        @warn "constrained_var_zero field is deprecated, use primal_convarcon_to_dual_function instead"
-        return getfield(m, :primal_convarcon_to_dual_function)
     elseif name === :primal_var_dual_quad_slack
         @warn "primal_var_dual_quad_slack field is deprecated, use primal_var_in_quad_obj_to_dual_slack_var instead"
         return getfield(m, :primal_var_in_quad_obj_to_dual_slack_var)
@@ -196,27 +236,19 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
 end
 
 function is_empty(primal_dual_map::PrimalDualMap{T}) where {T}
-    return isempty(
-               primal_dual_map.primal_convar_to_primal_convarcon_and_index,
-           ) &&
-           isempty(primal_dual_map.primal_convarcon_to_dual_con) &&
-           isempty(primal_dual_map.primal_convarcon_to_dual_function) &&
-           isempty(primal_dual_map.primal_var_to_dual_con) &&
-           isempty(primal_dual_map.primal_con_to_dual_var_vec) &&
-           isempty(primal_dual_map.primal_con_to_dual_convarcon) &&
-           isempty(primal_dual_map.primal_con_to_primal_constants_vec) &&
+    return isempty(primal_dual_map.primal_variable_data) &&
+           isempty(primal_dual_map.primal_constraint_data) &&
+           isempty(primal_dual_map.primal_constrained_variables) &&
+           #
            isempty(primal_dual_map.primal_parameter_to_dual_parameter) &&
            isempty(primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var)
 end
 
 function empty!(primal_dual_map::PrimalDualMap)
-    Base.empty!(primal_dual_map.primal_convar_to_primal_convarcon_and_index)
-    Base.empty!(primal_dual_map.primal_convarcon_to_dual_con)
-    Base.empty!(primal_dual_map.primal_convarcon_to_dual_function)
-    Base.empty!(primal_dual_map.primal_var_to_dual_con)
-    Base.empty!(primal_dual_map.primal_con_to_dual_var_vec)
-    Base.empty!(primal_dual_map.primal_con_to_dual_convarcon)
-    Base.empty!(primal_dual_map.primal_con_to_primal_constants_vec)
+    Base.empty!(primal_dual_map.primal_variable_data)
+    Base.empty!(primal_dual_map.primal_constraint_data)
+    Base.empty!(primal_dual_map.primal_constrained_variables)
+    #
     Base.empty!(primal_dual_map.primal_parameter_to_dual_parameter)
     Base.empty!(primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var)
     return

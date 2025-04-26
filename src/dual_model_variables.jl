@@ -37,8 +37,7 @@ function _add_dual_vars_in_dual_cones(
 ) where {T,F,S}
     for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
         # If `F` not one of these two, we can skip the `haskey` check.
-        if (F === MOI.VectorOfVariables || F === MOI.VariableIndex) &&
-           haskey(primal_dual_map.primal_convarcon_to_dual_con, ci)
+        if haskey(primal_dual_map.primal_constrained_variables, ci)
             # primal constraints that are the main constraints of
             # constrained variables have no dual variable associated
             # bacause they associated with dual constraints
@@ -69,7 +68,13 @@ function _add_dual_variable(
 ) where {T,F<:MOI.AbstractFunction,S<:MOI.AbstractSet}
     vis, con_index = _add_dual_cone_constraint(dual_model, primal_model, ci)
     # Add the map of the added dual variable to the relationated constraint
-    primal_dual_map.primal_con_to_dual_var_vec[ci] = vis
+    set_constant = if F <: MOI.AbstractScalarFunction
+        _get_normalized_constant(primal_model, ci)
+    else
+        T[]
+    end
+    primal_dual_map.primal_constraint_data[ci] =
+        ConstraintData(set_constant, vis, con_index)
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary
@@ -86,13 +91,6 @@ function _add_dual_variable(
             pre = dual_names.dual_variable_name_prefix
             MOI.set(dual_model, MOI.VariableName(), vi, pre * ci_name * "_$i")
         end
-    end
-    if con_index !== nothing
-        primal_dual_map.primal_con_to_dual_convarcon[ci] = con_index
-    end
-    if F <: MOI.AbstractScalarFunction
-        primal_dual_map.primal_con_to_primal_constants_vec[ci] =
-            _get_normalized_constant(primal_model, ci)
     end
     return
 end

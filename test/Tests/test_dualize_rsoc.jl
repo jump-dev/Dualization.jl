@@ -125,16 +125,18 @@
         )
         @test rsoc_con.variables == MOI.VariableIndex.(1:4)
 
-        primal_con_to_dual_var_vec = primal_dual_map.primal_con_to_dual_var_vec
-        @test primal_con_to_dual_var_vec[MOI.ConstraintIndex{
+        primal_constraint_data = primal_dual_map.primal_constraint_data
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.VectorAffineFunction{Float64},
             MOI.RotatedSecondOrderCone,
         }(
             1,
-        )] == MOI.VariableIndex.(1:4)
+        )].dual_variables == MOI.VariableIndex.(1:4)
 
-        primal_var_to_dual_con = primal_dual_map.primal_var_to_dual_con
-        @test primal_var_to_dual_con[MOI.VariableIndex(1)] == eq_con1
-        @test primal_var_to_dual_con[MOI.VariableIndex(2)] == eq_con2
+        primal_variable_data = primal_dual_map.primal_variable_data
+        @test primal_variable_data[MOI.VariableIndex(1)].dual_constraint ==
+              eq_con1
+        @test primal_variable_data[MOI.VariableIndex(2)].dual_constraint ==
+              eq_con2
     end
 end
