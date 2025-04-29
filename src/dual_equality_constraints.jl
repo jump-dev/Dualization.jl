@@ -411,6 +411,15 @@ function _fill_scalar_affine_terms!(
 end
 
 function _fill_scalar_affine_terms!(
+    ::Dict{MOI.VariableIndex,Vector{MOI.ScalarAffineTerm{T}}},
+    primal_constraint_data,
+    ::MOI.ModelLike,
+    ::MOI.ConstraintIndex{MOI.VariableIndex,MOI.Parameter{T}},
+) where {T}
+    return
+end
+
+function _fill_scalar_affine_terms!(
     scalar_affine_terms::Dict{
         MOI.VariableIndex,
         Vector{MOI.ScalarAffineTerm{T}},

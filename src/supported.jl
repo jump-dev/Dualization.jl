@@ -29,6 +29,13 @@ end
 supported_constraint(::Type, ::Type) = false
 
 function supported_constraint(
+    ::Type{MOI.VariableIndex},
+    S::Type{MOI.Parameter{T}},
+) where {T}
+    return true
+end
+
+function supported_constraint(
     ::Type{<:Union{MOI.VariableIndex,MOI.ScalarAffineFunction}},
     S::Type{<:MOI.AbstractScalarSet},
 )

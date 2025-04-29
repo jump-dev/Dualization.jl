@@ -83,3 +83,16 @@ function _select_constrained_variables(
     end
     return
 end
+
+function _get_parameter_variables(::PrimalDualMap{T}, primal_model) where {T}
+    cis = MOI.get(
+        primal_model,
+        MOI.ListOfConstraintIndices{MOI.VariableIndex,MOI.Parameter{T}}(),
+    )
+    parameters = Set{MOI.VariableIndex}()
+    for ci in cis
+        vi = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
+        push!(parameters, vi)
+    end
+    return parameters
+end
