@@ -4,13 +4,14 @@
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
 """
-    set_dual_model_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
+    _set_dual_model_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
 
 Set the dual model objective sense.
 """
-function set_dual_model_sense(
+function _set_dual_model_sense(
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
+    assume_min_if_fesability::Bool,
 )::Nothing
     # Get model sense
     primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
@@ -19,10 +20,19 @@ function set_dual_model_sense(
         MOI.MAX_SENSE
     elseif primal_sense == MOI.MAX_SENSE
         MOI.MIN_SENSE
-    elseif primal_sense == MOI.FEASIBILITY_SENSE 
+    elseif primal_sense == MOI.FEASIBILITY_SENSE && assume_min_if_feasibility
         # We assume fesibility sense is a Min 0
         # so the dual would be Max ...
         MOI.MAX_SENSE
+    else
+        error(
+            "Expected objective sense to be either MIN_SENSE or MAX_SENSE, " *
+            "got FEASIBILITY_SENSE. It is not possible to decidie how to " *
+            "dualize. Set the sense to either MIN_SENSE or MAX_SENSE to " *
+            "proceed. Alternatively, set the keyword argument " *
+            "`assume_min_if_feasibility` to true to assume the dual model " *
+            "is a minimization problem without setting the sense.",
+        )
     end
     MOI.set(dual_model, MOI.ObjectiveSense(), dual_sense)
     return

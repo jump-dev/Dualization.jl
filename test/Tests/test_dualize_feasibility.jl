@@ -15,7 +15,14 @@
             2y_3 == 0        :x_2
         =#
         primal_model = feasibility_1_test()
-        dual_model, primal_dual_map = dual_model_and_map(primal_model)
+
+        # fail due no objective sense
+        @test_throws ErrorException Dualization.dualize(primal_model)
+
+        dual =
+            Dualization.dualize(primal_model, assume_min_if_feasibility = true)
+        dual_model = dual.dual_model
+        primal_dual_map = dual.primal_dual_map
 
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 2
         list_of_cons = MOI.get(dual_model, MOI.ListOfConstraintTypesPresent())
