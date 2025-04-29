@@ -45,7 +45,7 @@ On each of these methods, the user can provide the following keyword arguments:
     added to the dual model. This is also useful for bi-level modelling, where
     the second level model is represented as a KKT in the upper level model.
 
-  * `assume_min_if_fesability`: a boolean indicating if the objective function 
+  * `assume_min_if_feasibility`: a boolean indicating if the objective function 
     is of type `MOI.FEASIBILITY_SENSE` then the objective is treated as
     `MOI.MIN_SENSE`. Therefore, the dual will have a `MOI.MAX_SENSE` objective.
     This is set to false by default, to warn users about the outcome.
@@ -59,7 +59,7 @@ function dualize(
     variable_parameters::Vector{MOI.VariableIndex} = MOI.VariableIndex[],
     ignore_objective::Bool = false,
     consider_constrained_variables::Bool = true,
-    assume_min_if_fesability::Bool = false,
+    assume_min_if_feasibility::Bool = false,
 )
     return dualize(
         primal_model,
@@ -68,7 +68,7 @@ function dualize(
         variable_parameters,
         ignore_objective,
         consider_constrained_variables,
-        assume_min_if_fesability,
+        assume_min_if_feasibility,
     )
 end
 
@@ -79,7 +79,7 @@ function dualize(
     variable_parameters::Vector{MOI.VariableIndex},
     ignore_objective::Bool,
     consider_constrained_variables::Bool,
-    assume_min_if_fesability::Bool = false,
+    assume_min_if_feasibility::Bool = false,
 ) where {T}
     # Throws an error if objective function cannot be dualized
     supported_objective(primal_model)
@@ -92,7 +92,7 @@ function dualize(
     _set_dual_model_sense(
         dual_problem.dual_model,
         primal_model,
-        assume_min_if_fesability,
+        assume_min_if_feasibility,
     )
 
     # Get primal objective in quadratic form

@@ -11,7 +11,7 @@ Set the dual model objective sense.
 function _set_dual_model_sense(
     dual_model::MOI.ModelLike,
     primal_model::MOI.ModelLike,
-    assume_min_if_fesability::Bool,
+    assume_min_if_feasibility::Bool,
 )::Nothing
     # Get model sense
     primal_sense = MOI.get(primal_model, MOI.ObjectiveSense())
