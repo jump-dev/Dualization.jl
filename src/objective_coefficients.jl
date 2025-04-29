@@ -4,7 +4,7 @@
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
 """
-    _set_dual_model_sense!(dual_model::MOI.ModelLike, model::MOI.ModelLike)
+    _set_dual_model_sense(dual_model::MOI.ModelLike, model::MOI.ModelLike)
 
 Set the dual model objective sense.
 """
@@ -44,6 +44,7 @@ function _scalar_quadratic_function(
 ) where {T}
     return MOI.Utilities.canonical(func)
 end
+
 function _scalar_quadratic_function(
     func::MOI.ScalarAffineFunction{T},
     ::Type{T},
@@ -66,11 +67,11 @@ function _scalar_quadratic_function(func::MOI.VariableIndex, T::Type)
 end
 
 """
-    PrimalObjective{T}
+    _PrimalObjective{T}
 
 Primal objective is defined as a `MOI.ScalarAffineFunction`
 """
-mutable struct PrimalObjective{T}
+mutable struct _PrimalObjective{T}
     obj::MOI.ScalarQuadraticFunction{T}
     quad_cross_parameters::Dict{
         MOI.VariableIndex,
@@ -78,7 +79,7 @@ mutable struct PrimalObjective{T}
     }
     obj_parametric::Union{MOI.ScalarQuadraticFunction{T},Nothing}
 
-    function PrimalObjective{T}(obj) where {T}
+    function _PrimalObjective{T}(obj) where {T}
         canonical_obj = _scalar_quadratic_function(obj, T)
         quad_cross_parameters =
             Dict{MOI.VariableIndex,Vector{MOI.ScalarAffineTerm{T}}}()
@@ -87,45 +88,26 @@ mutable struct PrimalObjective{T}
 end
 
 """
-    DualObjective{T}
+    _DualObjective{T}
 
 Dual objective is defined as a `MOI.ScalarAffineFunction`.
 """
-mutable struct DualObjective{T}
+mutable struct _DualObjective{T}
     obj::MOI.ScalarQuadraticFunction{T}
 end
 
-const Objective{T} = Union{PrimalObjective{T},DualObjective{T}}
-
-function get_raw_obj(objective::Objective{T}) where {T}
-    return objective.obj
-end
-function get_affine_terms(objective::Objective{T}) where {T}
-    return objective.obj.affine_terms
-end
-
-function get_primal_objective(primal_model::MOI.ModelLike, T::Type = Float64)
-    F = MOI.get(primal_model, MOI.ObjectiveFunctionType())
-    return _get_primal_objective(
-        MOI.get(primal_model, MOI.ObjectiveFunction{F}()),
-        T,
-    )
-end
-
-function _get_primal_objective(obj_fun, T::Type)
-    return PrimalObjective{T}(obj_fun)
-end
-
 # allow removing variables from objective function
-function get_primal_objective(
+function _get_primal_objective(
     primal_model::MOI.ModelLike,
     variable_parameters::Vector{MOI.VariableIndex},
     T::Type,
 )
-    p_obj = get_primal_objective(primal_model, T)
+    F = MOI.get(primal_model, MOI.ObjectiveFunctionType())
+    p_obj =
+        _PrimalObjective{T}(MOI.get(primal_model, MOI.ObjectiveFunction{F}()))
     if length(variable_parameters) > 0
         vars_func, quad_cross_params, params_func =
-            split_variables(p_obj.obj, variable_parameters)
+            _split_variables(p_obj.obj, variable_parameters)
         p_obj.obj = vars_func
         p_obj.quad_cross_parameters = quad_cross_params
         p_obj.obj_parametric = params_func
@@ -133,7 +115,7 @@ function get_primal_objective(
     return p_obj
 end
 
-function split_variables(
+function _split_variables(
     func::MOI.ScalarQuadraticFunction{T},
     variable_parameters::Vector{MOI.VariableIndex},
 ) where {T}
@@ -160,9 +142,9 @@ function split_variables(
         if is_param_1 && is_param_2
             push!(quad_params, term)
         elseif is_param_1
-            push_affine_term(quad_cross_params, term, false)
+            _push_affine_term(quad_cross_params, term, false)
         elseif is_param_2
-            push_affine_term(quad_cross_params, term, true)
+            _push_affine_term(quad_cross_params, term, true)
         else
             push!(quad_vars, term)
         end
@@ -176,7 +158,7 @@ function split_variables(
     return variables_func, quad_cross_params, parameters_func
 end
 
-function push_affine_term(
+function _push_affine_term(
     dic,
     term::MOI.ScalarQuadraticTerm{T},
     var_is_first::Bool,
@@ -194,19 +176,19 @@ function push_affine_term(
 end
 
 """
-    set_dual_objective(
+    _set_dual_objective(
         dual_model::MOI.ModelLike,
-        dual_objective::DualObjective{T},
+        dual_objective::_DualObjective{T},
     )::Nothing where {T}
 
 Add the objective function to the dual model.
 """
-function set_dual_objective(
+function _set_dual_objective(
     dual_model::MOI.ModelLike,
-    dual_objective::DualObjective{T},
+    dual_objective::_DualObjective{T},
 )::Nothing where {T}
     # Set dual model objective function
-    raw_obj = get_raw_obj(dual_objective)
+    raw_obj = dual_objective.obj
     if MOI.Utilities.number_of_quadratic_terms(T, raw_obj) > 0
         MOI.set(
             dual_model,
@@ -224,21 +206,21 @@ function set_dual_objective(
 end
 
 """
-    get_dual_objective(
+    _get_dual_objective(
         dual_model::MOI.ModelLike,
         dual_obj_affine_terms::Dict,
-        primal_objective::PrimalObjective{T},
-    )::DualObjective{T} where {T}
+        primal_objective::_PrimalObjective{T},
+    )::_DualObjective{T} where {T}
 
 build the dual model objective function from the primal model.
 """
-function get_dual_objective(
+function _get_dual_objective(
     dual_problem,
     dual_obj_affine_terms::Dict,
-    primal_objective::PrimalObjective{T},
+    primal_objective::_PrimalObjective{T},
     scalar_affine_terms,
     variable_parameters,
-)::DualObjective{T} where {T}
+)::_DualObjective{T} where {T}
     dual_model = dual_problem.dual_model
     map = dual_problem.primal_dual_map
     sense_change = ifelse(
@@ -268,14 +250,14 @@ function get_dual_objective(
             quad_terms,
             MOI.ScalarQuadraticTerm{T}(
                 -MOI.coefficient(term),
-                map.primal_var_dual_quad_slack[term.variable_1],
-                map.primal_var_dual_quad_slack[term.variable_2],
+                map.primal_var_in_quad_obj_to_dual_slack_var[term.variable_1],
+                map.primal_var_in_quad_obj_to_dual_slack_var[term.variable_2],
             ),
         )
     end
 
     # parametric part
-    # if some varaibles were marked to be parameters then their final
+    # if some variables were marked to be parameters then their final
     # processing occurs here.
     if nothing !== primal_objective.obj_parametric
 
@@ -287,7 +269,7 @@ function get_dual_objective(
                 lin_terms,
                 MOI.ScalarAffineTerm{T}(
                     MOI.coefficient(term),
-                    map.primal_parameter[term.variable],
+                    map.primal_parameter_to_dual_parameter[term.variable],
                 ),
             )
         end
@@ -300,8 +282,8 @@ function get_dual_objective(
                 quad_terms,
                 MOI.ScalarQuadraticTerm{T}(
                     MOI.coefficient(term),
-                    map.primal_parameter[term.variable_1],
-                    map.primal_parameter[term.variable_2],
+                    map.primal_parameter_to_dual_parameter[term.variable_1],
+                    map.primal_parameter_to_dual_parameter[term.variable_2],
                 ),
             )
         end
@@ -313,7 +295,7 @@ function get_dual_objective(
         # and, thus, the go to the obj of the dual.
         # TODO? set_dot
         for vi in variable_parameters
-            param = map.primal_parameter[vi]
+            param = map.primal_parameter_to_dual_parameter[vi]
             for term in scalar_affine_terms[vi]
                 push!(
                     quad_terms,
@@ -330,7 +312,7 @@ function get_dual_objective(
     saf_dual_objective = MOI.ScalarQuadraticFunction{T}(
         quad_terms,
         lin_terms,
-        MOI.constant(get_raw_obj(primal_objective)),
+        MOI.constant(primal_objective.obj),
     )
-    return DualObjective{T}(saf_dual_objective)
+    return _DualObjective{T}(saf_dual_objective)
 end

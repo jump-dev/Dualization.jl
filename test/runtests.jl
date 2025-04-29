@@ -104,6 +104,7 @@ primal_power_cone_optimizer = []
 include("Solvers/highs_test.jl")
 include("Solvers/csdp_test.jl")
 include("Solvers/scs_test.jl")
+include("Solvers/hypatia_test.jl")
 
 include("Tests/test_JuMP_dualize.jl")
 include("Tests/test_MOI_wrapper.jl")

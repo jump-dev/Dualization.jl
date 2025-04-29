@@ -6,12 +6,6 @@
 @testset "structures" begin
     primal_dual_map = Dualization.PrimalDualMap{Float64}()
     @test Dualization.is_empty(primal_dual_map)
-    push!(
-        primal_dual_map.primal_var_dual_con,
-        MOI.VariableIndex(1) =>
-            MOI.ConstraintIndex{MOI.VariableIndex,MOI.EqualTo}(1),
-    )
-    @test !Dualization.is_empty(primal_dual_map)
 
     # Constructors
     model = lp1_test()

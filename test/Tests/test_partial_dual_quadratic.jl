@@ -105,41 +105,46 @@
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        primal_constraint_data = primal_dual_map.primal_constraint_data
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.GreaterThan{Float64},
         }(
             1,
-        )] == [MOI.VariableIndex(1)]
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        )].dual_variables == [MOI.VariableIndex(1)]
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.GreaterThan{Float64},
         }(
             2,
-        )] == [MOI.VariableIndex(2)]
+        )].dual_variables == [MOI.VariableIndex(2)]
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[MOI.VariableIndex(1)] == MOI.ConstraintIndex{
+        primal_variable_data = primal_dual_map.primal_variable_data
+        @test primal_variable_data[MOI.VariableIndex(1)].dual_constraint ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             1,
         )
-        @test primal_var_dual_con[MOI.VariableIndex(2)] == MOI.ConstraintIndex{
+        @test primal_variable_data[MOI.VariableIndex(2)].dual_constraint ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             2,
         )
 
-        primal_parameter = primal_dual_map.primal_parameter
-        @test primal_parameter[MOI.VariableIndex(3)] == MOI.VariableIndex(2 + 1)
+        primal_parameter_to_dual_parameter =
+            primal_dual_map.primal_parameter_to_dual_parameter
+        @test primal_parameter_to_dual_parameter[MOI.VariableIndex(3)] ==
+              MOI.VariableIndex(2 + 1)
 
-        primal_var_dual_quad_slack = primal_dual_map.primal_var_dual_quad_slack
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(1)] ==
+        primal_var_in_quad_obj_to_dual_slack_var =
+            primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(1)] ==
               MOI.VariableIndex(2 + 1 + 1)
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(2)] ==
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(2)] ==
               MOI.VariableIndex(2 + 1 + 2)
     end
     @testset "qp2_test - ignore y" begin
@@ -218,32 +223,46 @@
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == -1.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        primal_constraint_data = primal_dual_map.primal_constraint_data
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             1,
-        )] == [MOI.VariableIndex(1)]
+        )].dual_variables == [MOI.VariableIndex(1)]
         @test !haskey(
-            primal_con_dual_var,
+            primal_constraint_data,
             MOI.ConstraintIndex{MOI.VariableIndex,MOI.GreaterThan{Float64}}(1),
         )
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.VariableIndex,
             MOI.GreaterThan{Float64},
         }(
             2,
-        )] == [MOI.VariableIndex(2)]
+        )].dual_variables == [MOI.VariableIndex(2)]
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test isempty(primal_var_dual_con)
+        for (vi, data) in primal_dual_map.primal_variable_data
+            @test vi == MOI.VariableIndex(1)
+            @test data.primal_constrained_variable_constraint ==
+                  MOI.ConstraintIndex{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(
+                1,
+            )
+            @test data.primal_constrained_variable_index == 0
+            @test data.dual_constraint !== nothing
+            @test data.dual_function === nothing
+        end
 
-        primal_parameter = primal_dual_map.primal_parameter
-        @test primal_parameter[MOI.VariableIndex(2)] == MOI.VariableIndex(3)
+        primal_parameter_to_dual_parameter =
+            primal_dual_map.primal_parameter_to_dual_parameter
+        @test primal_parameter_to_dual_parameter[MOI.VariableIndex(2)] ==
+              MOI.VariableIndex(3)
 
-        primal_var_dual_quad_slack = primal_dual_map.primal_var_dual_quad_slack
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(1)] ==
+        primal_var_in_quad_obj_to_dual_slack_var =
+            primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(1)] ==
               MOI.VariableIndex(4)
     end
     @testset "qp2_test - ignore y - no obj" begin
@@ -322,31 +341,46 @@
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == -1.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        primal_constraint_data = primal_dual_map.primal_constraint_data
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
             1,
-        )] == [MOI.VariableIndex(1)]
+        )].dual_variables == [MOI.VariableIndex(1)]
         @test !(haskey(
-            primal_con_dual_var,
+            primal_constraint_data,
             MOI.ConstraintIndex{MOI.VariableIndex,MOI.GreaterThan{Float64}}(1),
         ))
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.VariableIndex,
             MOI.GreaterThan{Float64},
         }(
             2,
-        )] == [MOI.VariableIndex(2)]
+        )].dual_variables == [MOI.VariableIndex(2)]
 
-        @test isempty(primal_dual_map.primal_var_dual_con)
+        for (vi, data) in primal_dual_map.primal_variable_data
+            @test vi == MOI.VariableIndex(1)
+            @test data.primal_constrained_variable_constraint ==
+                  MOI.ConstraintIndex{
+                MOI.VariableIndex,
+                MOI.GreaterThan{Float64},
+            }(
+                1,
+            )
+            @test data.primal_constrained_variable_index == 0
+            @test data.dual_constraint !== nothing
+            @test data.dual_function === nothing
+        end
 
-        primal_parameter = primal_dual_map.primal_parameter
-        @test primal_parameter[MOI.VariableIndex(2)] == MOI.VariableIndex(3)
+        primal_parameter_to_dual_parameter =
+            primal_dual_map.primal_parameter_to_dual_parameter
+        @test primal_parameter_to_dual_parameter[MOI.VariableIndex(2)] ==
+              MOI.VariableIndex(3)
 
-        primal_var_dual_quad_slack = primal_dual_map.primal_var_dual_quad_slack
-        @test primal_var_dual_quad_slack[MOI.VariableIndex(1)] ==
+        primal_var_in_quad_obj_to_dual_slack_var =
+            primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var
+        @test primal_var_in_quad_obj_to_dual_slack_var[MOI.VariableIndex(1)] ==
               MOI.VariableIndex(4)
     end
 end

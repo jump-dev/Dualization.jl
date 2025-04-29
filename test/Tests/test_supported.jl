@@ -11,9 +11,9 @@
         obj_typ_svf = MOI.get(lp1_test(), MOI.ObjectiveFunctionType())
         obj_typ_saf = MOI.get(lp10_test(), MOI.ObjectiveFunctionType())
         obj_typ_qp = MOI.get(qp1_test(), MOI.ObjectiveFunctionType())
-        @test Dualization.supported_obj(obj_typ_svf)
-        @test Dualization.supported_obj(obj_typ_saf)
-        @test Dualization.supported_obj(obj_typ_qp)
+        @test Dualization.supported_objective(obj_typ_svf)
+        @test Dualization.supported_objective(obj_typ_saf)
+        @test Dualization.supported_objective(obj_typ_qp)
     end
 
     @testset "supported_constraints" begin

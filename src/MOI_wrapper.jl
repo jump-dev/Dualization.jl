@@ -5,8 +5,11 @@
 
 export DualOptimizer, dual_optimizer
 
-function dual_optimizer(optimizer_constructor)
-    return () -> DualOptimizer(MOI.instantiate(optimizer_constructor))
+function dual_optimizer(
+    optimizer_constructor;
+    coefficient_type::Type{T} = Float64,
+) where {T<:Number}
+    return () -> DualOptimizer{T}(MOI.instantiate(optimizer_constructor))
 end
 
 struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
@@ -85,7 +88,7 @@ function MOI.supports(
     else
         MOI.ObjectiveFunction{MOI.ScalarAffineFunction{T}}()
     end
-    return supported_obj(F) &&
+    return supported_objective(F) &&
            MOI.supports(optimizer.dual_problem.dual_model, attr)
 end
 
@@ -123,7 +126,7 @@ function _change_constant(
     model,
     ci::MOI.ConstraintIndex{<:MOI.ScalarAffineFunction,S},
     constant,
-    idx,
+    ::Int,
 ) where {S}
     MOI.set(model, MOI.ConstraintSet(), ci, S(constant))
     return
@@ -133,7 +136,7 @@ function _change_constant(
     model,
     ci::MOI.ConstraintIndex{<:MOI.VectorAffineFunction},
     constant,
-    idx,
+    idx::Int,
 )
     func = MOI.get(model, MOI.ConstraintFunction(), ci)
     constants = copy(func.constant)
@@ -156,22 +159,19 @@ function MOI.modify(
         constant = -constant
     end
     vi = obj_change.variable
-    if vi in keys(primal_dual_map.constrained_var_idx)
-        ci_primal, index = primal_dual_map.constrained_var_idx[vi]
-        ci_dual = primal_dual_map.constrained_var_dual[ci_primal]
-        if ci_dual === NO_CONSTRAINT
-            return
-        end
+    data = get(primal_dual_map.primal_variable_data, vi, nothing)
+    if data === nothing
+        # error
+    elseif data.dual_constraint === nothing
+        return
+    elseif data.primal_constrained_variable_constraint !== nothing
         constant = -constant
-    else
-        ci_dual = primal_dual_map.primal_var_dual_con[vi]
-        index = 1
     end
     _change_constant(
         optimizer.dual_problem.dual_model,
-        ci_dual,
+        data.dual_constraint,
         constant,
-        index,
+        data.primal_constrained_variable_index,
     )
     return
 end
@@ -185,7 +185,8 @@ function MOI.supports_add_constrained_variables(
         MOI.ScalarAffineFunction{T},
         MOI.EqualTo{T},
     )
-    # If `_dual_set_type(MOI.Reals)` was `MOI.Zeros`, we would not need this method as special case of the one below
+    # If `_dual_set_type(MOI.Reals)` was `MOI.Zeros`,
+    # we would not need this method as special case of the one below
 end
 
 function MOI.supports_add_constrained_variables(
@@ -232,134 +233,61 @@ function MOI.empty!(optimizer::DualOptimizer)
     return
 end
 
-# MOI.get auxiliary functions
-function get_ci_dual_problem(optimizer::DualOptimizer, vi::MOI.VariableIndex)
-    return optimizer.dual_problem.primal_dual_map.primal_var_dual_con[vi]
-end
-
-function get_ci_dual_problem(optimizer::DualOptimizer, ci::MOI.ConstraintIndex)
-    return optimizer.dual_problem.primal_dual_map.primal_con_dual_con[ci]
-end
-
-function get_primal_ci_constant(
-    optimizer::DualOptimizer,
-    ci::MOI.ConstraintIndex,
-)
-    return first(get_primal_ci_constants(optimizer, ci))
-end
-
-function get_primal_ci_constants(
-    optimizer::DualOptimizer,
-    ci::MOI.ConstraintIndex,
-)
-    return optimizer.dual_problem.primal_dual_map.primal_con_constants[ci]
-end
-
-function get_vi_dual_problem(optimizer::DualOptimizer, ci::MOI.ConstraintIndex)
-    return first(get_vis_dual_problem(optimizer, ci))
-end
-
-function get_vis_dual_problem(optimizer::DualOptimizer, ci::MOI.ConstraintIndex)
-    return optimizer.dual_problem.primal_dual_map.primal_con_dual_var[ci]
-end
-
 function MOI.get(optimizer::DualOptimizer, ::MOI.SolverName)
     name = MOI.get(optimizer.dual_problem.dual_model, MOI.SolverName())
     return "Dual model with $name attached"
 end
 
-function _get(
-    ::DualOptimizer{T},
-    ::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex{MOI.VariableIndex,MOI.EqualTo{T}},
-    ::MOI.ConstraintIndex{Nothing,Nothing},
-) where {T}
-    return zero(T)
-end
-
-function _get(
-    optimizer::DualOptimizer,
-    attr::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex,
-    ci::MOI.ConstraintIndex,
-)
-    return MOI.get(optimizer.dual_problem.dual_model, attr, ci)
-end
-
-function _get(
-    optimizer::DualOptimizer{T},
-    ::MOI.AbstractConstraintAttribute,
-    ci_primal::MOI.ConstraintIndex{MOI.VectorOfVariables,MOI.Zeros},
-    ::MOI.ConstraintIndex{Nothing,Nothing},
-) where {T}
-    n = MOI.output_dimension(
-        optimizer.dual_problem.primal_dual_map.constrained_var_zero[ci_primal],
-    )
-    return zeros(T, n)
-end
-
-function _get_at_index(
-    optimizer::DualOptimizer,
-    attr::MOI.AbstractConstraintAttribute,
-    ci_primal::MOI.ConstraintIndex{MOI.VariableIndex},
-    ci_dual::MOI.ConstraintIndex,
-    idx,
-)
-    @assert isone(idx)
-    return _get(optimizer, attr, ci_primal, ci_dual)
-end
-
-function _get_at_index(
-    optimizer::DualOptimizer,
-    attr::MOI.AbstractConstraintAttribute,
-    ci_primal::MOI.ConstraintIndex{MOI.VectorOfVariables},
-    ci_dual::MOI.ConstraintIndex,
-    idx,
-)
-    return _get(optimizer, attr, ci_primal, ci_dual)[idx]
-end
-
 function MOI.get(
-    optimizer::DualOptimizer,
+    optimizer::DualOptimizer{T},
     ::MOI.VariablePrimal,
     vi::MOI.VariableIndex,
-)
+)::T where {T}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if vi in keys(primal_dual_map.constrained_var_idx)
-        ci_primal, idx = primal_dual_map.constrained_var_idx[vi]
-        ci_dual = primal_dual_map.constrained_var_dual[ci_primal]
-        return _get_at_index(
-            optimizer,
-            MOI.ConstraintDual(),
-            ci_primal,
-            ci_dual,
-            idx,
-        )
-    else
+    data = get(primal_dual_map.primal_variable_data, vi, nothing)
+    if data === nothing
+        # error
+    elseif data.dual_constraint === nothing
+        return zero(T)
+    elseif data.primal_constrained_variable_constraint === nothing
         return -MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.ConstraintDual(),
-            get_ci_dual_problem(optimizer, vi),
+            data.dual_constraint,
+        )
+    elseif data.dual_constraint isa
+           MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}
+        return MOI.get(
+            optimizer.dual_problem.dual_model,
+            MOI.ConstraintDual(),
+            data.dual_constraint,
+        )[data.primal_constrained_variable_index]
+    else
+        return MOI.get(
+            optimizer.dual_problem.dual_model,
+            MOI.ConstraintDual(),
+            data.dual_constraint,
         )
     end
 end
 
 function MOI.get(
     optimizer::DualOptimizer,
-    attr::MOI.ConstraintDual,
+    ::MOI.ConstraintDual,
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
-        ci_dual = primal_dual_map.constrained_var_dual[ci]
-        if ci_dual === NO_CONSTRAINT
+    if haskey(primal_dual_map.primal_constrained_variables, ci)
+        vi = primal_dual_map.primal_constrained_variables[ci][]
+        ci_dual = primal_dual_map.primal_variable_data[vi].dual_constraint
+        if ci_dual === nothing
             return MOI.Utilities.eval_variables(
-                primal_dual_map.constrained_var_zero[ci],
-            ) do vi
+                primal_dual_map.primal_variable_data[vi].dual_function,
+            ) do inner_vi
                 return MOI.get(
                     optimizer.dual_problem.dual_model,
                     MOI.VariablePrimal(),
-                    vi,
+                    inner_vi,
                 )
             end
         end
@@ -377,7 +305,7 @@ function MOI.get(
         return MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.VariablePrimal(),
-            get_vi_dual_problem(optimizer, ci),
+            primal_dual_map.primal_constraint_data[ci].dual_variables[],
         )
     end
 end
@@ -388,57 +316,66 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
-        ci_dual = primal_dual_map.constrained_var_dual[ci]
-        if ci_dual === NO_CONSTRAINT
-            return MOI.Utilities.eval_variables(
-                primal_dual_map.constrained_var_zero[ci],
-            ) do vi
-                return MOI.get(
-                    optimizer.dual_problem.dual_model,
-                    MOI.VariablePrimal(),
-                    vi,
-                )
-            end
+    if !haskey(primal_dual_map.primal_constraint_data, ci)
+        vis = primal_dual_map.primal_constrained_variables[ci]
+        ci_dual = primal_dual_map.primal_variable_data[vis[1]].dual_constraint
+        if ci_dual === nothing
+            return [
+                MOI.Utilities.eval_variables(
+                    primal_dual_map.primal_variable_data[vi].dual_function,
+                ) do inner_vi
+                    return MOI.get(
+                        optimizer.dual_problem.dual_model,
+                        MOI.VariablePrimal(),
+                        inner_vi,
+                    )
+                end for vi in vis
+            ]
         end
         return MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.ConstraintPrimal(),
-            primal_dual_map.constrained_var_dual[ci],
+            ci_dual,
         )
     else
         return MOI.get.(
             optimizer.dual_problem.dual_model,
             MOI.VariablePrimal(),
-            get_vis_dual_problem(optimizer, ci),
+            primal_dual_map.primal_constraint_data[ci].dual_variables,
         )
     end
 end
 
 function MOI.get(
-    optimizer::DualOptimizer,
+    optimizer::DualOptimizer{T},
     ::MOI.ConstraintPrimal,
     ci::MOI.ConstraintIndex{F,S},
-) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
+) where {T,F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
-        return _get(
-            optimizer,
-            MOI.ConstraintDual(),
-            ci,
-            primal_dual_map.constrained_var_dual[ci],
-        )
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if data === nothing
+        first_vi = primal_dual_map.primal_constrained_variables[ci][1]
+        ci_dual = primal_dual_map.primal_variable_data[first_vi].dual_constraint
+        if ci_dual === nothing
+            return zero(T)
+        else
+            return MOI.get(
+                optimizer.dual_problem.dual_model,
+                MOI.ConstraintDual(),
+                ci_dual,
+            )
+        end
     else
-        primal_ci_constant = get_primal_ci_constant(optimizer, ci)
+        primal_ci_constant = data.primal_set_constants[1]
         # If it has no key then there is no dual constraint
-        if !haskey(primal_dual_map.primal_con_dual_con, ci)
+        ci_dual = data.dual_constrained_variable_constraint
+        if ci_dual === nothing
             return -primal_ci_constant
         end
-        ci_dual_problem = get_ci_dual_problem(optimizer, ci)
         return MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.ConstraintDual(),
-            ci_dual_problem,
+            ci_dual,
         ) - primal_ci_constant
     end
 end
@@ -449,36 +386,42 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {T,F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
-        return _get(
-            optimizer,
-            MOI.ConstraintDual(),
-            ci,
-            primal_dual_map.constrained_var_dual[ci],
-        )
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if data === nothing
+        vis = primal_dual_map.primal_constrained_variables[ci]
+        ci_dual = primal_dual_map.primal_variable_data[vis[1]].dual_constraint
+        if ci_dual === nothing
+            return zeros(T, length(vis))
+        else
+            return MOI.get(
+                optimizer.dual_problem.dual_model,
+                MOI.ConstraintDual(),
+                ci_dual,
+            )
+        end
     else
+        ci_dual = data.dual_constrained_variable_constraint
         # If it has no key then there is no dual constraint
-        if !haskey(primal_dual_map.primal_con_dual_con, ci)
+        if ci_dual === nothing
             # The number of dual variable associated with the primal constraint is the ci dimension
-            ci_dimension = length(get_vis_dual_problem(optimizer, ci))
+            ci_dimension = length(data.dual_variables)
             return zeros(T, ci_dimension)
         end
-        ci_dual_problem = get_ci_dual_problem(optimizer, ci)
         return MOI.get(
             optimizer.dual_problem.dual_model,
             MOI.ConstraintDual(),
-            ci_dual_problem,
+            ci_dual,
         )
     end
 end
 
 function MOI.get(optimizer::DualOptimizer, ::MOI.TerminationStatus)
-    return dual_status(
+    return _dual_status(
         MOI.get(optimizer.dual_problem.dual_model, MOI.TerminationStatus()),
     )
 end
 
-function dual_status(term::MOI.TerminationStatusCode)
+function _dual_status(term::MOI.TerminationStatusCode)
     if term == MOI.INFEASIBLE
         return MOI.DUAL_INFEASIBLE
     elseif term == MOI.DUAL_INFEASIBLE
