@@ -7,12 +7,12 @@
     @testset "set_dual_model_sense" begin
         model = lp1_test()
         @test MOI.get(model, MOI.ObjectiveSense()) == MOI.MIN_SENSE
-        Dualization._set_dual_model_sense(model, model)
+        Dualization._set_dual_model_sense(model, model, false)
         @test MOI.get(model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
 
         model = lp4_test()
         @test MOI.get(model, MOI.ObjectiveSense()) == MOI.MAX_SENSE
-        Dualization._set_dual_model_sense(model, model)
+        Dualization._set_dual_model_sense(model, model, false)
         @test MOI.get(model, MOI.ObjectiveSense()) == MOI.MIN_SENSE
     end
 end
