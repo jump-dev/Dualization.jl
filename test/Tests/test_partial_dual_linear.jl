@@ -81,16 +81,17 @@
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 0.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        primal_constraint_data = primal_dual_map.primal_constraint_data
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.LessThan{Float64},
         }(
             1,
-        )] == [MOI.VariableIndex(1)]
+        )].dual_variables == [MOI.VariableIndex(1)]
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[MOI.VariableIndex(1)] == MOI.ConstraintIndex{
+        primal_variable_data = primal_dual_map.primal_variable_data
+        @test primal_variable_data[MOI.VariableIndex(1)].dual_constraint ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(
@@ -167,7 +168,7 @@
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 3.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
+        primal_constraint_data = primal_dual_map.primal_constraint_data
         vaf_npos, = MOI.get(
             primal_model,
             MOI.ListOfConstraintIndices{
@@ -175,19 +176,25 @@
                 MOI.Nonpositives,
             }(),
         )
-        @test primal_con_dual_var[vaf_npos] ==
+        @test primal_constraint_data[vaf_npos].dual_variables ==
               [MOI.VariableIndex(1); MOI.VariableIndex(2)]
-        vgt, = MOI.get(
+        vgt1, vgt2 = MOI.get(
             primal_model,
             MOI.ListOfConstraintIndices{
                 MOI.VariableIndex,
                 MOI.GreaterThan{Float64},
             }(),
         )
-        @test primal_con_dual_var[vgt] == [MOI.VariableIndex(3)]
+        @test primal_constraint_data[vgt1].dual_variables ==
+              [MOI.VariableIndex(3)]
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test isempty(primal_var_dual_con)
+        for (vi, data) in primal_dual_map.primal_variable_data
+            vi = MOI.VariableIndex(2)
+            @test data.primal_constrained_variable_constraint == vgt2
+            @test data.primal_constrained_variable_index == 0
+            @test data.dual_constraint !== nothing
+            @test data.dual_function === nothing
+        end
     end
 
     @testset "lp12_test - x_1 and x_3 ignored" begin
@@ -265,28 +272,29 @@
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
 
-        primal_con_dual_var = primal_dual_map.primal_con_dual_var
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        primal_constraint_data = primal_dual_map.primal_constraint_data
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.VariableIndex,
             MOI.LessThan{Float64},
         }(
             2,
-        )] == [MOI.VariableIndex(3)]
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        )].dual_variables == [MOI.VariableIndex(3)]
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.VariableIndex,
             MOI.LessThan{Float64},
         }(
             1,
-        )] == [MOI.VariableIndex(2)]
-        @test primal_con_dual_var[MOI.ConstraintIndex{
+        )].dual_variables == [MOI.VariableIndex(2)]
+        @test primal_constraint_data[MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.LessThan{Float64},
         }(
             1,
-        )] == [MOI.VariableIndex(1)]
+        )].dual_variables == [MOI.VariableIndex(1)]
 
-        primal_var_dual_con = primal_dual_map.primal_var_dual_con
-        @test primal_var_dual_con[MOI.VariableIndex(2)] == MOI.ConstraintIndex{
+        primal_variable_data = primal_dual_map.primal_variable_data
+        @test primal_variable_data[MOI.VariableIndex(2)].dual_constraint ==
+              MOI.ConstraintIndex{
             MOI.ScalarAffineFunction{Float64},
             MOI.EqualTo{Float64},
         }(

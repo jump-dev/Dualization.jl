@@ -98,18 +98,20 @@ function dualize(
     # Get primal objective in quadratic form
     # terms already split considering parameters
     primal_objective =
-        get_primal_objective(primal_model, variable_parameters, T)
+        _get_primal_objective(primal_model, variable_parameters, T)
 
     # Cache information of which primal variables are `constrained_variables`
-    # creating a map: constrained_var_idx, from original primal vars to original
-    # constrains and their internal index (if vector constrains), 1 otherwise.
-    # Also, initializes the map: `constrained_var_dual`, from original primal ci
-    # to the dual constraint (latter is initilized as empty at this point).
+    # filling the a map: primal_variable_data, from original primal vars to:
+    # 1) constrained variable constraint (if constrained) and 2) index (if
+    # vector and constrained) and 3) dual constraint (if dual set not `Reals`),
+    # 4) dual function (if dual set is `Reals`).
+    # Items 3 and 4 are initialized with `nothing` at this point.
     # If the Set constant of a MOI.VariableIndex-in-Set constraint is non-zero,
     # the respective primal variable will not be a constrained variable (with
     # respect to that constraint).
+    # Constrained variables are registered in `primal_constrained_variables`.
     if consider_constrained_variables
-        add_constrained_variables(
+        _select_constrained_variables(
             dual_problem,
             primal_model,
             variable_parameters,
@@ -124,19 +126,19 @@ function dualize(
     # * creates the dual variable associated with the primal constraint
     # * fills `dual_obj_affine_terms`, since we are already looping through
     #   all constraints that might have constants.
-    # * fills `primal_con_dual_var` mapping the primal constraint and the dual
+    # * fills `primal_con_to_dual_var_vec` mapping the primal constraint and the dual
     #   variable
-    # * fills `primal_con_dual_con` to map the primal constraint to a
+    # * fills `primal_con_to_dual_convarcon` to map the primal constraint to a
     #   constraint in the dual variable (if there is such constraint the dual
     #   dual variable is said to be constrained). If the primal constraint's set
     #   is EqualTo or Zeros, no constraint is added in the dual variable (the
     #   dual variable is said to be free).
-    # * fills `primal_con_constants` mapping primal constraints to their
+    # * fills `primal_con_to_primal_constants_vec` mapping primal constraints to their
     #   respective constants, which might be inside the set.
     #   this map is used in `MOI.get(::DualOptimizer,::MOI.ConstraintPrimal,ci)`
     #   that requires extra information in the case that the scalar set
     #   constrains a constant (EqualtTo, GreaterThan, LessThan)
-    dual_obj_affine_terms = add_dual_vars_in_dual_cones(
+    dual_obj_affine_terms = _add_dual_vars_in_dual_cones(
         dual_problem.dual_model,
         primal_model,
         dual_problem.primal_dual_map,
@@ -146,9 +148,9 @@ function dualize(
 
     # Creates variables in the dual problem that represent parameters in the
     # primal model.
-    # Fills `primal_parameter` mapping parameters in the primal to parameters
+    # Fills `primal_parameter_to_dual_parameter` mapping parameters in the primal to parameters
     # in the dual model.
-    add_primal_parameter_vars(
+    _add_primal_parameter_vars(
         dual_problem.dual_model,
         primal_model,
         dual_problem.primal_dual_map,
@@ -161,9 +163,9 @@ function dualize(
     # Add dual slack variables that are associated to the primal quadratic terms
     # All primal variables that appear in the objective products will have an
     # associated dual slack variable that is created here.
-    # also, `primal_var_dual_quad_slack` is filled, mapping primal variables
+    # also, `primal_var_in_quad_obj_to_dual_slack_var` is filled, mapping primal variables
     # (that appear in quadritc objective terms) to dual "slack" variables.
-    add_quadratic_slack_vars(
+    _add_quadratic_slack_vars(
         dual_problem.dual_model,
         primal_model,
         dual_problem.primal_dual_map,
@@ -178,8 +180,8 @@ function dualize(
     # Also, fills the link dictionary.
     # returns `scalar_affine_terms`
     # because the terms associated to variables that are parameters will be used
-    # in `get_dual_objective`
-    scalar_affine_terms = add_dual_equality_constraints(
+    # in `_get_dual_objective`
+    scalar_affine_terms = _add_dual_equality_constraints(
         dual_problem.dual_model,
         primal_model,
         dual_problem.primal_dual_map,
@@ -193,7 +195,7 @@ function dualize(
         # do not add objective
     else
         # Fill Dual Objective Coefficients Struct
-        dual_objective = get_dual_objective(
+        dual_objective = _get_dual_objective(
             dual_problem,
             dual_obj_affine_terms,
             primal_objective,
@@ -201,7 +203,7 @@ function dualize(
             variable_parameters,
         )
         # Add dual objective to the model
-        set_dual_objective(dual_problem.dual_model, dual_objective)
+        _set_dual_objective(dual_problem.dual_model, dual_objective)
     end
     return dual_problem
 end

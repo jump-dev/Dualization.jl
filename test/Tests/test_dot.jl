@@ -4,17 +4,17 @@
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
 @testset "test_dot.jl" begin
-    a = Dualization.CanonicalVector{Int}(1, 3)
+    a = Dualization._CanonicalVector{Int}(1, 3)
     @test collect(a) == [1, 0, 0]
-    b = Dualization.CanonicalVector{Int}(2, 3)
+    b = Dualization._CanonicalVector{Int}(2, 3)
     @test collect(b) == [0, 1, 0]
     set = MOI.PositiveSemidefiniteConeTriangle(2)
     @test MOI.Utilities.set_dot(a, b, set) == 0
     @test MOI.Utilities.set_dot(a, a, set) == 1
     @test MOI.Utilities.set_dot(b, b, set) == 2
-    a = Dualization.CanonicalVector{Int}(1, 4)
-    b = Dualization.CanonicalVector{Int}(2, 4)
-    c = Dualization.CanonicalVector{Int}(3, 4)
+    a = Dualization._CanonicalVector{Int}(1, 4)
+    b = Dualization._CanonicalVector{Int}(2, 4)
+    c = Dualization._CanonicalVector{Int}(3, 4)
     set = MOI.RootDetConeTriangle(2)
     @test MOI.Utilities.set_dot(a, b, set) == 0
     @test MOI.Utilities.set_dot(b, c, set) == 0
