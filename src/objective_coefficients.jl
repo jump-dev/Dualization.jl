@@ -27,7 +27,7 @@ function _set_dual_model_sense(
     else
         error(
             "Expected objective sense to be either MIN_SENSE or MAX_SENSE, " *
-            "got FEASIBILITY_SENSE. It is not possible to decidie how to " *
+            "got FEASIBILITY_SENSE. It is not possible to decide how to " *
             "dualize. Set the sense to either MIN_SENSE or MAX_SENSE to " *
             "proceed. Alternatively, set the keyword argument " *
             "`assume_min_if_feasibility` to true to assume the dual model " *
