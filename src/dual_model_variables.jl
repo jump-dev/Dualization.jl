@@ -80,6 +80,7 @@ function _add_dual_variable(
     # Add each vi to the dictionary
     func = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
+    is_unique_var = length(vis) == 1
     for (i, vi) in enumerate(vis)
         if !(F <: MOI.VectorOfVariables)
             value = set_dot(i, set, T) * _get_normalized_constant(func, set, i)
@@ -89,7 +90,8 @@ function _add_dual_variable(
         end
         if !is_empty(dual_names) && !isempty(ci_name)
             pre = dual_names.dual_variable_name_prefix
-            MOI.set(dual_model, MOI.VariableName(), vi, pre * ci_name * "_$i")
+            pos = is_unique_var ? "" : "_$i"
+            MOI.set(dual_model, MOI.VariableName(), vi, pre * ci_name * pos)
         end
     end
     return

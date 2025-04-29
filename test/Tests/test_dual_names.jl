@@ -77,7 +77,7 @@
     }(
         1,
     )].dual_variables[1]
-    @test MOI.get(dual_model, MOI.VariableName(), vi_2) == "dualvar_lessthan_1"
+    @test MOI.get(dual_model, MOI.VariableName(), vi_2) == "dualvar_lessthan"
     # Query constraint names
     ci_1 =
         primal_dual_map.primal_variable_data[MOI.VariableIndex(
