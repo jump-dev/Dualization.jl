@@ -10,8 +10,10 @@ function _add_dual_vars_in_dual_cones(
     primal_dual_map::PrimalDualMap{T},
     dual_names::DualNames,
     con_types::Vector{Tuple{Type,Type}},
+    variable_parameters,
 ) where {T}
     dual_obj_affine_terms = Dict{MOI.VariableIndex,T}()
+    parameters_set = Set(variable_parameters)
     for (F, S) in con_types
         _add_dual_vars_in_dual_cones(
             dual_obj_affine_terms,
@@ -21,6 +23,7 @@ function _add_dual_vars_in_dual_cones(
             dual_names,
             F,
             S,
+            parameters_set,
         )
     end
     return dual_obj_affine_terms
@@ -34,13 +37,22 @@ function _add_dual_vars_in_dual_cones(
     dual_names::DualNames,
     ::Type{F},
     ::Type{S},
+    parameters_set,
 ) where {T,F,S}
     for ci in MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
         # If `F` not one of these two, we can skip the `haskey` check.
-        if haskey(primal_dual_map.primal_constrained_variables, ci)
-            # primal constraints that are the main constraints of
-            # constrained variables have no dual variable associated
-            # bacause they associated with dual constraints
+        if haskey(primal_dual_map.primal_constrained_variables, ci) ||
+           # primal constraints that are the main constraints of
+           # constrained variables have no dual variable associated
+           # bacause they associated with dual constraints
+           (
+            F <: MOI.VariableIndex &&
+            MOI.get(primal_model, MOI.ConstraintFunction(), ci) in
+            parameters_set
+        )
+            # if a parameter is constrained, either because the set is
+            # Parameter or because it was user defined parameter its constraint
+            # will lead to a useless dual variable.
             continue
         end
         # Add dual variable to dual cone

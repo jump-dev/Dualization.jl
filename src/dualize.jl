@@ -69,7 +69,7 @@ function dualize(
     primal_model::MOI.ModelLike,
     dual_problem::DualProblem{T},
     dual_names::DualNames,
-    variable_parameters::Vector{MOI.VariableIndex},
+    _variable_parameters::Vector{MOI.VariableIndex},
     ignore_objective::Bool,
     consider_constrained_variables::Bool,
 ) where {T}
@@ -79,6 +79,15 @@ function dualize(
     # Query all constraint types of the model
     con_types = MOI.get(primal_model, MOI.ListOfConstraintTypesPresent())
     supported_constraints(con_types) # Errors if constraint cant be dualized
+
+    # merge user listed parameters and MOI.VariableIndex-in-MOI.Parameter{T}
+    moi_parameters =
+        _get_parameter_variables(dual_problem.primal_dual_map, primal_model)
+    all_parameters = Set{MOI.VariableIndex}(_variable_parameters)
+    for p in moi_parameters
+        push!(all_parameters, p)
+    end
+    variable_parameters = collect(all_parameters)
 
     # Set the dual model objective sense
     _set_dual_model_sense(dual_problem.dual_model, primal_model)
@@ -98,6 +107,8 @@ function dualize(
     # the respective primal variable will not be a constrained variable (with
     # respect to that constraint).
     # Constrained variables are registered in `primal_constrained_variables`.
+    # Since MOI.VariableIndex-in-MOI.Parameter{T} are in the variable_parameters
+    # list, they are not considered constrained variables, they are parameters.
     if consider_constrained_variables
         _select_constrained_variables(
             dual_problem,
@@ -132,6 +143,7 @@ function dualize(
         dual_problem.primal_dual_map,
         dual_names,
         con_types,
+        variable_parameters,
     )
 
     # Creates variables in the dual problem that represent parameters in the
