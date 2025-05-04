@@ -8,17 +8,21 @@ export DualOptimizer, dual_optimizer
 function dual_optimizer(
     optimizer_constructor;
     coefficient_type::Type{T} = Float64,
+    kwargs...,
 ) where {T<:Number}
-    return () -> DualOptimizer{T}(MOI.instantiate(optimizer_constructor))
+    return () ->
+        DualOptimizer{T}(MOI.instantiate(optimizer_constructor), kwargs...)
 end
 
 struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
     dual_problem::DualProblem{T,OT}
+    assume_min_if_feasibility::Bool
 
     function DualOptimizer{T,OT}(
-        dual_problem::DualProblem{T,OT},
+        dual_problem::DualProblem{T,OT};
+        assume_min_if_feasibility::Bool = false,
     ) where {T,OT<:MOI.ModelLike}
-        return new{T,OT}(dual_problem)
+        return new{T,OT}(dual_problem, assume_min_if_feasibility)
     end
 end
 
@@ -50,11 +54,14 @@ CachingOptimizer state: EMPTY_OPTIMIZER
 Solver name: Dual model with HiGHS attached
 ```
 """
-function DualOptimizer(dual_optimizer::OT) where {OT<:MOI.ModelLike}
-    return DualOptimizer{Float64}(dual_optimizer)
+function DualOptimizer(dual_optimizer::OT; kwargs...) where {OT<:MOI.ModelLike}
+    return DualOptimizer{Float64}(dual_optimizer, kwargs...)
 end
 
-function DualOptimizer{T}(dual_optimizer::OT) where {T,OT<:MOI.ModelLike}
+function DualOptimizer{T}(
+    dual_optimizer::OT;
+    kwargs...,
+) where {T,OT<:MOI.ModelLike}
     dual_problem = DualProblem{T}(
         MOI.Bridges.full_bridge_optimizer(
             MOI.Utilities.CachingOptimizer(
@@ -67,7 +74,7 @@ function DualOptimizer{T}(dual_optimizer::OT) where {T,OT<:MOI.ModelLike}
     # discover the type of
     # MOI.Utilities.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
     OptimizerType = typeof(dual_problem.dual_model)
-    return DualOptimizer{T,OptimizerType}(dual_problem)
+    return DualOptimizer{T,OptimizerType}(dual_problem, kwargs...)
 end
 
 DualOptimizer() = error("DualOptimizer must have a solver attached")
@@ -205,7 +212,11 @@ function MOI.supports_add_constrained_variables(
 end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike)
-    dualize(src, dest.dual_problem)
+    dualize(
+        src,
+        dest.dual_problem,
+        assume_min_if_feasibility = dest.assume_min_if_feasibility,
+    )
     idx_map = MOI.Utilities.IndexMap()
     for vi in MOI.get(src, MOI.ListOfVariableIndices())
         setindex!(idx_map, vi, vi)
