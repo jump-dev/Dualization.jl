@@ -113,7 +113,7 @@ function _add_dual_equality_constraints(
         end
         # Add primal variable to dual contraint to the link dictionary
         primal_dual_map.primal_variable_data[primal_vi] =
-            VariableData{T}(nothing, -1, dual_ci, nothing)
+            PrimalVariableData{T}(nothing, -1, dual_ci, nothing)
     end
     return scalar_affine_terms
 end
@@ -139,7 +139,7 @@ function _add_constrained_variable_constraint(
             sense_change * get(scalar_terms, vi, zero(T)),
         )
         primal_dual_map.primal_variable_data[vi] =
-            VariableData{T}(ci, i, nothing, dual_function)
+            PrimalVariableData{T}(ci, i, nothing, dual_function)
     end
     return
 end
@@ -172,7 +172,7 @@ function _add_constrained_variable_constraint(
     dual_ci = MOI.add_constraint(dual_model, func_dual, set_dual)
     for (i, vi) in enumerate(vis)
         primal_dual_map.primal_variable_data[vi] =
-            VariableData{T}(ci, i, dual_ci, nothing)
+            PrimalVariableData{T}(ci, i, dual_ci, nothing)
     end
     if !is_empty(dual_names)
         @warn(
@@ -199,7 +199,7 @@ function _add_constrained_variable_constraint(
         sense_change * get(scalar_terms, vi, zero(T)),
     )
     primal_dual_map.primal_variable_data[vi] =
-        VariableData{T}(ci, 0, nothing, dual_function)
+        PrimalVariableData{T}(ci, 0, nothing, dual_function)
     return
 end
 
@@ -226,7 +226,7 @@ function _add_constrained_variable_constraint(
         set_dual,
     )
     primal_dual_map.primal_variable_data[vi] =
-        VariableData{T}(ci, 0, dual_ci, nothing)
+        PrimalVariableData{T}(ci, 0, dual_ci, nothing)
     if !is_empty(dual_names)
         _set_dual_constraint_name(
             dual_model,

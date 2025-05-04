@@ -5,11 +5,8 @@
 
 module Dualization
 
-import JuMP
 import LinearAlgebra
-import MathOptInterface
-
-const MOI = MathOptInterface
+import MathOptInterface as MOI
 
 include("structures.jl")
 include("utils.jl")

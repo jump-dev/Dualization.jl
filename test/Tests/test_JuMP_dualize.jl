@@ -60,17 +60,44 @@ end
 
         # Test that unnamed objects don't create a key `Symbol("")` in `dual_model`.
         @variable(model)
-        @constraint(model, x == y)
+        @constraint(model, c, x == y)
 
         dual_model = dualize(model; dual_names = DualNames("dual", ""))
 
         @test typeof(dual_model[:dualeqcon]) == VariableRef
         @test !haskey(dual_model, Symbol(""))
+
+        for var in (x, y, z)
+            con = Dualization._get_dual_constraint(dual_model, x)
+            @test con[1] isa ConstraintRef
+            @test con[2] isa Int
+        end
+
+        var = Dualization._get_dual_variables(dual_model, soccon)
+        @test var === nothing
+        con = Dualization._get_dual_constraint(dual_model, soccon)
+        @test con === nothing
+
+        con = Dualization._get_primal_constraint(dual_model, y)
+        @test con[1] isa ConstraintRef
+        @test con[2] == 2
+
+        var = Dualization._get_dual_variables(dual_model, eqcon)
+        @test length(var) == 1
+        @test var[1] isa VariableRef
+        con = Dualization._get_dual_constraint(dual_model, eqcon)
+        @test con === nothing
+
+        var = Dualization._get_dual_variables(dual_model, c)
+        @test length(var) == 1
+        @test var[1] isa VariableRef
+        con = Dualization._get_dual_constraint(dual_model, c)
+        @test con === nothing
     end
     @testset "JuMP_dualize_kwargs" begin
         model = Model()
         @variable(model, x >= 0)
-        @constraint(model, x <= 2)
+        @constraint(model, c, x <= 2)
         @objective(model, Max, 2 * x + 1)
         dual_model = Dualization.dualize(
             model;
@@ -80,5 +107,25 @@ end
         )
         @test dual_model isa Model
         @test num_variables(dual_model) == 2
+        con = Dualization._get_dual_constraint(dual_model, x)
+        @test con[1] isa ConstraintRef
+        @test con[2] == -1
+
+        con = Dualization._get_primal_constraint(dual_model, x)
+        @test con[1] === nothing
+        @test con[2] == -1
+
+        var = Dualization._get_dual_variables(dual_model, c)
+        @test length(var) == 1
+        @test var[] isa VariableRef
+        con = Dualization._get_dual_constraint(dual_model, c)
+        @test con isa ConstraintRef
+
+        cv = LowerBoundRef(x)
+        var = Dualization._get_dual_variables(dual_model, cv)
+        @test length(var) == 1
+        @test var[] isa VariableRef
+        con = Dualization._get_dual_constraint(dual_model, cv)
+        @test con isa ConstraintRef
     end
 end

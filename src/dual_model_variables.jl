@@ -86,7 +86,7 @@ function _add_dual_variable(
         T[]
     end
     primal_dual_map.primal_constraint_data[ci] =
-        ConstraintData(set_constant, vis, con_index)
+        PrimalConstraintData(set_constant, vis, con_index)
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
     # Add each vi to the dictionary

@@ -26,7 +26,7 @@ MOI.Utilities.@model(
 )
 
 """
-    VariableData{T}
+    PrimalVariableData{T}
 
 Data structure used in `PrimalDualMap` to hold information about primal
 variables and their dual counterparts.
@@ -55,9 +55,9 @@ variables and their dual counterparts.
 To got from the constrained variable constraint to the primal variable, use the
 `primal_constrained_variables` field of `PrimalDualMap`.
 
-See also `PrimalDualMap` and `ConstraintData`.
+See also `PrimalDualMap` and `PrimalConstraintData`.
 """
-struct VariableData{T}
+struct PrimalVariableData{T}
     primal_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}
     primal_constrained_variable_index::Int
     dual_constraint::Union{Nothing,MOI.ConstraintIndex}
@@ -66,7 +66,7 @@ end
 
 # constraints of primal constrained variables are not here
 """
-    ConstraintData{T}
+    PrimalConstraintData{T}
 
 Data structure used in `PrimalDualMap` to hold information about primal
 constraints and their dual counterparts.
@@ -85,7 +85,7 @@ added in the `primal_constrained_variables` field of `PrimalDualMap`.
     if primal set is `EqualTo` or `Zeros`, then the dual constraint is `Reals`
     then the dual variable is free (no constraint in the dual model).
 """
-struct ConstraintData{T}
+struct PrimalConstraintData{T}
     primal_set_constants::Vector{T}
     dual_variables::Vector{MOI.VariableIndex}
     dual_constrained_variable_constraint::Union{Nothing,MOI.ConstraintIndex}
@@ -98,14 +98,14 @@ Maps information from all structures of the primal to the dual model.
 
 Main maps:
 
-  * `primal_variable_data::Dict{MOI.VariableIndex,Dualization.VariableData{T}}`:
+  * `primal_variable_data::Dict{MOI.VariableIndex,Dualization.PrimalVariableData{T}}`:
     maps primal variable indices to their data. The data is a structure that
     contains information about the primal variable and its dual counterpart.
     In particular, it contains the primal constrained variable constraint index,
     the primal constrained variable index, the dual constraint index and the
     primal function for the case of constraints that are not added in the dual.
 
-  * `primal_constraint_data::Dict{MOI.ConstraintIndex,Dualization.ConstraintData{T}}`:
+  * `primal_constraint_data::Dict{MOI.ConstraintIndex,Dualization.PrimalConstraintData{T}}`:
     maps primal constraint indices to their data. The data is a structure that
     contains information about the primal constraint and its dual counterpart.
     In particular, it contains the primal set constants, the dual variables and
@@ -125,8 +125,8 @@ Addtional maps
     "slack" variables. These primal variables might appear in other maps.
 """
 mutable struct PrimalDualMap{T}
-    primal_variable_data::Dict{MOI.VariableIndex,VariableData{T}}
-    primal_constraint_data::Dict{MOI.ConstraintIndex,ConstraintData{T}}
+    primal_variable_data::Dict{MOI.VariableIndex,PrimalVariableData{T}}
+    primal_constraint_data::Dict{MOI.ConstraintIndex,PrimalConstraintData{T}}
     primal_constrained_variables::Dict{
         MOI.ConstraintIndex,
         Vector{MOI.VariableIndex},
@@ -141,14 +141,47 @@ mutable struct PrimalDualMap{T}
     }
     function PrimalDualMap{T}() where {T}
         return new(
-            Dict{MOI.VariableIndex,VariableData{T}}(),
-            Dict{MOI.ConstraintIndex,ConstraintData{T}}(),
+            Dict{MOI.VariableIndex,PrimalVariableData{T}}(),
+            Dict{MOI.ConstraintIndex,PrimalConstraintData{T}}(),
             Dict{MOI.ConstraintIndex,Vector{MOI.VariableIndex}}(),
             #
             Dict{MOI.VariableIndex,MOI.VariableIndex}(),
             Dict{MOI.VariableIndex,MOI.VariableIndex}(),
         )
     end
+end
+
+function _get_dual_constraint(m::PrimalDualMap, vi::MOI.VariableIndex)
+    data = m.primal_variable_data[vi]
+    return data.dual_constraint, data.primal_constrained_variable_index
+end
+
+function _get_primal_constraint(m::PrimalDualMap, vi::MOI.VariableIndex)
+    data = m.primal_variable_data[vi]
+    return data.primal_constrained_variable_constraint,
+    data.primal_constrained_variable_index
+end
+
+function _get_dual_variables(m::PrimalDualMap, ci::MOI.ConstraintIndex)
+    if !haskey(m.primal_constrained_variables, ci)
+        # if the constraint is a constrained variable, then the dual variable
+        # is the first element of the vector of dual variables
+        return m.primal_constraint_data[ci].dual_variables
+    end
+    return nothing # ci is a constrained variable constraint
+end
+
+function _get_dual_constraint(m::PrimalDualMap, ci::MOI.ConstraintIndex)
+    if !haskey(m.primal_constrained_variables, ci)
+        # if the constraint is a constrained variable, then the dual variable
+        # is the first element of the vector of dual variables
+        return m.primal_constraint_data[ci].dual_constrained_variable_constraint
+    end
+    return nothing # ci is a constrained variable constraint
+end
+
+function _get_dual_parameter(m::PrimalDualMap, vi::MOI.VariableIndex)
+    return m.primal_parameter_to_dual_parameter[vi]
 end
 
 function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
