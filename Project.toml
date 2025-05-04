@@ -16,4 +16,4 @@ DualizationJuMPExt = "JuMP"
 [compat]
 JuMP = "0.23, 1"
 MathOptInterface = "1"
-julia = "1.6"
+julia = "1.9"
