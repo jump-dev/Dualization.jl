@@ -163,7 +163,7 @@ function _get_primal_constraint(m::PrimalDualMap, vi::MOI.VariableIndex)
 end
 
 function _get_dual_variables(m::PrimalDualMap, ci::MOI.ConstraintIndex)
-    if haskey(m.primal_constrained_variables, ci)
+    if !haskey(m.primal_constrained_variables, ci)
         # if the constraint is a constrained variable, then the dual variable
         # is the first element of the vector of dual variables
         return m.primal_constraint_data[ci].dual_variables
@@ -172,7 +172,7 @@ function _get_dual_variables(m::PrimalDualMap, ci::MOI.ConstraintIndex)
 end
 
 function _get_dual_constraint(m::PrimalDualMap, ci::MOI.ConstraintIndex)
-    if haskey(m.primal_constrained_variables, ci)
+    if !haskey(m.primal_constrained_variables, ci)
         # if the constraint is a constrained variable, then the dual variable
         # is the first element of the vector of dual variables
         return m.primal_constraint_data[ci].dual_constrained_variable_constraint

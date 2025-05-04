@@ -72,14 +72,19 @@ function _get_dual_constraint(dual_model, primal_ref::JuMP.VariableRef)
     return JuMP.constraint_ref_with_index(dual_model, moi_dual_ci), idx
 end
 
-# necessary?
-# function get_primal_constraint(primal_vi::JuMP.VariableRef)
-#     primal_model = JuMP.owner_model(dual_model)
-#     map = _get_primal_dual_map(primal_model)
-#     moi_primal_vi = JuMP.index(primal_vi)
-#     primal_ci, idx = get_primal_constraint(map, moi_primal_vi)
-#     return JuMP.constraint_ref_with_index(primal_model, primal_ci), idx
-# end
+function _get_primal_constraint(
+    dual_model::JuMP.Model,
+    primal_vi::JuMP.VariableRef,
+)
+    primal_model = JuMP.owner_model(primal_vi)
+    map = _get_primal_dual_map(dual_model)
+    moi_primal_vi = JuMP.index(primal_vi)
+    primal_ci, idx = _get_primal_constraint(map, moi_primal_vi)
+    if primal_ci === nothing
+        return nothing, idx
+    end
+    return JuMP.constraint_ref_with_index(primal_model, primal_ci), idx
+end
 
 function _get_dual_variables(
     dual_model::JuMP.Model,
