@@ -89,11 +89,14 @@ function _add_dual_variable(
         PrimalConstraintData(set_constant, vis, con_index)
     # Get constraint name
     ci_name = MOI.get(primal_model, MOI.ConstraintName(), ci)
+    @show ci_name
+    @show ci
     # Add each vi to the dictionary
     func = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
     set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
     is_unique_var = length(vis) == 1
     for (i, vi) in enumerate(vis)
+<<<<<<< Updated upstream
         if !(F <: MOI.VectorOfVariables)
             value = set_dot(i, set, T) * _get_normalized_constant(func, set, i)
             if !iszero(value)
@@ -106,6 +109,44 @@ function _add_dual_variable(
             MOI.set(dual_model, MOI.VariableName(), vi, pre * ci_name * pos)
         end
     end
+=======
+        push_to_dual_obj_aff_terms!(
+            primal_model,
+            dual_obj_affine_terms,
+            vi,
+            func,
+            set,
+            i,
+        )
+        @show dual_names
+        if !isnothing(dual_names)
+            set_dual_variable_name(
+                dual_model,
+                vi,
+                func isa MOI.AbstractScalarFunction ? nothing : i,
+                ci_name,
+                dual_names.dual_variable_name_prefix,
+            )
+        end
+    end
+    return con_index
+end
+
+function set_dual_variable_name(
+    dual_model::MOI.ModelLike,
+    vi::MOI.VariableIndex,
+    i::Union{Nothing,Int},
+    ci_name::String,
+    prefix::String,
+)
+    @show ci_name
+    isempty(ci_name) && return
+    name = prefix * ci_name
+    if !isnothing(i)
+        name *= "_$i"
+    end
+    MOI.set(dual_model, MOI.VariableName(), vi, name)
+>>>>>>> Stashed changes
     return
 end
 
