@@ -174,11 +174,6 @@ function _add_constrained_variable_constraint(
         primal_dual_map.primal_variable_data[vi] =
             PrimalVariableData{T}(ci, i, dual_ci, nothing)
     end
-    if !is_empty(dual_names)
-        @warn(
-            "dual names for constrained vector of variables not supported yet."
-        )
-    end
     return
 end
 
