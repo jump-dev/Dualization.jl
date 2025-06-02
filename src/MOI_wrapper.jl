@@ -3,8 +3,30 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-export DualOptimizer, dual_optimizer
+"""
+    dual_optimizer(
+        optimizer_constructor;
+        coefficient_type::Type{T} = Float64,
+        kwargs...,
+    ) where {T<:Number}
 
+A user-friendly constructor for [`DualOptimizer`](@ref) that can be passed
+directly to the JuMP `Model` constructor.
+
+## Example
+
+```julia
+julia> using Dualization, JuMP, HiGHS
+
+julia> model = Model(dual_optimizer(HiGHS.Optimizer))
+A JuMP Model
+Feasibility problem with:
+Variables: 0
+Model mode: AUTOMATIC
+CachingOptimizer state: EMPTY_OPTIMIZER
+Solver name: Dual model with HiGHS attached
+```
+"""
 function dual_optimizer(
     optimizer_constructor;
     coefficient_type::Type{T} = Float64,

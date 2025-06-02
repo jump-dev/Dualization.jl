@@ -3,21 +3,28 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-using Documenter, Dualization
+import Documenter
+import Dualization
 
-makedocs(
-    modules = [Dualization],
-    doctest = false,
-    clean = true,
-    # See https://github.com/JuliaDocs/Documenter.jl/issues/868
+Documenter.makedocs(
+    sitename = "Dualization.jl",
+    authors = "Guilherme Bodin, and contributors",
     format = Documenter.HTML(
         assets = ["assets/favicon.ico"],
         mathengine = Documenter.MathJax(),
         prettyurls = get(ENV, "CI", nothing) == "true",
     ),
-    sitename = "Dualization.jl",
-    authors = "Guilherme Bodin, and contributors",
-    pages = ["Home" => "index.md", "manual.md", "examples.md", "reference.md"],
+    pages = [
+        "Home" => "index.md",
+        "manual.md",
+        "mathematical_background.md",
+        "examples.md",
+        "reference.md",
+    ],
+    modules = [Dualization],
+    checkdocs = :exports,
+    doctest = true,
+    clean = true,
 )
 
 Documenter.deploydocs(;
