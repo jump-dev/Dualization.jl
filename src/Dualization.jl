@@ -21,4 +21,9 @@ include("dual_equality_constraints.jl")
 include("dualize.jl")
 include("MOI_wrapper.jl")
 
+export dualize
+export dual_optimizer
+export DualOptimizer
+export DualNames
+
 end # module

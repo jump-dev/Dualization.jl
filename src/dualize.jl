@@ -3,8 +3,6 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-export dualize
-
 """
     dualize(args...; kwargs...)
 
@@ -45,7 +43,7 @@ On each of these methods, the user can provide the following keyword arguments:
     added to the dual model. This is also useful for bi-level modelling, where
     the second level model is represented as a KKT in the upper level model.
 
-  * `assume_min_if_feasibility`: a boolean indicating if the objective function 
+  * `assume_min_if_feasibility`: a boolean indicating if the objective function
     is of type `MOI.FEASIBILITY_SENSE` then the objective is treated as
     `MOI.MIN_SENSE`. Therefore, the dual will have a `MOI.MAX_SENSE` objective.
     This is set to false by default, to warn users about the outcome.

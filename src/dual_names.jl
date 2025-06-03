@@ -3,15 +3,36 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-export DualNames
-
 """
-    DualNames
+    DualNames(dual_variable_name_prefix, dual_constraint_name_prefix)
 
-DualNames is a struct to pass the prefix of dual variables and dual constraints
-names.
+A struct to pass the prefix of dual variables and dual constraints names to
+the `dual_names` keyword argument of [`dualize`](@ref).
 
-See more on naming the variables.
+## Example
+
+```jldoctest
+julia> using JuMP, Dualization
+
+julia> begin
+           model = Model()
+           @variable(model, x)
+           @constraint(model, c, x >= 1)
+           @objective(model, Min, x)
+           dual_model = dualize(model; dual_names = DualNames("dual_var_", "dual_con_"))
+       end;
+
+julia> print(model)
+Min x
+Subject to
+ c : x ≥ 1
+
+julia> print(dual_model)
+Max dual_var_c
+Subject to
+ dual_con_x : dual_var_c = 1
+ dual_var_c ≥ 0
+```
 """
 mutable struct DualNames
     dual_variable_name_prefix::String
