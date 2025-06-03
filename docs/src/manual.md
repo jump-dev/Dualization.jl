@@ -2,7 +2,7 @@
 
 ## Dualize a JuMP model
 
-Use [`dualize`](@ref) to formulat the dual of a JuMP model.
+Use [`dualize`](@ref) to formulate the dual of a JuMP model.
 
 For example, consider this problem:
 
@@ -17,23 +17,10 @@ begin
     @constraint(model, eqcon, x == 1)
     @constraint(model, con_le, x + y >= 1)
     @objective(model, Min, y + z)
-    print(model)
-end
-```
-You can dualize the model by doing
-
-```@repl dualize_model
+end;
+print(model)
 dual_model = dualize(model)
 print(dual_model)
-```
-
-Note that if you declare the model with an optimizer attached you will lose the
-optimizer during the dualization. To dualize the model and attach the optimizer
-to the dual model you should do `dualize(model, optimizer)`
-
-```@repl dualize_model
-using ECOS
-dual_model = dualize(model, ECOS.Optimizer)
 ```
 
 ## Name the dual variables and dual constraints
@@ -46,6 +33,17 @@ dual_model = dualize(model; dual_names = DualNames("dual_var_", "dual_con_"))
 print(dual_model)
 ```
 
+## Pass a new optimizer
+
+If the primal model has an optimizer attached you will lose the optimizer during
+the dualization. To dualize the model and attach the optimizer to the dual model
+you should do `dualize(model, optimizer)`:
+
+```@repl dualize_model
+import ECOS
+dual_model = dualize(model, ECOS.Optimizer)
+```
+
 ## Solve a problem using its dual formulation
 
 Wrap an optimizer with [`dual_optimizer`](@ref) to solve the dual of the problem
@@ -53,13 +51,12 @@ instead of the primal:
 ```@repl
 using JuMP, Dualization, ECOS
 model = Model(dual_optimizer(ECOS.Optimizer))
-@variable(model, x)
-@variable(model, y)
-@variable(model, z)
-@constraint(model, soccon, [x; y; z] in SecondOrderCone())
-@constraint(model, eqcon, x == 1)
-@objective(model, Min, y + z)
-optimize!(model)
+```
+You can also set the optimizer after the model is created:
+```@repl
+using JuMP, Dualization, ECOS
+model = Model()
+set_optimizer(model, dual_optimizer(ECOS.Optimizer))
 ```
 
 Pass arguments to the solver by attaching them to the solver constructor:
@@ -142,119 +139,66 @@ Note that some of MOI constraints can be bridged, see [Bridges](http://jump.dev/
 | `MOI.ScalarAffineFunction`    |
 | `MOI.ScalarQuadraticFunction` |
 
-## Adding new sets
+## Advanced: add support for new sets
 
 Dualization.jl can automatically dualize models with custom sets.
-To do this, the user needs to define the set and its dual set and provide the functions:
 
-* `supported_constraint`
-* `dual_set`
+To do this, the user needs to define the set and its dual set and provide the
+functions:
 
-If the custom set has some special scalar product (see the [link](https://jump.dev/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)), the user also needs
-to provide a `set_dot` function.
+* [`Dualization.supported_constraint`](@ref)
+* `MathOptInterface.dual_set`
 
-For example, let us define a fake cone and its dual, the fake dual cone. We will write a JuMP model
-with the fake cone and dualize it.
+If the custom set has some special scalar product (see the [link](https://jump.dev/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)),
+the user also needs to provide the `MathOptInterface.Utilities.set_dot` function.
 
-```julia
-using Dualization, JuMP, MathOptInterface, LinearAlgebra
+For example, let us define a fake cone and its dual, the fake dual cone. We will
+write a JuMP model with the fake cone and dualize it.
 
-# Rename MathOptInterface to simplify the code
-const MOI = MathOptInterface
-
-# Define the custom cone and its dual
+```@repl repl_example_new_set
+using Dualization, JuMP
 struct FakeCone <: MOI.AbstractVectorSet
     dimension::Int
 end
-
 struct FakeDualCone <: MOI.AbstractVectorSet
     dimension::Int
 end
-
-# Define a model with your FakeCone
-model = Model()
-@variable(model, x[1:3])
-@constraint(model, con, x in FakeCone(3)) # Note that the constraint name is "con"
+model = Model();
+@variable(model, x[1:3] >= 0)
+@constraint(model, con, 1.0 * x in FakeCone(3))
 @objective(model, Min, sum(x))
-```
-The resulting JuMP model is
-
-```math
-\begin{align}
-    & \min_{x} & x_1 + x_2 + x_3 &
-    \\
-    & \;\;\text{s.t.}
-    &x \in FakeCone(3)\\
-\end{align}
+print(model)
 ```
 
 Now in order to dualize we must overload the methods as described above.
 
-```julia
-# Overload the methods dual_set and supported_constraints
-Dualization.dual_set(s::FakeCone) = FakeDualCone(MOI.dimension(s))
-Dualization.supported_constraint(::Type{MOI.VectorOfVariables}, ::Type{<:FakeCone}) = true
+```@repl repl_example_new_set
+MOI.dual_set(s::FakeCone) = FakeDualCone(MOI.dimension(s))
+function Dualization.supported_constraint(
+    ::Type{MOI.VectorOfVariables},
+    ::Type{FakeCone},
+)
+    return true
+end
+function Dualization.supported_constraint(
+    ::Type{<:MOI.VectorAffineFunction},
+    ::Type{FakeCone},
+)
+    return true
+end
+```
 
-# If your set has some specific scalar product you also need to define a new set_dot function
-# Our FakeCone has this weird scalar product
-MOI.Utilities.set_dot(x::Vector, y::Vector, set::FakeCone) = 2dot(x, y)
+If your set has some specific scalar product you also need to define a new
+`set_dot` function. Assume that our FakeCone has this weird scalar product:
+```@repl repl_example_new_set
+import LinearAlgebra
+function MOI.Utilities.set_dot(x::Vector, y::Vector, ::FakeCone)
+    return 2 * LinearAlgebra.dot(x, y)
+end
+```
 
-# Dualize the model
+Dualize the model
+```@repl repl_example_new_set
 dual_model = dualize(model)
-```
-
-The resulting dual model is
-
-```math
-\begin{align}
-    & \max_{con} & 0 &
-    \\
-    & \;\;\text{s.t.}
-    &2con_1 & = 1\\
-    &&2con_2 & = 1\\
-    &&2con_3 & = 1\\
-    && con & \in FakeDualCone(3)\\
-\end{align}
-```
-
-If the model has constraints that are `MOI.VectorAffineFunction`
-
-```julia
-model = Model()
-@variable(model, x[1:3])
-@constraint(model, con, x + 3 in FakeCone(3))
-@objective(model, Min, sum(x))
-```
-
-```math
-\begin{align}
-    & \min_{x} & x_1 + x_2 + x_3 &
-    \\
-    & \;\;\text{s.t.}
-    &[x_1 + 3, x_2 + 3, x_3 + 3] & \in FakeCone(3)\\
-\end{align}
-```
-
-the user only needs to extend the `supported_constraints` function.
-
-```julia
-# Overload the supported_constraints for VectorAffineFunction
-Dualization.supported_constraint(::Type{<:MOI.VectorAffineFunction}, ::Type{<:FakeCone}) = true
-
-# Dualize the model
-dual_model = dualize(model)
-```
-
-The resulting dual model is
-
-```math
-\begin{align}
-    & \max_{con} & - 3con_1& - 3con_2 - 3con_3
-    \\
-    & \;\;\text{s.t.}
-    &2con_1 & = 1\\
-    &&2con_2 & = 1\\
-    &&2con_3 & = 1\\
-    && con & \in FakeDualCone(3)\\
-\end{align}
+print(dual_model)
 ```

@@ -41,6 +41,11 @@ DualOptimizer
 DualNames
 ```
 
+## `Dualization.supported_constraint`
+```@docs
+Dualization.supported_constraint
+```
+
 ## `Dualization.supported_constraints`
 ```@docs
 Dualization.supported_constraints

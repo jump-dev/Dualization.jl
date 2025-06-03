@@ -26,6 +26,11 @@ function supported_constraints(con_types::Vector{Tuple{Type,Type}})
     return true
 end
 
+"""
+    supported_constraint(::Type{F}, ::Type{S})
+
+Return `true` if Dualization supports dualizing the constraint type `F`-in-`S`.
+"""
 supported_constraint(::Type, ::Type) = false
 
 function supported_constraint(
