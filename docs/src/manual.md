@@ -1,5 +1,112 @@
 # Manual
 
+## Dualize a JuMP model
+
+Use [`dualize`](@ref) to formulat the dual of a JuMP model.
+
+For example, consider this problem:
+
+```@repl dualize_model
+using JuMP, Dualization
+begin
+    model = Model()
+    @variable(model, x)
+    @variable(model, y >= 0)
+    @variable(model, z)
+    @constraint(model, soccon, [1.0 * x + 2.0, y, z] in SecondOrderCone())
+    @constraint(model, eqcon, x == 1)
+    @constraint(model, con_le, x + y >= 1)
+    @objective(model, Min, y + z)
+    print(model)
+end
+```
+You can dualize the model by doing
+
+```@repl dualize_model
+dual_model = dualize(model)
+print(dual_model)
+```
+
+Note that if you declare the model with an optimizer attached you will lose the
+optimizer during the dualization. To dualize the model and attach the optimizer
+to the dual model you should do `dualize(model, optimizer)`
+
+```@repl dualize_model
+using ECOS
+dual_model = dualize(model, ECOS.Optimizer)
+```
+
+## Name the dual variables and dual constraints
+
+Provide prefixes for the names of the variables and constraints using
+[`DualNames`](@ref).
+
+```@repl dualize_model
+dual_model = dualize(model; dual_names = DualNames("dual_var_", "dual_con_"))
+print(dual_model)
+```
+
+## Solve a problem using its dual formulation
+
+Wrap an optimizer with [`dual_optimizer`](@ref) to solve the dual of the problem
+instead of the primal:
+```@repl
+using JuMP, Dualization, ECOS
+model = Model(dual_optimizer(ECOS.Optimizer))
+@variable(model, x)
+@variable(model, y)
+@variable(model, z)
+@constraint(model, soccon, [x; y; z] in SecondOrderCone())
+@constraint(model, eqcon, x == 1)
+@objective(model, Min, y + z)
+optimize!(model)
+```
+
+Pass arguments to the solver by attaching them to the solver constructor:
+```@repl
+using JuMP, Dualization, ECOS
+model = Model(dual_optimizer(optimizer_with_attributes(ECOS.Optimizer, "maxit" => 5)))
+```
+or by using `JuMP.set_attribute`:
+```@repl
+using JuMP, Dualization, ECOS
+model = Model(dual_optimizer(ECOS.Optimizer))
+set_attribute(model, "maxit", 5)
+```
+
+## The benefit of solving the dual formulation
+
+Solving an optimization problem via its dual representation can be useful
+because some conic solvers assume the model is in the standard form and others
+use the geometric form.
+
+The geometric conic form has affine expressions in cones:
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & c^T x
+\\
+& \;\;\text{s.t.} & A_i x + b_i & \in \mathcal{C}_i & i = 1 \ldots m
+\end{align}
+```
+
+The standard form has variables in cones:
+
+```math
+\begin{align}
+& \min_{x \in \mathbb{R}^n} & c^T x
+\\
+& \;\;\text{s.t.} & A x + s & = b
+\\
+& & s & \in \mathcal{C}
+\end{align}
+```
+
+Solvers which use the geometric conic form include CDCS, SCS, ECOS, and SeDuMi.
+Solvers which use the standard conic form include SDPT3, SDPNAL, CSDP, and SDPA.
+Mosek v10 supports both affine constraints in cones and variables in cones,
+hence both the standard and geometric form at the same time.
+
 ## Supported problem types
 
 Dualization.jl works only for optimization models that can be written in conic
@@ -34,51 +141,6 @@ Note that some of MOI constraints can be bridged, see [Bridges](http://jump.dev/
 | `MOI.VariableIndex`           |
 | `MOI.ScalarAffineFunction`    |
 | `MOI.ScalarQuadraticFunction` |
-
-## Dualize a model
-
-## DualOptimizer
-
-You can solve a primal problem by using its dual formulation using the `DualOptimizer`.
-
-Solving an optimization problem via its dual representation can be useful because some conic solvers assume the model is in the standard form and others use the geometric form.
-
-Geometric form has affine expressions in cones
-
-```math
-\begin{align}
-& \min_{x \in \mathbb{R}^n} & c^T x
-\\
-& \;\;\text{s.t.} & A_i x + b_i & \in \mathcal{C}_i & i = 1 \ldots m
-\end{align}
-```
-
-Standard form has variables in cones
-
-```math
-\begin{align}
-& \min_{x \in \mathbb{R}^n} & c^T x
-\\
-& \;\;\text{s.t.} & A x + s & = b
-\\
-& & s & \in \mathcal{C}
-\end{align}
-```
-
-|  Standard form | Geometric form |
-|:-------:|:-------:|
-| SDPT3 | CDCS |
-| SDPNAL | SCS |
-| CSDP | ECOS |
-| SDPA | SeDuMi |
-| Mosek v9 |
-
-!!! note
-    Mosek v10 now supports both affine constraints in cones and variables in
-    cones hence both the standard and geometric form at the same time.
-
-!!! note
-    MOI standard form is the Geometric form and not the "textbook" Standard form.
 
 ## Adding new sets
 

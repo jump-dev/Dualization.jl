@@ -18,7 +18,6 @@ Documenter.makedocs(
         "Home" => "index.md",
         "manual.md",
         "mathematical_background.md",
-        "examples.md",
         "reference.md",
     ],
     modules = [Dualization],
