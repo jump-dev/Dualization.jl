@@ -78,6 +78,7 @@
 
     @testset "attributes" begin
         for optimizer in [dual_conic_optimizer; dual_linear_optimizer]
+            @test MOI.supports(optimizer, MOI.Silent())
             before = MOI.get(optimizer, MOI.Silent())
             MOI.set(optimizer, MOI.Silent(), !before)
             @test MOI.get(optimizer, MOI.Silent()) == !before
