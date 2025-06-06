@@ -467,20 +467,11 @@ function _dual_status(term::MOI.TerminationStatusCode)
     return term
 end
 
-function MOI.get(optimizer::DualOptimizer, ::MOI.ObjectiveValue)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualObjectiveValue())
-end
-
-function MOI.get(optimizer::DualOptimizer, ::MOI.DualObjectiveValue)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveValue())
-end
-
-function MOI.get(optimizer::DualOptimizer, ::MOI.PrimalStatus)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.DualStatus())
-end
-
-function MOI.get(optimizer::DualOptimizer, ::MOI.DualStatus)
-    return MOI.get(optimizer.dual_problem.dual_model, MOI.PrimalStatus())
+function MOI.supports(
+    optimizer::DualOptimizer,
+    attr::MOI.AbstractOptimizerAttribute,
+)
+    return MOI.supports(optimizer.dual_problem.dual_model, attr)
 end
 
 function MOI.set(
@@ -491,9 +482,14 @@ function MOI.set(
     return MOI.set(optimizer.dual_problem.dual_model, attr, value)
 end
 
-function MOI.get(
-    optimizer::DualOptimizer,
-    attr::Union{MOI.AbstractModelAttribute,MOI.AbstractOptimizerAttribute},
-)
+function MOI.get(optimizer::DualOptimizer, attr::MOI.AbstractOptimizerAttribute)
+    return MOI.get(optimizer.dual_problem.dual_model, attr)
+end
+
+# For now we don't support setting arbitrary AbstractModelAttribute because
+# we don't know if they need to be modified via the dualization. One example
+# would be `MOI.set(model, MOI.ObjectiveFunction{F}(), f)`. We currently
+# don't support the incremental interface.
+function MOI.get(optimizer::DualOptimizer, attr::MOI.AbstractModelAttribute)
     return MOI.get(optimizer.dual_problem.dual_model, attr)
 end
