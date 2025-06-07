@@ -142,7 +142,7 @@ function _add_primal_parameter_vars(
             prefix =
                 dual_names.parameter_name_prefix == "" ? "param_" :
                 dual_names.parameter_name_prefix
-            MOI.set(dual_model, MOI.VariableName(), vi, prefix * vi_name)
+            MOI.set(dual_model, MOI.VariableName(), vis[i], prefix * vi_name)
         end
     end
     return
