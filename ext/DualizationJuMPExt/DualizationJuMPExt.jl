@@ -146,4 +146,14 @@ function Dualization._get_dual_parameter(
     return JuMP.VariableRef(dual_model, moi_dual_vi)
 end
 
+function Dualization._get_dual_slack_variable(
+    dual_model::JuMP.Model,
+    primal_ref::JuMP.VariableRef,
+)
+    map = _get_primal_dual_map(dual_model)
+    moi_primal_vi = JuMP.index(primal_ref)
+    moi_dual_vi = Dualization._get_dual_slack_variable(map, moi_primal_vi)
+    return JuMP.VariableRef(dual_model, moi_dual_vi)
+end
+
 end # module DualizationJuMPExt
