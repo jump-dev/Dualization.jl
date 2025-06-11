@@ -184,6 +184,10 @@ function _get_dual_parameter(m::PrimalDualMap, vi::MOI.VariableIndex)
     return m.primal_parameter_to_dual_parameter[vi]
 end
 
+function _get_dual_slack_variable(m::PrimalDualMap, vi::MOI.VariableIndex)
+    return m.primal_var_in_quad_obj_to_dual_slack_var[vi]
+end
+
 function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
     if name === :constrained_var_idx
         error(

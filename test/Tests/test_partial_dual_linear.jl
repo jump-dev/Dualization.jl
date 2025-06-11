@@ -99,6 +99,44 @@
         )
     end
 
+    @testset "lp1_test - parameter name" begin
+        #=
+        primal
+            min -4x_2 - 1
+        s.t.
+            x_1 >= 3         :y_2
+            x_1 + 2x_2 <= 3  :y_3
+        ignore x_2 during dualization
+        dual
+
+        s.t.
+            y_2 >= 0
+            y_3 <= 0
+            y_2 + y_3 == 0    :x_1
+        =#
+        primal_model = lp1_test()
+        MOI.add_constraint(
+            primal_model,
+            MOI.VariableIndex(2),
+            MOI.Parameter{Float64}(0.0),
+        )
+        dual = Dualization.dualize(
+            primal_model,
+            dual_names = Dualization.DualNames("", "", "parameter_", ""),
+        )
+        dual_model = dual.dual_model
+        primal_dual_map = dual.primal_dual_map
+        primal_parameter_to_dual_parameter =
+            primal_dual_map.primal_parameter_to_dual_parameter
+        @test MOI.get(
+            dual_model,
+            MOI.VariableName(),
+            primal_parameter_to_dual_parameter[MOI.VariableIndex(2)],
+        ) ==
+              "parameter_" *
+              MOI.get(primal_model, MOI.VariableName(), MOI.VariableIndex(2))
+    end
+
     @testset "lp7_test - x_1 ignored" begin
         #=
         primal
