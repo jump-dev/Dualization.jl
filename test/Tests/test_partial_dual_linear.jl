@@ -108,7 +108,7 @@
             x_1 + 2x_2 <= 3  :y_3
         ignore x_2 during dualization
         dual
-            
+
         s.t.
             y_2 >= 0
             y_3 <= 0
@@ -122,16 +122,19 @@
         )
         dual = Dualization.dualize(
             primal_model,
-            dual_names=Dualization.DualNames("", "", "parameter_", "")
+            dual_names = Dualization.DualNames("", "", "parameter_", ""),
         )
         dual_model = dual.dual_model
         primal_dual_map = dual.primal_dual_map
-        primal_parameter_to_dual_parameter = primal_dual_map.primal_parameter_to_dual_parameter
+        primal_parameter_to_dual_parameter =
+            primal_dual_map.primal_parameter_to_dual_parameter
         @test MOI.get(
             dual_model,
             MOI.VariableName(),
             primal_parameter_to_dual_parameter[MOI.VariableIndex(2)],
-        ) == "parameter_" * MOI.get(primal_model, MOI.VariableName(), MOI.VariableIndex(2))
+        ) ==
+              "parameter_" *
+              MOI.get(primal_model, MOI.VariableName(), MOI.VariableIndex(2))
     end
 
     @testset "lp7_test - x_1 ignored" begin

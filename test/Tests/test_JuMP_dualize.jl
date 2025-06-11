@@ -134,7 +134,7 @@ end
         @variable(model, p ∈ Parameter(2.0))
         @constraint(model, c, x <= p)
         @objective(model, Max, 3x + x^2)
-        dual_model = dualize(model, dual_names=DualNames())
+        dual_model = dualize(model, dual_names = DualNames())
         param = Dualization._get_dual_parameter(dual_model, p)
         @test param isa VariableRef
         @test owner_model(param) === dual_model
@@ -142,6 +142,7 @@ end
         quadslack = Dualization._get_dual_slack_variable(dual_model, x)
         @test quadslack isa VariableRef
         @test owner_model(quadslack) === dual_model
-        @test MOI.get(dual_model, MOI.VariableName(), quadslack) == "quadslack_x"
+        @test MOI.get(dual_model, MOI.VariableName(), quadslack) ==
+              "quadslack_x"
     end
 end
