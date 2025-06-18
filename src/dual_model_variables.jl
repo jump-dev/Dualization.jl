@@ -114,7 +114,7 @@ function _add_primal_parameter_vars(
     primal_model::MOI.ModelLike,
     primal_dual_map::PrimalDualMap{T},
     dual_names::DualNames,
-    moi_parameter_values::Dict{MOI.VariableIndex,T},
+    moi_parameter_sets::Dict{MOI.VariableIndex,MOI.Parameter{T}},
     variable_parameters::Vector{MOI.VariableIndex},
     primal_objective,
     ignore_objective::Bool,
@@ -136,14 +136,14 @@ function _add_primal_parameter_vars(
     end
     vis = MOI.add_variables(dual_model, length(parameters))
 
-    moi_parameters = keys(moi_parameter_values)
+    moi_parameters = keys(moi_parameter_sets)
     for i in eachindex(vis)
         vi = vis[i]
         if vi in moi_parameters
             MOI.add_constraint(
                 dual_model,
                 vi,
-                MOI.Parameter{T}(moi_parameter_values[vi]),
+                moi_parameter_sets[vi],
             )
         end
         primal_dual_map.primal_parameter_to_dual_parameter[parameters[i]] = vi

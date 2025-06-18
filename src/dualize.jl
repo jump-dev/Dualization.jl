@@ -87,10 +87,10 @@ function dualize(
     supported_constraints(con_types) # Errors if constraint cant be dualized
 
     # merge user listed parameters and MOI.VariableIndex-in-MOI.Parameter{T}
-    moi_parameter_values =
+    moi_parameter_sets =
         _get_parameter_variables(dual_problem.primal_dual_map, primal_model)
     all_parameters = Set{MOI.VariableIndex}(_variable_parameters)
-    for p in keys(moi_parameter_values)
+    for p in keys(moi_parameter_sets)
         push!(all_parameters, p)
     end
     variable_parameters = collect(all_parameters)
@@ -165,7 +165,7 @@ function dualize(
         primal_model,
         dual_problem.primal_dual_map,
         dual_names,
-        moi_parameter_values,
+        moi_parameter_sets,
         variable_parameters,
         primal_objective,
         ignore_objective,
