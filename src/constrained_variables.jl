@@ -89,10 +89,11 @@ function _get_parameter_variables(::PrimalDualMap{T}, primal_model) where {T}
         primal_model,
         MOI.ListOfConstraintIndices{MOI.VariableIndex,MOI.Parameter{T}}(),
     )
-    parameters = Set{MOI.VariableIndex}()
+    parameters = Dict{MOI.VariableIndex,MOI.Parameter{T}}()
     for ci in cis
         vi = MOI.get(primal_model, MOI.ConstraintFunction(), ci)
-        push!(parameters, vi)
+        set = MOI.get(primal_model, MOI.ConstraintSet(), ci)
+        parameters[vi] = set
     end
     return parameters
 end
