@@ -180,6 +180,7 @@
         @test Set(list_of_cons) == Set(
             [
                 (MOI.VariableIndex, MOI.GreaterThan{Float64})
+                (MOI.VariableIndex, MOI.Parameter{Float64})
                 (MOI.ScalarAffineFunction{Float64}, MOI.EqualTo{Float64})
             ],
         )
@@ -287,6 +288,18 @@
             primal_dual_map.primal_parameter_to_dual_parameter
         @test primal_parameter_to_dual_parameter[MOI.VariableIndex(3)] ==
               MOI.VariableIndex(2 + 1)
+
+        @test MOI.get(
+            dual_model,
+            MOI.ConstraintSet(),
+            MOI.ConstraintIndex{MOI.VariableIndex,MOI.Parameter{Float64}}(
+                primal_parameter_to_dual_parameter[MOI.VariableIndex(3)].value,
+            ),
+        ) == MOI.get(
+            primal_model,
+            MOI.ConstraintSet(),
+            MOI.ConstraintIndex{MOI.VariableIndex,MOI.Parameter{Float64}}(3),
+        )
 
         primal_var_in_quad_obj_to_dual_slack_var =
             primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var
