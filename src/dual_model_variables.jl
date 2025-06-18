@@ -138,21 +138,19 @@ function _add_primal_parameter_vars(
 
     moi_parameters = keys(moi_parameter_sets)
     for i in eachindex(vis)
-        vi = vis[i]
-        if vi in moi_parameters
-            MOI.add_constraint(
-                dual_model,
-                vi,
-                moi_parameter_sets[parameters[i]],
-            )
+        pvi = parameters[i]
+        dvi = vis[i]
+
+        if pvi in moi_parameters
+            MOI.add_constraint(dual_model, dvi, moi_parameter_sets[pvi])
         end
-        primal_dual_map.primal_parameter_to_dual_parameter[parameters[i]] = vi
+        primal_dual_map.primal_parameter_to_dual_parameter[pvi] = dvi
         if !is_empty(dual_names)
-            vi_name = MOI.get(primal_model, MOI.VariableName(), parameters[i])
+            pvi_name = MOI.get(primal_model, MOI.VariableName(), pvi)
             prefix =
                 dual_names.parameter_name_prefix == "" ? "param_" :
                 dual_names.parameter_name_prefix
-            MOI.set(dual_model, MOI.VariableName(), vis[i], prefix * vi_name)
+            MOI.set(dual_model, MOI.VariableName(), dvi, prefix * pvi_name)
         end
     end
     return
