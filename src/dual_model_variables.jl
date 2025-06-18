@@ -140,14 +140,13 @@ function _add_primal_parameter_vars(
     for i in eachindex(vis)
         vi = vis[i]
         if vi in moi_parameters
-            # TODO: use add_constrained_variables instead?
-            # TODO: store the ci somewhere?
             MOI.add_constraint(
-                dual_model, vi, MOI.Parameter{T}(moi_parameter_values[vi])
+                dual_model,
+                vi,
+                MOI.Parameter{T}(moi_parameter_values[vi]),
             )
         end
-        primal_dual_map.primal_parameter_to_dual_parameter[parameters[i]] =
-            vi
+        primal_dual_map.primal_parameter_to_dual_parameter[parameters[i]] = vi
         if !is_empty(dual_names)
             vi_name = MOI.get(primal_model, MOI.VariableName(), parameters[i])
             prefix =
