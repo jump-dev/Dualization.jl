@@ -71,21 +71,6 @@ model = Model(dual_optimizer(ECOS.Optimizer))
 set_attribute(model, "maxit", 5)
 ```
 
-## Using Dualization.jl with Convex.jl
-
-Dualization.jl can be used in conjunction with [Convex.jl](https://github.com/jump-dev/Convex.jl) by wrapping the inner optimizer with [`dual_optimizer`](@ref):
-
-```@repl
-using JuMP, Convex, Dualization, SCS
-model = Model(() -> Convex.Optimizer(dual_optimizer(SCS.Optimizer)))
-@variable(model, x >= 1)
-@variable(model, t)
-@constraint(model, t >= exp(x))
-@objective(model, Min, t)
-
-optimize!(model)
-```
-
 ## The benefit of solving the dual formulation
 
 Solving an optimization problem via its dual representation can be useful
