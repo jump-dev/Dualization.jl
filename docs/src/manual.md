@@ -40,8 +40,8 @@ the dualization. To dualize the model and attach the optimizer to the dual model
 you should do `dualize(model, optimizer)`:
 
 ```@repl dualize_model
-import ECOS
-dual_model = dualize(model, ECOS.Optimizer)
+import SCS
+dual_model = dualize(model, SCS.Optimizer)
 ```
 
 ## Solve a problem using its dual formulation
@@ -49,25 +49,25 @@ dual_model = dualize(model, ECOS.Optimizer)
 Wrap an optimizer with [`dual_optimizer`](@ref) to solve the dual of the problem
 instead of the primal:
 ```@repl
-using JuMP, Dualization, ECOS
-model = Model(dual_optimizer(ECOS.Optimizer))
+using JuMP, Dualization, SCS
+model = Model(dual_optimizer(SCS.Optimizer))
 ```
 You can also set the optimizer after the model is created:
 ```@repl
-using JuMP, Dualization, ECOS
+using JuMP, Dualization, SCS
 model = Model()
-set_optimizer(model, dual_optimizer(ECOS.Optimizer))
+set_optimizer(model, dual_optimizer(SCS.Optimizer))
 ```
 
 Pass arguments to the solver by attaching them to the solver constructor:
 ```@repl
-using JuMP, Dualization, ECOS
-model = Model(dual_optimizer(optimizer_with_attributes(ECOS.Optimizer, "maxit" => 5)))
+using JuMP, Dualization, SCS
+model = Model(dual_optimizer(optimizer_with_attributes(SCS.Optimizer, "maxit" => 5)))
 ```
 or by using `JuMP.set_attribute`:
 ```@repl
-using JuMP, Dualization, ECOS
-model = Model(dual_optimizer(ECOS.Optimizer))
+using JuMP, Dualization, SCS
+model = Model(dual_optimizer(SCS.Optimizer))
 set_attribute(model, "maxit", 5)
 ```
 
