@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:cc="http://creativecommons.org/ns#"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="150" height="150" viewBox="0 0 150 150">
+<path fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="miter" stroke="rgb(20%, 20%, 20%)" stroke-opacity="1" stroke-miterlimit="10" d="M 120 72 L 20 112 "/>
+<path fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="miter" stroke="rgb(20%, 20%, 20%)" stroke-opacity="1" stroke-miterlimit="10" d="M 136 20 L 20 136 "/>
+<path fill-rule="nonzero" fill="rgb(79.6%, 23.5%, 20%)" fill-opacity="1" d="M 57 36 C 57 26.609375 64.609375 19 74 19 C 83.390625 19 91 26.609375 91 36 C 91 45.390625 83.390625 53 74 53 C 64.609375 53 57 45.390625 57 36 Z M 57 36 "/>
+<path fill-rule="nonzero" fill="rgb(22%, 59.6%, 14.9%)" fill-opacity="1" d="M 17 76 C 17 66.609375 24.609375 59 34 59 C 43.390625 59 51 66.609375 51 76 C 51 85.390625 43.390625 93 34 93 C 24.609375 93 17 85.390625 17 76 Z M 17 76 "/>
+<path fill-rule="nonzero" fill="rgb(58.4%, 34.5%, 69.8%)" fill-opacity="1" d="M 17 36 C 17 26.609375 24.609375 19 34 19 C 43.390625 19 51 26.609375 51 36 C 51 45.390625 43.390625 53 34 53 C 24.609375 53 17 45.390625 17 36 Z M 17 36 "/>
+<metadata
+    id="metadata21">
+    <rdf:RDF>
+        <cc:Work
+            rdf:about="">
+        <dc:creator>
+            <cc:Agent>
+            <dc:title>Dualization.jl</dc:title>
+            </cc:Agent>
+        </dc:creator>
+        <dc:title>Logo for Dualization.jl</dc:title>
+        <cc:license
+            rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:description>Logo for Dualization.jl, an automatic dualization feature for MathOptInterface.jl and JuMP.</dc:description>
+        <dc:date>June 2025</dc:date>
+        </cc:Work>
+        <cc:License
+            rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+            rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+            rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+            rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+            rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+            rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        </cc:License>
+    </rdf:RDF>
+</metadata>
+</svg>
+
