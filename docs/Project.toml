@@ -2,6 +2,7 @@
 Convex = "f65535da-76fb-5f13-bab9-19810c17039a"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Dualization = "191a621a-6537-11e9-281d-650236a99e60"
+ECOS = "e2685f51-7e38-5353-a97d-a921fd2c8199"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
 
