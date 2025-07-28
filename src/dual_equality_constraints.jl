@@ -498,47 +498,8 @@ function _fill_scalar_affine_terms!(
     return
 end
 
-struct _CanonicalVector{T} <: AbstractVector{T}
-    index::Int
-    n::Int
-end
-
-Base.eltype(::Type{_CanonicalVector{T}}) where {T} = T
-
-Base.length(v::_CanonicalVector) = v.n
-
-Base.size(v::_CanonicalVector) = (v.n,)
-
-function Base.getindex(v::_CanonicalVector{T}, i::Integer) where {T}
-    return convert(T, i == v.index)
-end
-
-# This is much faster than the default implementation that goes
-# through all entries even if only one is nonzero.
-function LinearAlgebra.dot(
-    x::_CanonicalVector{T},
-    y::_CanonicalVector{T},
-) where {T}
-    return convert(T, x.index == y.index)
-end
-
-function MOI.Utilities.triangle_dot(
-    x::_CanonicalVector{T},
-    y::_CanonicalVector{T},
-    dim::Int,
-    offset::Int,
-) where {T}
-    if x.index != y.index || x.index <= offset
-        return zero(T)
-    elseif MOI.Utilities.is_diagonal_vectorized_index(x.index - offset)
-        return one(T)
-    else
-        return 2one(T)
-    end
-end
-
 function set_dot(i::Integer, s::MOI.AbstractVectorSet, T::Type)
-    vec = _CanonicalVector{T}(i, MOI.dimension(s))
+    vec = MOI.Utilities.CanonicalVector{T}(i, MOI.dimension(s))
     return MOI.Utilities.set_dot(vec, vec, s)
 end
 
