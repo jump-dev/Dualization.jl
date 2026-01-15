@@ -204,7 +204,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             """
             Field `constrained_var_dual` was removed.
             From a primal constrained variable constraint index, use the field
-            `primal_constrained_variables` to obtain the primal varaibles.
+            `primal_constrained_variables` to obtain the primal variables.
             Then, from the primal variable index, use the field
             `primal_variable_data`.
             In the data structures returned, the constraint can be found at
@@ -227,7 +227,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             From a primal constraint index, use the field
             `primal_constraint_data`.
             In the data structure returned, the dual variables can be found at
-            `dual_varaibles`.
+            `dual_variables`.
             """,
         )
     elseif name === :primal_con_dual_con
@@ -254,7 +254,7 @@ function Base.getproperty(m::PrimalDualMap{T}, name::Symbol) where {T}
             """
             Field `constrained_var_zero` was removed.
             From a primal constrained variable constraint index, use the field
-            `primal_constrained_variables` to obtain the primal varaibles.
+            `primal_constrained_variables` to obtain the primal variables.
             Then, from the primal variable index, use the field
             `primal_variable_data`.
             In the data structure returned, the primal function can be found at
