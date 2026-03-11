@@ -19,16 +19,16 @@
                 linear_config,
                 include = ["test_linear_"],
                 exclude = [
-                    "test_linear_FEASIBILITY_SENSE",
-                    "test_linear_INFEASIBLE_2",
-                    "test_linear_Interval_inactive",
-                    "test_linear_add_constraints",
-                    "test_linear_inactive_bounds",
-                    "test_linear_integration_2",
-                    "test_linear_integration_Interval",
-                    "test_linear_integration_delete_variables",
-                    "test_linear_complex_Zeros",
-                    "test_linear_complex_Zeros_duplicate",
+                    r"^test_linear_FEASIBILITY_SENSE$",
+                    r"^test_linear_INFEASIBLE_2$",
+                    r"^test_linear_Interval_inactive$",
+                    r"^test_linear_add_constraints$",
+                    r"^test_linear_inactive_bounds$",
+                    r"^test_linear_integration_2$",
+                    r"^test_linear_integration_Interval$",
+                    r"^test_linear_integration_delete_variables$",
+                    r"^test_linear_complex_Zeros$",
+                    r"^test_linear_complex_Zeros_duplicate$",
                 ],
             )
         end
@@ -143,5 +143,19 @@
             assume_min_if_feasibility = true,
         )
         @test model.assume_min_if_feasibility
+    end
+
+    @testset "Start" begin
+        model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
+        x = MOI.add_variable(model)
+        c = MOI.add_constraint(model, 2.0 * x, MOI.GreaterThan(0.0))
+        MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+        MOI.set(model, MOI.VariablePrimalStart(), x, 1.0)
+        MOI.set(model, MOI.ConstraintPrimalStart(), c, 3.0)
+        MOI.set(model, MOI.ConstraintDualStart(), c, 4.0)
+        dual_problem = Dualization.DualProblem{Float64}(TestModel{Float64}())
+        OptimizerType = typeof(dual_problem.dual_model)
+        dual = DualOptimizer{Float64,OptimizerType}(dual_problem)
+        index_map = MOI.copy_to(dual, model)
     end
 end

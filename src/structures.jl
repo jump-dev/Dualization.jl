@@ -19,18 +19,23 @@ variables and their dual counterparts.
     this is the position in that vector.
 
   * `dual_constraint::Union{Nothing,MOI.ConstraintIndex}`: dual constraint
-    associated with the variable. If the variable is not constrained then the
-    set is EqualTo{T}(zero(T)). If the variable is a constrained variable then
-    the set is the dual set of the constrained variable set. If the dual set is
-    `Reals` then the field is kept as `nothing` as teh constraint is not added.
+    associated with the variable. If this is a variable constrained in
+    `MOI.Zeros` or `MOI.EqualTo`, then this is `nothing`. Otherwise, this is
+    a constraint with set corresponding to the dual set this variable is
+    constrained to.  If the variable is not constrained then this an equality
+    constrained, so the set is `MOI.EqualTo` even if strictly speaking, the dual
+    set of `MOI.Reals` is `MOI.Zeros`. If the variable is a constrained variable
+    in a given set `S`, this is a constraint on the dual set `MOI.dual_set(S)`.
 
-  * `dual_function::Union{Nothing,MOI.ScalarAffineFunction{T}}`: if the
+  * `dual_function::Union{Nothing,MOI.ScalarAffineFunction{T}}`: if it is a
     constrained variable is `VectorOfVariables`-in-`Zeros` or
     `VariableIndex`-in-`EqualTo(zero(T))` then the dual is `func`-in-`Reals`,
-    which is "irrelevant" to the model. But this information is cached for
-    completeness of the `DualOptimizer` for `get`ting `ConstraintDuals`.
+    which is "irrelevant" to the model. So the no constrained is added (hence
+    `dual_constraint` is `nothing` but the function is cached in this field for
+    completeness of the `DualOptimizer` for `get`ting `ConstraintDual`s.
+    Otherwise, `dual_function` is `nothing`.
 
-To got from the constrained variable constraint to the primal variable, use the
+To go from the constrained variable constraint to the primal variable, use the
 `primal_constrained_variables` field of `PrimalDualMap`.
 
 See also `PrimalDualMap` and `PrimalConstraintData`.
