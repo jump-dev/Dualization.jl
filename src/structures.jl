@@ -3,28 +3,6 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
-MOI.Utilities.@model(
-    DualizableModel,
-    (),
-    (MOI.EqualTo, MOI.GreaterThan, MOI.LessThan),
-    (
-        MOI.Reals,
-        MOI.Zeros,
-        MOI.Nonnegatives,
-        MOI.Nonpositives,
-        MOI.SecondOrderCone,
-        MOI.RotatedSecondOrderCone,
-        MOI.ExponentialCone,
-        MOI.DualExponentialCone,
-        MOI.PositiveSemidefiniteConeTriangle,
-    ),
-    (MOI.PowerCone, MOI.DualPowerCone),
-    (),
-    (MOI.ScalarAffineFunction,),
-    (MOI.VectorOfVariables,),
-    (MOI.VectorAffineFunction,)
-)
-
 """
     PrimalVariableData{T}
 
@@ -304,7 +282,7 @@ Result of the `dualize` function. Contains the fields:
     (`VariableIndex` and `ConstraintIndex`) and other data.
 """
 struct DualProblem{T,OT<:MOI.ModelLike}
-    dual_model::OT #It can be a model from an optimizer or a DualizableModel{T}
+    dual_model::OT # Inner model or optimizer
     primal_dual_map::PrimalDualMap{T}
 
     function DualProblem{T}(
@@ -324,5 +302,5 @@ function DualProblem(dual_optimizer::OT) where {OT<:MOI.ModelLike}
 end
 
 function DualProblem{T}() where {T}
-    return DualProblem{T}(DualizableModel{T}(), PrimalDualMap{T}())
+    return DualProblem{T}(MOI.Utilities.Model{T}(), PrimalDualMap{T}())
 end

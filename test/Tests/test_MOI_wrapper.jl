@@ -7,7 +7,7 @@
     for opt in dual_linear_optimizer
         linear_config = MOI.Test.Config(atol = 1e-6, rtol = 1e-6)
         linear_cache = MOI.Utilities.UniversalFallback(
-            Dualization.DualizableModel{Float64}(),
+            MOI.Utilities.Model{Float64}(),
         )
         MOI.empty!(opt)
         linear_cached = MOI.Utilities.CachingOptimizer(linear_cache, opt)
@@ -39,7 +39,7 @@
         opt = dual_conic_optimizer[1]
         conic_config = MOI.Test.Config(atol = 1e-4, rtol = 1e-4)
         conic_cache = MOI.Utilities.UniversalFallback(
-            Dualization.DualizableModel{Float64}(),
+            MOI.Utilities.Model{Float64}(),
         )
         conic_cached = MOI.Utilities.CachingOptimizer(conic_cache, opt)
         conic_bridged = MOI.Bridges.full_bridge_optimizer(conic_cached, Float64)
