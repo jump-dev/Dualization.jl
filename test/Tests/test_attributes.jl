@@ -84,12 +84,17 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         attr = MOI.ConstraintDualStart()
         @test MOI.supports(dual, attr, typeof(ci))
         value = rand_value()
-        MOI.set(dual, attr, ci, value)
-        @test MOI.get(dual, attr, ci) == value
+        if constrained_variable && vector
+            # FIXME not supported yet
+            @test_throws MOI.SetAttributeNotAllowed{MOI.ConstraintDualStart} MOI.set(dual, attr, ci, value)
+        else
+            MOI.set(dual, attr, ci, value)
+            @test MOI.get(dual, attr, ci) == value
+        end
     end
 
     if vector && constrained_variable
-        value = zeros(T, 1)
+        value = 2ones(T, 1)
     else
         value = rand(T)
         mock_vi = MOI.get(mock, MOI.ListOfVariableIndices())[]
