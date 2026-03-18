@@ -87,14 +87,14 @@ function DualOptimizer{T}(
     dual_problem = DualProblem{T}(
         MOI.Bridges.full_bridge_optimizer(
             MOI.Utilities.CachingOptimizer(
-                MOI.Utilities.UniversalFallback(DualizableModel{T}()),
+                MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
                 dual_optimizer,
             ),
             T,
         ),
     )
     # discover the type of
-    # MOI.Utilities.CachingOptimizer(DualizableModel{T}(), dual_optimizer)
+    # MOI.Utilities.CachingOptimizer(MOI.Utilities.Model{T}(), dual_optimizer)
     OptimizerType = typeof(dual_problem.dual_model)
     return DualOptimizer{T,OptimizerType}(dual_problem, kwargs...)
 end
