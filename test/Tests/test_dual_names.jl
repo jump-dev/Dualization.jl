@@ -47,17 +47,10 @@
     @test MOI.get(dual_model, MOI.VariableName(), vi_1) == ""
     @test MOI.get(dual_model, MOI.VariableName(), vi_2) == ""
     # Query constraint names
-<<<<<<< HEAD
     ci_1 =
         primal_dual_map.primal_variable_data[MOI.VariableIndex(1)].dual_constraint
     ci_2 =
         primal_dual_map.primal_variable_data[MOI.VariableIndex(2)].dual_constraint
-=======
-    vi = MOI.VariableIndex(1)
-    ci_1 = primal_dual_map.primal_variable_data[vi].dual_constraint
-    vi = MOI.VariableIndex(2)
-    ci_2 = primal_dual_map.primal_variable_data[vi].dual_constraint
->>>>>>> 7e40a8a (Add support for starting values)
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_1) == ""
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_2) == ""
 
@@ -82,17 +75,10 @@
     )].dual_variables[1]
     @test MOI.get(dual_model, MOI.VariableName(), vi_2) == "dualvar_lessthan"
     # Query constraint names
-<<<<<<< HEAD
     ci_1 =
         primal_dual_map.primal_variable_data[MOI.VariableIndex(1)].dual_constraint
     ci_2 =
         primal_dual_map.primal_variable_data[MOI.VariableIndex(2)].dual_constraint
-=======
-    vi = MOI.VariableIndex(1)
-    ci_1 = primal_dual_map.primal_variable_data[vi].dual_constraint
-    vi = MOI.VariableIndex(2)
-    ci_2 = primal_dual_map.primal_variable_data[vi].dual_constraint
->>>>>>> 7e40a8a (Add support for starting values)
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_1) == "dualcon_x1"
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_2) == "dualcon_x2"
 end
