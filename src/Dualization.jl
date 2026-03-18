@@ -20,6 +20,7 @@ include("dual_model_variables.jl")
 include("dual_equality_constraints.jl")
 include("dualize.jl")
 include("MOI_wrapper.jl")
+include("attributes.jl")
 
 export dualize
 export dual_optimizer

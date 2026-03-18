@@ -49,7 +49,11 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}());
         eval_variable_constraint_dual = false,
     )
-    dual = MOI.instantiate(() -> Dualization.DualOptimizer(mock), with_cache_type = T)
+    dual = MOI.Utilities.CachingOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
+        MOI.Utilities.MANUAL, # easier to debug with less try-catch hidding stuff
+    )
+    MOI.Utilities.reset_optimizer(dual, Dualization.DualOptimizer(mock))
     set_constant = T(-4)
     if vector
         set = MOI.Nonnegatives(1)
@@ -74,6 +78,7 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
     MOI.set(dual, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     obj = T(2) * x
     MOI.set(dual, MOI.ObjectiveFunction{typeof(obj)}(), obj)
+    MOI.Utilities.attach_optimizer(dual)
     MOI.optimize!(dual)
     for attr in [MOI.ConstraintDualStart(), MOI.ConstraintPrimalStart()]
         attr = MOI.ConstraintDualStart()
