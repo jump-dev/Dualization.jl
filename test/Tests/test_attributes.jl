@@ -86,7 +86,12 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         value = rand_value()
         if constrained_variable && vector
             # FIXME not supported yet
-            @test_throws MOI.SetAttributeNotAllowed{MOI.ConstraintDualStart} MOI.set(dual, attr, ci, value)
+            @test_throws MOI.SetAttributeNotAllowed{MOI.ConstraintDualStart} MOI.set(
+                dual,
+                attr,
+                ci,
+                value,
+            )
         else
             MOI.set(dual, attr, ci, value)
             @test MOI.get(dual, attr, ci) == value
