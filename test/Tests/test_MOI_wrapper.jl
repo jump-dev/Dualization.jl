@@ -35,7 +35,6 @@
     end
 
     for opt in dual_conic_optimizer
-        opt = dual_conic_optimizer[1]
         conic_config = MOI.Test.Config(atol = 1e-4, rtol = 1e-4)
         conic_cache =
             MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}())
