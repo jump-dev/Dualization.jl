@@ -125,4 +125,23 @@
                   DualOptimizer{Float32,Caching_OptimizerType}
         end
     end
+
+    @testset "dual_optimizer_kwargs" begin
+        constructor = Dualization.dual_optimizer(
+            HiGHS.Optimizer;
+            assume_min_if_feasibility = true,
+        )
+        model = MOI.instantiate(constructor)
+        @test model.assume_min_if_feasibility
+        model = Dualization.DualOptimizer(
+            HiGHS.Optimizer();
+            assume_min_if_feasibility = true,
+        )
+        @test model.assume_min_if_feasibility
+        model = Dualization.DualOptimizer{Float64}(
+            HiGHS.Optimizer();
+            assume_min_if_feasibility = true,
+        )
+        @test model.assume_min_if_feasibility
+    end
 end
