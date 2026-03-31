@@ -33,7 +33,7 @@ function dual_optimizer(
     kwargs...,
 ) where {T<:Number}
     return () ->
-        DualOptimizer{T}(MOI.instantiate(optimizer_constructor), kwargs...)
+        DualOptimizer{T}(MOI.instantiate(optimizer_constructor); kwargs...)
 end
 
 struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
@@ -77,7 +77,7 @@ Solver name: Dual model with HiGHS attached
 ```
 """
 function DualOptimizer(dual_optimizer::OT; kwargs...) where {OT<:MOI.ModelLike}
-    return DualOptimizer{Float64}(dual_optimizer, kwargs...)
+    return DualOptimizer{Float64}(dual_optimizer; kwargs...)
 end
 
 function DualOptimizer{T}(
@@ -96,7 +96,7 @@ function DualOptimizer{T}(
     # discover the type of
     # MOI.Utilities.CachingOptimizer(MOI.Utilities.Model{T}(), dual_optimizer)
     OptimizerType = typeof(dual_problem.dual_model)
-    return DualOptimizer{T,OptimizerType}(dual_problem, kwargs...)
+    return DualOptimizer{T,OptimizerType}(dual_problem; kwargs...)
 end
 
 DualOptimizer() = error("DualOptimizer must have a solver attached")
