@@ -131,7 +131,7 @@
             HiGHS.Optimizer;
             assume_min_if_feasibility = true,
         )
-        model = MOI.initialize(constructor)
+        model = MOI.instantiate(constructor)
         @test model.assume_min_if_feasibility
         model = Dualization.DualOptimizer(
             HiGHS.Optimizer();
