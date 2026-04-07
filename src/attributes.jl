@@ -95,7 +95,7 @@ function MOI.set(
     value,
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if vi in keys(primal_dual_map.constrained_var_idx)
+    if vi in keys(primal_dual_map.primal_variable_data)
         msg = "Setting starting value for variables constrained at creation is not supported yet"
         throw(MOI.SetAttributeNotAllowed(attr, msg))
     end

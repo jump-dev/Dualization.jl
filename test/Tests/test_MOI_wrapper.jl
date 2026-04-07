@@ -153,9 +153,12 @@
         MOI.set(model, MOI.VariablePrimalStart(), x, 1.0)
         MOI.set(model, MOI.ConstraintPrimalStart(), c, 3.0)
         MOI.set(model, MOI.ConstraintDualStart(), c, 4.0)
-        dual_problem = Dualization.DualProblem{Float64}(TestModel{Float64}())
+        dual_model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
+        dual_problem = Dualization.DualProblem{Float64}(dual_model)
         OptimizerType = typeof(dual_problem.dual_model)
         dual = DualOptimizer{Float64,OptimizerType}(dual_problem)
         index_map = MOI.copy_to(dual, model)
+        vars = MOI.get(dual_model, MOI.ListOfVariableIndices())
+        MOI.get(dual_model, MOI.VariablePrimalStart(), vars[])
     end
 end
