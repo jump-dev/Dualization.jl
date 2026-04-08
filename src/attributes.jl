@@ -62,6 +62,10 @@ function _variable_dual_attribute(::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
+function _variable_dual_attribute(attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart})
+    return dual_attribute(attr)
+end
+
 fixed_variable_value(::MOI.VariablePrimal, ::Type{T}) where {T} = zero(T)
 
 # The inner optimizer may not support equality constraints (e.g. MOI.FileFormats.SDPA.Model)
@@ -178,48 +182,31 @@ function MOI.supports(
 end
 
 function MOI.set(
-    optimizer::DualOptimizer,
-    attr::MOI.ConstraintDualStart,
-    ci::MOI.ConstraintIndex,
+    av::_AfterVectorize,
+    attr::MOI.AbstractConstraintAttribute,
+    ::MOI.ConstraintIndex,
     value,
 )
+    optimizer = av.inner
+    ci = av.inner_ci
+    value = _scalarize(ci, value) # Needed because the Vectorize bridge has vectorized it
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = get(primal_dual_map.primal_constraint_data, ci, nothing)
     if isnothing(data)
-        msg = "Setting starting value for variables constrained at creation is not supported yet"
+        msg = "Setting $attr for variables constrained at creation is not supported yet"
         throw(MOI.SetAttributeNotAllowed(attr, msg))
     else
-        MOI.set(
-            optimizer.dual_problem.dual_model,
-            _variable_dual_attribute(attr),
-            primal_dual_map.primal_constraint_data[ci].dual_variables[],
-            value,
-        )
-    end
-    return
-end
-
-function MOI.set(
-    optimizer::DualOptimizer,
-    attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
-    ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction},
-    value,
-)
-    primal_dual_map = optimizer.dual_problem.primal_dual_map
-    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
-    if isnothing(data)
-        error(
-            "Setting starting value for variables constrained at creation is not supported yet",
-        )
-    else
-        ci_dual_problem = data.dual_constrained_variable_constraint
-        if !isnothing(value)
-            value -= data.primal_set_constants[]
+        dual_attr = _variable_dual_attribute(attr)
+        if dual_attr isa MOI.AbstractVariableAttribute
+            index = _scalarize(ci, primal_dual_map.primal_constraint_data[ci].dual_variables)
+        else
+            @assert dual_attr isa MOI.AbstractConstraintAttribute
+            index = data.dual_constrained_variable_constraint
         end
         MOI.set(
             optimizer.dual_problem.dual_model,
-            dual_attribute(attr),
-            ci_dual_problem,
+            dual_attr,
+            index,
             value,
         )
     end
@@ -344,62 +331,6 @@ end
 
 function _scalarize(::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction}, v)
     return only(v)
-end
-
-struct _AfterVectorize{T,OT,F,S} <: MOI.ModelLike
-    inner::DualOptimizer{T,OT}
-    inner_ci::MOI.ConstraintIndex{F,S}
-end
-
-# Dualization handles scalar constraints like `f(x) >= lb` in a way that's equivalent
-# to applying a `MOI.Bridges.Constraint.VectorizeBridge`. That is, it is equivalent to
-# transforming it into `[f(x) - lb] in MOI.Nonnegatives(1)`.
-# For packages that define custom attributes, to avoid having them to deal with both
-# defining how it should go through the vectorize bridge and for a scalar constraint
-# in a dualization layer, we just use the vectorize bridge implementation here:
-# This also help us get the mechanism that detect if it is a ray or not.
-# It's getting quite hacky, maybe we should just drop support for scalar constraint
-# in Dualization and rely on a bridge layer.
-
-function MOI.get(
-    optimizer::DualOptimizer,
-    attr::MOI.AbstractConstraintAttribute,
-    ci::MOI.ConstraintIndex,
-)
-    return MOI.get(_AfterVectorize(optimizer, ci), attr, ci)
-end
-
-function _vectorize_bridge(
-    ::Type{MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}},
-    constant,
-) where {T,F,S,G}
-    dummy_ci = MOI.ConstraintIndex{F,S}(1)
-    return MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}(dummy_ci, constant)
-end
-
-function MOI.get(
-    optimizer::DualOptimizer{T},
-    attr::MOI.AbstractConstraintAttribute,
-    ci::MOI.ConstraintIndex{F,S},
-) where {T,F<:MOI.AbstractScalarFunction,S<:MOI.Utilities.ScalarLinearSet}
-    model = _AfterVectorize(optimizer, ci)
-    primal_dual_map = optimizer.dual_problem.primal_dual_map
-    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
-    if !isnothing(data)
-        constant = data.primal_set_constants[]
-        BT = MOI.Bridges.Constraint.concrete_bridge_type(
-            MOI.Bridges.Constraint.VectorizeBridge{T},
-            F,
-            S,
-        )
-        ci = _vectorize_bridge(BT, -constant)
-    end
-    return MOI.get(model, attr, ci)
-end
-
-# Vectorize bridge uses this to check if it is a ray or not
-function MOI.get(av::_AfterVectorize, attr::MOI.AbstractModelAttribute)
-    return MOI.get(av.inner, attr)
 end
 
 function MOI.get(

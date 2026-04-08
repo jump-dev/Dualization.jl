@@ -179,7 +179,7 @@ function _test_fixed(T)
     @test MOI.get(dual, MOI.VariablePrimalStart(), x) == 4
     @test MOI.get(dual, MOI.ConstraintPrimalStart(), cx) == 1
     @test isnothing(MOI.get(dual, MOI.ConstraintDualStart(), cx))
-    @test_broken MOI.get(dual, MOI.ConstraintPrimalStart(), c) == 5
+    @test MOI.get(dual, MOI.ConstraintPrimalStart(), c) == 5
     @test_broken MOI.get(dual, MOI.ConstraintDualStart(), c) == 6
     return
 end
