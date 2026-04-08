@@ -155,6 +155,41 @@ function test_constraint_attribute_VectorAffineFunction()
     )
 end
 
+function _test_fixed(T)
+    model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+    x, cx = MOI.add_constrained_variable(model, MOI.EqualTo(T(1)))
+    c = MOI.add_constraint(model, T(2) * x, MOI.LessThan(T(3)))
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+
+    MOI.set(model, MOI.VariablePrimalStart(), x, T(4))
+    MOI.set(model, MOI.ConstraintPrimalStart(), c, T(5))
+    MOI.set(model, MOI.ConstraintDualStart(), c, T(6))
+
+    dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+    dual_problem = Dualization.DualProblem{T}(dual_model)
+    OptimizerType = typeof(dual_problem.dual_model)
+    dual = Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
+    @test MOI.supports(dual, MOI.VariablePrimalStart(), typeof(x))
+    @test MOI.supports(dual, MOI.ConstraintDualStart(), typeof(c))
+    @test MOI.supports(dual, MOI.ConstraintPrimalStart(), typeof(c))
+
+    index_map = MOI.copy_to(dual, model)
+    @test dual_model === dual.dual_problem.dual_model
+
+    @test MOI.get(dual, MOI.VariablePrimalStart(), x) == 4
+    @test MOI.get(dual, MOI.ConstraintPrimalStart(), cx) == 1
+    @test isnothing(MOI.get(dual, MOI.ConstraintDualStart(), cx))
+    @test_broken MOI.get(dual, MOI.ConstraintPrimalStart(), c) == 5
+    @test_broken MOI.get(dual, MOI.ConstraintDualStart(), c) == 6
+    return
+end
+
+function test_fixed()
+    _test_fixed(Float64)
+    _test_fixed(Int)
+    return
+end
+
 function _test_simple(T)
     model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
     x = MOI.add_variable(model)
@@ -163,6 +198,7 @@ function _test_simple(T)
     MOI.set(model, MOI.VariablePrimalStart(), x, T(1))
     MOI.set(model, MOI.ConstraintPrimalStart(), c, T(3))
     MOI.set(model, MOI.ConstraintDualStart(), c, T(4))
+
     dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
     dual_problem = Dualization.DualProblem{T}(dual_model)
     OptimizerType = typeof(dual_problem.dual_model)
@@ -201,11 +237,13 @@ function _test_simple(T)
     @test isnothing(
         MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound),
     )
+    return
 end
 
 function test_simple()
     _test_simple(Float64)
-    return _test_simple(Int)
+    _test_simple(Int)
+    return
 end
 
 end  # module
