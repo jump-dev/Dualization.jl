@@ -119,6 +119,7 @@ function MOI.get(
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = primal_dual_map.primal_variable_data[vi]
     if isnothing(data.primal_constrained_variable_constraint)
+        # Classical free variable
         return dual_attribute_value(
             attr,
             MOI.get(
@@ -132,6 +133,7 @@ function MOI.get(
         # Fixed variable: variable constrained to `MOI.EqualTo` or `MOI.Zeros`
         return fixed_variable_value(attr, T)
     end
+    # Added as constrained variable
     con_attr = constraint_attribute(attr)
     value = dual_attribute_value(
         con_attr,
@@ -143,8 +145,10 @@ function MOI.get(
     )
     if data.dual_constraint isa
        MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}
+        # Added as part of a vector of constrained variable
         return value[data.primal_constrained_variable_index]
     else
+        # Added as a scalar constrained variable
         return value
     end
 end
