@@ -184,12 +184,15 @@ end
 function MOI.set(
     av::_AfterVectorize,
     attr::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex,
+    ci::MOI.ConstraintIndex,
     value,
 )
     optimizer = av.inner
-    ci = av.inner_ci
-    value = _scalarize(ci, value) # Needed because the Vectorize bridge has vectorized it
+    if !isnothing(av.ci)
+        ci = av.ci
+        # Needed because the Vectorize bridge has vectorized it
+        value = _scalarize(ci, value)
+    end
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = get(primal_dual_map.primal_constraint_data, ci, nothing)
     if isnothing(data)
@@ -336,10 +339,12 @@ end
 function MOI.get(
     av::_AfterVectorize{T},
     attr::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex,
+    ci::MOI.ConstraintIndex,
 ) where {T}
     optimizer = av.inner
-    ci = av.inner_ci
+    if !isnothing(av.ci)
+        ci = av.ci
+    end
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = get(primal_dual_map.primal_constraint_data, ci, nothing)
     if isnothing(data)

@@ -10,7 +10,8 @@
 
 struct _AfterVectorize{T,OT,F,S} <: MOI.ModelLike
     inner::DualOptimizer{T,OT}
-    inner_ci::MOI.ConstraintIndex{F,S}
+    # If `ci` is `nothing`, the bridge isn't used
+    ci::Union{Nothing,MOI.ConstraintIndex{F,S}}
 end
 
 # Vectorize bridge uses this to check if it is a ray or not
