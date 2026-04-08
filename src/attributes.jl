@@ -62,7 +62,9 @@ function _variable_dual_attribute(::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
-function _variable_dual_attribute(attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart})
+function _variable_dual_attribute(
+    attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+)
     return dual_attribute(attr)
 end
 
@@ -201,17 +203,15 @@ function MOI.set(
     else
         dual_attr = _variable_dual_attribute(attr)
         if dual_attr isa MOI.AbstractVariableAttribute
-            index = _scalarize(ci, primal_dual_map.primal_constraint_data[ci].dual_variables)
+            index = _scalarize(
+                ci,
+                primal_dual_map.primal_constraint_data[ci].dual_variables,
+            )
         else
             @assert dual_attr isa MOI.AbstractConstraintAttribute
             index = data.dual_constrained_variable_constraint
         end
-        MOI.set(
-            optimizer.dual_problem.dual_model,
-            dual_attr,
-            index,
-            value,
-        )
+        MOI.set(optimizer.dual_problem.dual_model, dual_attr, index, value)
     end
     return
 end
@@ -250,7 +250,9 @@ function get_for_fixed_constrained_variables(
     return MOI.Utilities.eval_variables(eval, dual_function)
 end
 
-_variable_attr(attr::MOI.ConstraintPrimal) = MOI.VariablePrimal(attr.result_index)
+function _variable_attr(attr::MOI.ConstraintPrimal)
+    return MOI.VariablePrimal(attr.result_index)
+end
 _variable_attr(::MOI.ConstraintPrimalStart) = MOI.VariablePrimalStart()
 
 function get_for_fixed_constrained_variables(
@@ -270,7 +272,10 @@ end
 function _maybe_shift_for_vectorize(
     optimizer,
     attr,
-    dual_ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction,<:MOI.Utilities.ScalarLinearSet},
+    dual_ci::MOI.ConstraintIndex{
+        <:MOI.AbstractScalarFunction,
+        <:MOI.Utilities.ScalarLinearSet,
+    },
     value,
 )
     return _shift_for_vectorize(optimizer, attr, dual_ci, value)
@@ -285,13 +290,23 @@ function _maybe_shift_for_vectorize(
     return value
 end
 
-function _shift_for_vectorize(optimizer, ::Union{MOI.ConstraintDual,MOI.ConstraintDualStart}, dual_ci, value)
+function _shift_for_vectorize(
+    optimizer,
+    ::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
+    dual_ci,
+    value,
+)
     set =
         MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintSet(), dual_ci)
     return value - MOI.constant(set)
 end
 
-function _shift_for_vectorize(optimizer, ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart}, dual_ci, value)
+function _shift_for_vectorize(
+    optimizer,
+    ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    dual_ci,
+    value,
+)
     return value
 end
 

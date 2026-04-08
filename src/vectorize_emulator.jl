@@ -27,11 +27,17 @@ function _vectorize_bridge(
     return MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}(dummy_ci, constant)
 end
 
-function _wrap(optimizer::DualOptimizer{T,OT}, ci::MOI.ConstraintIndex{F,S}) where {T,OT,F,S}
+function _wrap(
+    optimizer::DualOptimizer{T,OT},
+    ci::MOI.ConstraintIndex{F,S},
+) where {T,OT,F,S}
     return _AfterVectorize{T,OT,F,S}(optimizer, nothing), ci
 end
 
-function _wrap(optimizer::DualOptimizer{T,OT}, ci::MOI.ConstraintIndex{F,S}) where {T,OT,F<:MOI.AbstractScalarFunction,S<:MOI.Utilities.ScalarLinearSet}
+function _wrap(
+    optimizer::DualOptimizer{T,OT},
+    ci::MOI.ConstraintIndex{F,S},
+) where {T,OT,F<:MOI.AbstractScalarFunction,S<:MOI.Utilities.ScalarLinearSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = get(primal_dual_map.primal_constraint_data, ci, nothing)
     if isnothing(data)
