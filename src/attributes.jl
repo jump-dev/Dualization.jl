@@ -230,22 +230,24 @@ end
     get_for_fixed_constrained_variables(
         optimizer::DualOptimizer,
         attr::MOI.AbstractConstraintAttribute,
+        primal_vi::MOI.VariableIndex,
         dual_function::MOI.ScalarAffineFunction,
     )
 
-Given a fixed variable, so part of a `MOI.VariableIndex`-in-`MOI.EqualTo`
-constraint or `MOI.VectorOfVariables`-in-`MOI.Zeros` constraint,
-return the value of the attribute `attr` at the entry corresponding to
-this variable.
-The terms of `dual_function` are the product of the coefficient of the variable
+Given a fixed variable `primal_vi`, so part of a
+`MOI.VariableIndex`-in-`MOI.EqualTo` constraint or a
+`MOI.VectorOfVariables`-in-`MOI.Zeros` constraint, return the value of the
+attribute `attr` at the entry corresponding to `primal_vi`.
+The terms of `dual_function` are the product of the coefficient of `primal_vi`
 in each constraint multiplied by the corresponding dual variable.
-The constant is the coefficient of the variable in the objective function.
+The constant is the coefficient of `primal_vi` in the objective function.
 """
 function get_for_fixed_constrained_variables end
 
 function get_for_fixed_constrained_variables(
     optimizer,
     attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
+    ::MOI.VariableIndex,
     dual_function::MOI.ScalarAffineFunction,
 )
     function eval(inner_vi)
@@ -258,13 +260,16 @@ function get_for_fixed_constrained_variables(
     return MOI.Utilities.eval_variables(eval, dual_function)
 end
 
+_variable_attr(attr::MOI.ConstraintPrimal) = MOI.VariablePrimal(attr.result_index)
+_variable_attr(::MOI.ConstraintPrimalStart) = MOI.VariablePrimalStart()
+
 function get_for_fixed_constrained_variables(
-    ::DualOptimizer{T},
-    ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    optimizer::DualOptimizer{T},
+    attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    primal_vi::MOI.VariableIndex,
     ::MOI.ScalarAffineFunction,
 ) where {T}
-    # TODO evaluate functions
-    return zero(T)
+    return MOI.get(optimizer, _variable_attr(attr), primal_vi)
 end
 
 # Not sure how to rely on a bridge for this one.
@@ -419,6 +424,7 @@ function MOI.get(
             return get_for_fixed_constrained_variables.(
                 optimizer,
                 attr,
+                _scalarize(ci, vis),
                 _scalarize(ci, dual_functions),
             )
         else

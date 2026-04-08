@@ -38,6 +38,7 @@
         conic_config = MOI.Test.Config(atol = 1e-4, rtol = 1e-4)
         conic_cache =
             MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}())
+        MOI.empty!(opt)
         conic_cached = MOI.Utilities.CachingOptimizer(conic_cache, opt)
         conic_bridged = MOI.Bridges.full_bridge_optimizer(conic_cached, Float64)
 
