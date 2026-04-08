@@ -255,11 +255,8 @@ function get_for_constrained_variables(
     attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
     dual_ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction},
 )
-    set = MOI.get(
-        optimizer.dual_problem.dual_model,
-        MOI.ConstraintSet(),
-        dual_ci,
-    )
+    set =
+        MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintSet(), dual_ci)
     return MOI.get(
         optimizer.dual_problem.dual_model,
         dual_attribute(attr),
@@ -275,7 +272,11 @@ function get_for_constrained_variables(optimizer, attr, dual_ci)
     )
 end
 
-function get_for_equality_constraint(optimizer, attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart}, dual_variable::MOI.VariableIndex)
+function get_for_equality_constraint(
+    optimizer,
+    attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
+    dual_variable::MOI.VariableIndex,
+)
     # TODO do something else not relying on `_variable_dual_attribute`
     return MOI.get(
         optimizer.dual_problem.dual_model,
@@ -284,29 +285,43 @@ function get_for_equality_constraint(optimizer, attr::Union{MOI.ConstraintDual,M
     )
 end
 
-function get_for_equality_constraint(::DualOptimizer{T}, ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart}, ::MOI.VariableIndex) where {T}
+function get_for_equality_constraint(
+    ::DualOptimizer{T},
+    ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    ::MOI.VariableIndex,
+) where {T}
     return zero(T)
 end
 
-function shift_constant_for_get(::Union{MOI.ConstraintDual,MOI.ConstraintDualStart}, value, _)
+function shift_constant_for_get(
+    ::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
+    value,
+    _,
+)
     return value
 end
 
-shift_constant_for_get(::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart}, value::Vector, constant::Vector) = value
-
-shift_constant_for_get(::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart}, value::Real, constant::Real) = value - constant
-
-function _scalarize(
-    ::MOI.ConstraintIndex{<:MOI.AbstractVectorFunction},
-    v,
+function shift_constant_for_get(
+    ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    value::Vector,
+    constant::Vector,
 )
+    return value
+end
+
+function shift_constant_for_get(
+    ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    value::Real,
+    constant::Real,
+)
+    return value - constant
+end
+
+function _scalarize(::MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}, v)
     return v
 end
 
-function _scalarize(
-    ::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction},
-    v,
-)
+function _scalarize(::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction}, v)
     return only(v)
 end
 
@@ -324,8 +339,8 @@ function MOI.get(
         if isnothing(data.dual_constraint)
             # Fixed variables (constrained in `MOI.Zeros` or `MOI.EqualTo`)
             dual_functions = MOI.ScalarAffineFunction{T}[
-                primal_dual_map.primal_variable_data[vi].dual_function
-                for vi in vis
+                primal_dual_map.primal_variable_data[vi].dual_function for
+                vi in vis
             ]
             return get_for_fixed_constrained_variables.(
                 optimizer,
@@ -333,7 +348,11 @@ function MOI.get(
                 _scalarize(ci, dual_functions),
             )
         else
-            return get_for_constrained_variables(optimizer, attr, data.dual_constraint)
+            return get_for_constrained_variables(
+                optimizer,
+                attr,
+                data.dual_constraint,
+            )
         end
     else
         @assert !haskey(primal_dual_map.primal_constrained_variables, ci)
@@ -341,7 +360,11 @@ function MOI.get(
         value = if isnothing(dual_ci)
             # Primal equality constraint, so no dual constraint
             # TODO do something else not relying on `_variable_dual_attribute`
-            get_for_equality_constraint.(optimizer, attr, _scalarize(ci, data.dual_variables))
+            get_for_equality_constraint.(
+                optimizer,
+                attr,
+                _scalarize(ci, data.dual_variables),
+            )
         else
             MOI.get(
                 optimizer.dual_problem.dual_model,
@@ -349,7 +372,11 @@ function MOI.get(
                 dual_ci,
             )
         end
-        return shift_constant_for_get(attr, value, _scalarize(ci, data.primal_set_constants))
+        return shift_constant_for_get(
+            attr,
+            value,
+            _scalarize(ci, data.primal_set_constants),
+        )
     end
 end
 

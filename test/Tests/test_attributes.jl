@@ -177,24 +177,35 @@ function _test_simple(T)
     vars = MOI.get(dual_model, MOI.ListOfVariableIndices())
     @test MOI.get(dual_model, MOI.VariablePrimalStart(), vars[]) == 4
 
-    dual_eq = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{T},MOI.EqualTo{T}}())[]
+    dual_eq = MOI.get(
+        dual_model,
+        MOI.ListOfConstraintIndices{
+            MOI.ScalarAffineFunction{T},
+            MOI.EqualTo{T},
+        }(),
+    )[]
     @test MOI.get(dual, MOI.VariablePrimalStart(), x) == 1
     @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_eq) == -1
     # We could set it to zero, but `nothing` should be fine for the solver,
     # let's only revisit if we have a convincing use case
     @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_eq))
 
-    dual_bound = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.VariableIndex,MOI.GreaterThan{T}}())[]
+    dual_bound = MOI.get(
+        dual_model,
+        MOI.ListOfConstraintIndices{MOI.VariableIndex,MOI.GreaterThan{T}}(),
+    )[]
     @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_bound) == 3
     # We could set it to the value of the variable, but `nothing` should be fine for the solver.
     # Let's revisit only if we have a solver needing `ConstraintPrimalStart` for `VariableIndex`-in-`S`
     # constraints.
-    @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound))
+    @test isnothing(
+        MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound),
+    )
 end
 
 function test_simple()
     _test_simple(Float64)
-    _test_simple(Int)
+    return _test_simple(Int)
 end
 
 end  # module
