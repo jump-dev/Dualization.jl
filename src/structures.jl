@@ -57,9 +57,9 @@ constraints and their dual counterparts.
 Constraint indices for constrained variables are not in this structure. They are
 added in the `primal_constrained_variables` field of `PrimalDualMap`.
 
-  * `primal_set_constants::Vector{T}`: a vector of primal set constants that are
-    used in MOI getters. This is used to get the primal constants of the primal
-    constraints.
+  * `primal_set_constants::Vector{T}`: for vector constraints, it is `T[]`.
+    For scalar constraints, it is equal to the constant of the set minus
+    the constant of the function.
 
   * `dual_variables::Vector{MOI.VariableIndex}`: vector of dual variables. If
     primal constraint is scalar then, the vector has length = 1.

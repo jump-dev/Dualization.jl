@@ -293,6 +293,11 @@ function get_for_equality_constraint(
     return zero(T)
 end
 
+"""
+    shift_constant_for_get(attr::MOI.AbstractConstraintAttribute, value)
+"""
+function shift_constant_for_get end
+
 function shift_constant_for_get(
     ::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
     value,
@@ -317,6 +322,30 @@ function shift_constant_for_get(
     return value - constant
 end
 
+function _get_through_constraint_vectorize(
+    ::MOI.ConstraintIndex,
+    _,
+    value,
+    _,
+)
+    return value
+end
+
+function _get_through_constraint_vectorize(
+    ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction,<:MOI.Utilities.ScalarLinearSet},
+    attr,
+    value,
+    constants,
+)
+    # Dualization handles scalar constraints like `f(x) >= lb` in a way that's equivalent
+    # to applying a `MOI.Bridges.Constraint.VectorizeBridge`. That is, it is equivalent to
+    # transforming it into `[f(x) - lb] in MOI.Nonnegatives(1)`.
+    # For packages that define custom attributes, to avoid having them to deal with both
+    # defining how it should go through the vectorize bridge and for a scalar constraint
+    # in a dualization layer, we just use the vectorize bridge implementation here:
+    return MOI.get(model, attr, )
+end
+
 function _scalarize(::MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}, v)
     return v
 end
@@ -325,8 +354,34 @@ function _scalarize(::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction}, v)
     return only(v)
 end
 
+struct _AfterVectorize{T,OT,F,S} <: MOI.ModelLike
+    inner::DualOptimizer{T,OT}
+    inner_ci::MOI.ConstraintIndex{F,S}
+end
+
+# Dualization handles scalar constraints like `f(x) >= lb` in a way that's equivalent
+# to applying a `MOI.Bridges.Constraint.VectorizeBridge`. That is, it is equivalent to
+# transforming it into `[f(x) - lb] in MOI.Nonnegatives(1)`.
+# For packages that define custom attributes, to avoid having them to deal with both
+# defining how it should go through the vectorize bridge and for a scalar constraint
+# in a dualization layer, we just use the vectorize bridge implementation here:
+
 function MOI.get(
-    optimizer::DualOptimizer{T},
+    optimizer::DualOptimizer,
+    attr::MOI.AbstractConstraintAttribute,
+    ::MOI.ConstraintIndex,
+)
+end
+
+function MOI.get(
+    optimizer::DualOptimizer,
+    attr::MOI.AbstractConstraintAttribute,
+    ::MOI.ConstraintIndex,
+)
+end
+
+function MOI.get(
+    optimizer::_AfterVectorize{T},
     attr::MOI.AbstractConstraintAttribute,
     ci::MOI.ConstraintIndex,
 ) where {T}
@@ -372,10 +427,11 @@ function MOI.get(
                 dual_ci,
             )
         end
-        return shift_constant_for_get(
+        return _get_through_constraint_vectorize(
+            ci,
             attr,
             value,
-            _scalarize(ci, data.primal_set_constants),
+            data.primal_set_constants,
         )
     end
 end
