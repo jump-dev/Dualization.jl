@@ -165,6 +165,18 @@ function MOI.supports(
     )
 end
 
+function MOI.supports(
+    optimizer::DualOptimizer,
+    attr::MOI.ConstraintPrimalStart,
+    C::Type{<:MOI.ConstraintIndex},
+)
+    return MOI.supports(
+        optimizer.dual_problem.dual_model,
+        dual_attribute(attr),
+        C,
+    )
+end
+
 function MOI.set(
     optimizer::DualOptimizer,
     attr::MOI.ConstraintDualStart,
@@ -172,16 +184,45 @@ function MOI.set(
     value,
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.primal_constrained_variables)
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if isnothing(data)
         msg = "Setting starting value for variables constrained at creation is not supported yet"
         throw(MOI.SetAttributeNotAllowed(attr, msg))
+    else
+        MOI.set(
+            optimizer.dual_problem.dual_model,
+            _variable_dual_attribute(attr),
+            primal_dual_map.primal_constraint_data[ci].dual_variables[],
+            value,
+        )
     end
-    MOI.set(
-        optimizer.dual_problem.dual_model,
-        _variable_dual_attribute(attr),
-        primal_dual_map.primal_constraint_data[ci].dual_variables[],
-        value,
-    )
+    return
+end
+
+function MOI.set(
+    optimizer::DualOptimizer,
+    attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+    ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction},
+    value,
+)
+    primal_dual_map = optimizer.dual_problem.primal_dual_map
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if isnothing(data)
+        error(
+            "Setting starting value for variables constrained at creation is not supported yet",
+        )
+    else
+        ci_dual_problem = data.dual_constrained_variable_constraint
+        if !isnothing(value)
+            value -= data.primal_set_constants[]
+        end
+        MOI.set(
+            optimizer.dual_problem.dual_model,
+            dual_attribute(attr),
+            ci_dual_problem,
+            value,
+        )
+    end
     return
 end
 
@@ -191,7 +232,8 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractScalarFunction,S<:MOI.AbstractScalarSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if haskey(primal_dual_map.primal_constrained_variables, ci)
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if isnothing(data)
         vi = primal_dual_map.primal_constrained_variables[ci][]
         ci_dual = primal_dual_map.primal_variable_data[vi].dual_constraint
         if ci_dual === nothing
@@ -240,7 +282,8 @@ function MOI.get(
     ci::MOI.ConstraintIndex{F,S},
 ) where {F<:MOI.AbstractVectorFunction,S<:MOI.AbstractVectorSet}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if !haskey(primal_dual_map.primal_constraint_data, ci)
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if isnothing(data)
         vis = primal_dual_map.primal_constrained_variables[ci]
         ci_dual = primal_dual_map.primal_variable_data[vis[1]].dual_constraint
         if ci_dual === nothing
@@ -278,45 +321,6 @@ function MOI.get(
             ci_dual,
         )
     end
-end
-
-function MOI.supports(
-    optimizer::DualOptimizer,
-    attr::MOI.ConstraintPrimalStart,
-    C::Type{<:MOI.ConstraintIndex},
-)
-    return MOI.supports(
-        optimizer.dual_problem.dual_model,
-        dual_attribute(attr),
-        C,
-    )
-end
-
-function MOI.set(
-    optimizer::DualOptimizer,
-    attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
-    ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction},
-    value,
-)
-    primal_dual_map = optimizer.dual_problem.primal_dual_map
-    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
-    if isnothing(data)
-        error(
-            "Setting starting value for variables constrained at creation is not supported yet",
-        )
-    else
-        ci_dual_problem = data.dual_constrained_variable_constraint
-        if !isnothing(value)
-            value -= data.primal_set_constants[]
-        end
-        MOI.set(
-            optimizer.dual_problem.dual_model,
-            dual_attribute(attr),
-            ci_dual_problem,
-            value,
-        )
-    end
-    return
 end
 
 function MOI.get(
