@@ -146,6 +146,7 @@
     end
 
     @testset "Copy twice" begin
+        T = Float64
         model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
         x = MOI.add_variable(model)
         c = MOI.add_constraint(model, T(2) * x, MOI.GreaterThan(T(0)))
