@@ -365,26 +365,58 @@ end
 # For packages that define custom attributes, to avoid having them to deal with both
 # defining how it should go through the vectorize bridge and for a scalar constraint
 # in a dualization layer, we just use the vectorize bridge implementation here:
+# This also help us get the mechanism that detect if it is a ray or not.
+# It's getting quite hacky, maybe we should just drop support for scalar constraint
+# in Dualization and rely on a bridge layer.
 
 function MOI.get(
     optimizer::DualOptimizer,
-    attr::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex,
-)
-end
-
-function MOI.get(
-    optimizer::DualOptimizer,
-    attr::MOI.AbstractConstraintAttribute,
-    ::MOI.ConstraintIndex,
-)
-end
-
-function MOI.get(
-    optimizer::_AfterVectorize{T},
     attr::MOI.AbstractConstraintAttribute,
     ci::MOI.ConstraintIndex,
+)
+    return MOI.get(_AfterVectorize(optimizer, ci), attr, ci)
+end
+
+function _vectorize_bridge(::Type{MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}}, constant) where {T,F,S,G}
+    dummy_ci = MOI.ConstraintIndex{F,S}(1)
+    return MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}(dummy_ci, constant)
+end
+
+function MOI.get(
+    optimizer::DualOptimizer{T},
+    attr::MOI.AbstractConstraintAttribute,
+    ci::MOI.ConstraintIndex{F,S},
+) where {T,F<:MOI.AbstractScalarFunction,S<:MOI.Utilities.ScalarLinearSet}
+    model = _AfterVectorize(optimizer, ci)
+    primal_dual_map = optimizer.dual_problem.primal_dual_map
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if !isnothing(data)
+        constant = data.primal_set_constants[]
+        BT = MOI.Bridges.Constraint.concrete_bridge_type(
+            MOI.Bridges.Constraint.VectorizeBridge{T},
+            F,
+            S,
+        )
+        ci = _vectorize_bridge(BT, -constant)
+    end
+    return MOI.get(model, attr, ci)
+end
+
+# Vectorize bridge uses this to check if it is a ray or not
+function MOI.get(
+    av::_AfterVectorize,
+    attr::MOI.AbstractModelAttribute,
+)
+    return MOI.get(av.inner, attr)
+end
+
+function MOI.get(
+    av::_AfterVectorize{T},
+    attr::MOI.AbstractConstraintAttribute,
+    ::MOI.ConstraintIndex,
 ) where {T}
+    optimizer = av.inner
+    ci = av.inner_ci
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = get(primal_dual_map.primal_constraint_data, ci, nothing)
     if isnothing(data)
@@ -412,27 +444,21 @@ function MOI.get(
     else
         @assert !haskey(primal_dual_map.primal_constrained_variables, ci)
         dual_ci = data.dual_constrained_variable_constraint
-        value = if isnothing(dual_ci)
+        if isnothing(dual_ci)
             # Primal equality constraint, so no dual constraint
             # TODO do something else not relying on `_variable_dual_attribute`
-            get_for_equality_constraint.(
+            return get_for_equality_constraint.(
                 optimizer,
                 attr,
                 _scalarize(ci, data.dual_variables),
             )
         else
-            MOI.get(
+            return MOI.get(
                 optimizer.dual_problem.dual_model,
                 dual_attribute(attr),
                 dual_ci,
             )
         end
-        return _get_through_constraint_vectorize(
-            ci,
-            attr,
-            value,
-            data.primal_set_constants,
-        )
     end
 end
 
