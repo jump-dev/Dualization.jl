@@ -155,31 +155,48 @@ function test_constraint_attribute_VectorAffineFunction()
     )
 end
 
+function _test_simple(T)
+    model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+    x = MOI.add_variable(model)
+    c = MOI.add_constraint(model, T(2) * x, MOI.GreaterThan(T(0)))
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    MOI.set(model, MOI.VariablePrimalStart(), x, T(1))
+    MOI.set(model, MOI.ConstraintPrimalStart(), c, T(3))
+    MOI.set(model, MOI.ConstraintDualStart(), c, T(4))
+    dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+    dual_problem = Dualization.DualProblem{T}(dual_model)
+    OptimizerType = typeof(dual_problem.dual_model)
+    dual = Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
+    @test MOI.supports(dual, MOI.VariablePrimalStart(), typeof(x))
+    @test MOI.supports(dual, MOI.ConstraintDualStart(), typeof(c))
+    @test MOI.supports(dual, MOI.ConstraintPrimalStart(), typeof(c))
+
+    index_map = MOI.copy_to(dual, model)
+    @test dual_model === dual.dual_problem.dual_model
+
+    vars = MOI.get(dual_model, MOI.ListOfVariableIndices())
+    @test MOI.get(dual_model, MOI.VariablePrimalStart(), vars[]) == 4
+
+    dual_eq = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{T},MOI.EqualTo{T}}())[]
+    @test MOI.get(dual, MOI.VariablePrimalStart(), x) == 1
+    @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_eq) == -1
+    # We could set it to zero, but `nothing` should be fine for the solver,
+    # let's only revisit if we have a convincing use case
+    @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_eq))
+
+    dual_bound = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.VariableIndex,MOI.GreaterThan{T}}())[]
+    @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_bound) == 3
+    # We could set it to the value of the variable, but `nothing` should be fine for the solver.
+    # Let's revisit only if we have a solver needing `ConstraintPrimalStart` for `VariableIndex`-in-`S`
+    # constraints.
+    @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound))
+end
+
+function test_simple()
+    _test_simple(Float64)
+    _test_simple(Int)
+end
+
 end  # module
 
 TestAttributes.runtests()
-
-model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
-x = MOI.add_variable(model)
-c = MOI.add_constraint(model, 2.0 * x, MOI.GreaterThan(0.0))
-MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-MOI.set(model, MOI.VariablePrimalStart(), x, 1.0)
-MOI.set(model, MOI.ConstraintPrimalStart(), c, 3.0)
-MOI.set(model, MOI.ConstraintDualStart(), c, 4.0)
-dual_model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
-dual_problem = Dualization.DualProblem{Float64}(dual_model)
-OptimizerType = typeof(dual_problem.dual_model)
-dual = DualOptimizer{Float64,OptimizerType}(dual_problem)
-index_map = MOI.copy_to(dual, model)
-vars = MOI.get(dual_model, MOI.ListOfVariableIndices())
-println(dual_model)
-MOI.get(dual_model, MOI.VariablePrimalStart(), vars[])
-T = Float64
-@show dual_model === dual.dual_problem.dual_model
-dual_eq = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{T},MOI.EqualTo{T}}())[]
-@test MOI.get(dual, MOI.VariablePrimalStart(), x) == 1
-@test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_eq) == -1
-MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_eq)
-dual_bound = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.VariableIndex,MOI.GreaterThan{T}}())[]
-MOI.get(dual_model, MOI.ConstraintDualStart(), dual_bound)
-MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound)

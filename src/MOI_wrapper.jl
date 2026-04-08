@@ -234,23 +234,20 @@ function MOI.supports_add_constrained_variables(
 end
 
 function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike)
+    MOI.empty!(dest)
     dualize(
         src,
         dest.dual_problem,
         assume_min_if_feasibility = dest.assume_min_if_feasibility,
     )
-    idx_map = MOI.Utilities.IndexMap()
-    vis_src = MOI.get(src, MOI.ListOfVariableIndices())
-    for vi in vis_src
-        setindex!(idx_map, vi, vi)
-    end
-    MOI.Utilities.pass_attributes(dest, src, idx_map, vis_src)
+    index_map = MOI.Utilities.identity_index_map(src)
+    vis = MOI.get(src, MOI.ListOfVariableIndices())
+    MOI.Utilities.pass_attributes(dest, src, index_map, vis)
     for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
-        for con in MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
-            setindex!(idx_map, con, con)
-        end
+        cis = MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
+        MOI.Utilities.pass_attributes(dest, src, index_map, cis)
     end
-    return idx_map
+    return index_map
 end
 
 function MOI.optimize!(optimizer::DualOptimizer)

@@ -281,7 +281,7 @@ function MOI.get(
 end
 
 function MOI.supports(
-    ::DualOptimizer,
+    optimizer::DualOptimizer,
     attr::MOI.ConstraintPrimalStart,
     C::Type{<:MOI.ConstraintIndex},
 )
@@ -299,15 +299,15 @@ function MOI.set(
     value,
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if ci in keys(primal_dual_map.constrained_var_dual)
+    data = get(primal_dual_map.primal_constraint_data, ci, nothing)
+    if isnothing(data)
         error(
             "Setting starting value for variables constrained at creation is not supported yet",
         )
-    elseif haskey(primal_dual_map.primal_con_dual_con, ci)
-        # If it has no key then there is no dual constraint
-        ci_dual_problem = get_ci_dual_problem(optimizer, ci)
-        if !isnothing(value) && (F <: MOI.AbstractScalarFunction)
-            value -= get_primal_ci_constant(optimizer, ci)
+    else
+        ci_dual_problem = data.dual_constrained_variable_constraint
+        if !isnothing(value)
+            value -= data.primal_set_constants[]
         end
         MOI.set(
             optimizer.dual_problem.dual_model,

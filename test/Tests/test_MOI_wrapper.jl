@@ -144,4 +144,22 @@
         )
         @test model.assume_min_if_feasibility
     end
+
+    @testset "Copy twice" begin
+        model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+        x = MOI.add_variable(model)
+        c = MOI.add_constraint(model, T(2) * x, MOI.GreaterThan(T(0)))
+        MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+        MOI.set(model, MOI.VariablePrimalStart(), x, T(1))
+        MOI.set(model, MOI.ConstraintPrimalStart(), c, T(3))
+        MOI.set(model, MOI.ConstraintDualStart(), c, T(4))
+        dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+        dual_problem = Dualization.DualProblem{T}(dual_model)
+        OptimizerType = typeof(dual_problem.dual_model)
+        dual = DualOptimizer{T,OptimizerType}(dual_problem)
+        MOI.copy_to(dual, model)
+        # Test that it is emptied
+        MOI.copy_to(dual, model)
+        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 1
+    end
 end
