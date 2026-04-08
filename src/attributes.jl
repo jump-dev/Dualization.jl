@@ -322,17 +322,15 @@ function shift_constant_for_get(
     return value - constant
 end
 
-function _get_through_constraint_vectorize(
-    ::MOI.ConstraintIndex,
-    _,
-    value,
-    _,
-)
+function _get_through_constraint_vectorize(::MOI.ConstraintIndex, _, value, _)
     return value
 end
 
 function _get_through_constraint_vectorize(
-    ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction,<:MOI.Utilities.ScalarLinearSet},
+    ci::MOI.ConstraintIndex{
+        <:MOI.AbstractScalarFunction,
+        <:MOI.Utilities.ScalarLinearSet,
+    },
     attr,
     value,
     constants,
@@ -343,7 +341,7 @@ function _get_through_constraint_vectorize(
     # For packages that define custom attributes, to avoid having them to deal with both
     # defining how it should go through the vectorize bridge and for a scalar constraint
     # in a dualization layer, we just use the vectorize bridge implementation here:
-    return MOI.get(model, attr, )
+    return MOI.get(model, attr)
 end
 
 function _scalarize(::MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}, v)
@@ -377,7 +375,10 @@ function MOI.get(
     return MOI.get(_AfterVectorize(optimizer, ci), attr, ci)
 end
 
-function _vectorize_bridge(::Type{MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}}, constant) where {T,F,S,G}
+function _vectorize_bridge(
+    ::Type{MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}},
+    constant,
+) where {T,F,S,G}
     dummy_ci = MOI.ConstraintIndex{F,S}(1)
     return MOI.Bridges.Constraint.VectorizeBridge{T,F,S,G}(dummy_ci, constant)
 end
@@ -403,10 +404,7 @@ function MOI.get(
 end
 
 # Vectorize bridge uses this to check if it is a ray or not
-function MOI.get(
-    av::_AfterVectorize,
-    attr::MOI.AbstractModelAttribute,
-)
+function MOI.get(av::_AfterVectorize, attr::MOI.AbstractModelAttribute)
     return MOI.get(av.inner, attr)
 end
 
