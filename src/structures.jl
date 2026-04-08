@@ -30,7 +30,7 @@ variables and their dual counterparts.
   * `dual_function::Union{Nothing,MOI.ScalarAffineFunction{T}}`: if it is a
     constrained variable is `VectorOfVariables`-in-`Zeros` or
     `VariableIndex`-in-`EqualTo(zero(T))` then the dual is `func`-in-`Reals`,
-    which is "irrelevant" to the model. So the no constrained is added (hence
+    which is "irrelevant" to the model. So then no constrained is added (hence
     `dual_constraint` is `nothing` but the function is cached in this field for
     completeness of the `DualOptimizer` for `get`ting `ConstraintDual`s.
     Otherwise, `dual_function` is `nothing`.

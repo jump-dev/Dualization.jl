@@ -48,18 +48,18 @@
                 include = ["test_conic_"],
                 exclude = [
                     # uses FEASIBILITY_SENSE
-                    "test_conic_NormInfinityCone_INFEASIBLE",
-                    "test_conic_NormOneCone_INFEASIBLE",
-                    "test_conic_PositiveSemidefiniteConeSquare_3",
-                    "test_conic_PositiveSemidefiniteConeTriangle_3",
-                    "test_conic_SecondOrderCone_INFEASIBLE",
-                    "test_conic_SecondOrderCone_negative_post_bound_2",
-                    "test_conic_SecondOrderCone_negative_post_bound_3",
-                    "test_conic_SecondOrderCone_no_initial_bound",
-                    "test_conic_RotatedSecondOrderCone_out_of_order",
-                    "test_conic_linear_INFEASIBLE",
-                    "test_conic_empty_matrix",
-                    "test_conic_HermitianPositiveSemidefiniteConeTriangle_2",
+                    r"test_conic_NormInfinityCone_INFEASIBLE$",
+                    r"test_conic_NormOneCone_INFEASIBLE$",
+                    r"test_conic_PositiveSemidefiniteConeSquare_3$",
+                    r"test_conic_PositiveSemidefiniteConeTriangle_3$",
+                    r"test_conic_SecondOrderCone_INFEASIBLE$",
+                    r"test_conic_SecondOrderCone_negative_post_bound_2$",
+                    r"test_conic_SecondOrderCone_negative_post_bound_3$",
+                    r"test_conic_SecondOrderCone_no_initial_bound$",
+                    r"test_conic_RotatedSecondOrderCone_out_of_order$",
+                    r"test_conic_linear_INFEASIBLE",
+                    r"test_conic_empty_matrix$",
+                    r"test_conic_HermitianPositiveSemidefiniteConeTriangle_2$",
                 ],
             )
         end
@@ -143,22 +143,5 @@
             assume_min_if_feasibility = true,
         )
         @test model.assume_min_if_feasibility
-    end
-
-    @testset "Start" begin
-        model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
-        x = MOI.add_variable(model)
-        c = MOI.add_constraint(model, 2.0 * x, MOI.GreaterThan(0.0))
-        MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
-        MOI.set(model, MOI.VariablePrimalStart(), x, 1.0)
-        MOI.set(model, MOI.ConstraintPrimalStart(), c, 3.0)
-        MOI.set(model, MOI.ConstraintDualStart(), c, 4.0)
-        dual_model = MOI.Utilities.UniversalFallback(TestModel{Float64}())
-        dual_problem = Dualization.DualProblem{Float64}(dual_model)
-        OptimizerType = typeof(dual_problem.dual_model)
-        dual = DualOptimizer{Float64,OptimizerType}(dual_problem)
-        index_map = MOI.copy_to(dual, model)
-        vars = MOI.get(dual_model, MOI.ListOfVariableIndices())
-        MOI.get(dual_model, MOI.VariablePrimalStart(), vars[])
     end
 end

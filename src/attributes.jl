@@ -62,6 +62,8 @@ function _variable_dual_attribute(::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
+fixed_variable_value(::MOI.VariablePrimal, ::Type{T}) where {T} = zero(T)
+
 # The inner optimizer may not support equality constraints (e.g. MOI.FileFormats.SDPA.Model)
 # In this case, if all variables are created using constrained variables then dualization won't
 # have to create any equality constraints so it will work.
@@ -95,14 +97,15 @@ function MOI.set(
     value,
 )
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    if vi in keys(primal_dual_map.primal_variable_data)
+    data = primal_dual_map.primal_variable_data[vi]
+    if !isnothing(data.primal_constrained_variable_constraint)
         msg = "Setting starting value for variables constrained at creation is not supported yet"
         throw(MOI.SetAttributeNotAllowed(attr, msg))
     end
     MOI.set(
         optimizer.dual_problem.dual_model,
         dual_attribute(attr),
-        get_ci_dual_problem(optimizer, vi),
+        data.dual_constraint,
         dual_attribute_value(attr, value),
     )
     return
@@ -114,12 +117,8 @@ function MOI.get(
     vi::MOI.VariableIndex,
 )::T where {T}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
-    data = get(primal_dual_map.primal_variable_data, vi, nothing)
-    if data === nothing
-        # error
-    elseif data.dual_constraint === nothing
-        return zero(T)
-    elseif data.primal_constrained_variable_constraint === nothing
+    data = primal_dual_map.primal_variable_data[vi]
+    if isnothing(data.primal_constrained_variable_constraint)
         return dual_attribute_value(
             attr,
             MOI.get(
@@ -128,6 +127,10 @@ function MOI.get(
                 data.dual_constraint,
             ),
         )
+    end
+    if isnothing(data.dual_constraint)
+        # Fixed variable: variable constrained to `MOI.EqualTo` or `MOI.Zeros`
+        return fixed_variable_value(attr, T)
     end
     con_attr = constraint_attribute(attr)
     value = dual_attribute_value(
