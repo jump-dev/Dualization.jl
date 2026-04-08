@@ -226,6 +226,23 @@ function MOI.set(
     return
 end
 
+"""
+    get_for_fixed_constrained_variables(
+        optimizer::DualOptimizer,
+        attr::MOI.AbstractConstraintAttribute,
+        dual_function::MOI.ScalarAffineFunction,
+    )
+
+Given a fixed variable, so part of a `MOI.VariableIndex`-in-`MOI.EqualTo`
+constraint or `MOI.VectorOfVariables`-in-`MOI.Zeros` constraint,
+return the value of the attribute `attr` at the entry corresponding to
+this variable.
+The terms of `dual_function` are the product of the coefficient of the variable
+in each constraint multiplied by the corresponding dual variable.
+The constant is the coefficient of the variable in the objective function.
+"""
+function get_for_fixed_constrained_variables end
+
 function get_for_fixed_constrained_variables(
     optimizer,
     attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
@@ -250,27 +267,50 @@ function get_for_fixed_constrained_variables(
     return zero(T)
 end
 
-function get_for_constrained_variables(
+# Not sure how to rely on a bridge for this one.
+# What we did is equivalent to applying `MOI.Bridges.Variable.VectorizeBridge`
+# so we substituted the variable, hence it's a bit trickier.
+# Anyway I think we should just drop support for scalar constraints.
+# We can revisit if we have a custom attribute that needs to extend this.
+function _maybe_shift_for_vectorize(
     optimizer,
-    attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
-    dual_ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction},
+    attr,
+    dual_ci::MOI.ConstraintIndex{<:MOI.AbstractScalarFunction,<:MOI.Utilities.ScalarLinearSet},
+    value,
 )
-    set =
-        MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintSet(), dual_ci)
-    return MOI.get(
-        optimizer.dual_problem.dual_model,
-        dual_attribute(attr),
-        dual_ci,
-    ) - MOI.constant(set)
+    return _shift_for_vectorize(optimizer, attr, dual_ci, value)
 end
 
-function get_for_constrained_variables(optimizer, attr, dual_ci)
-    return MOI.get(
-        optimizer.dual_problem.dual_model,
-        dual_attribute(attr),
-        dual_ci,
-    )
+function _maybe_shift_for_vectorize(
+    optimizer,
+    attr,
+    dual_ci::MOI.ConstraintIndex,
+    value,
+)
+    return value
 end
+
+function _shift_for_vectorize(optimizer, ::Union{MOI.ConstraintDual,MOI.ConstraintDualStart}, dual_ci, value)
+    set =
+        MOI.get(optimizer.dual_problem.dual_model, MOI.ConstraintSet(), dual_ci)
+    return value - MOI.constant(set)
+end
+
+function _shift_for_vectorize(optimizer, ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart}, dual_ci, value)
+    return value
+end
+
+"""
+    get_for_equality_constraint(
+        optimizer::DualOptimizer,
+        attr::MOI.AbstractConstraintAttribute,
+        dual_variable::MOI.ScalarAffineFunction,
+    )
+
+Return the value of `attr` for an equality constraint whose dual variable
+is `dual_variable`.
+"""
+function get_for_equality_constraint end
 
 function get_for_equality_constraint(
     optimizer,
@@ -382,10 +422,15 @@ function MOI.get(
                 _scalarize(ci, dual_functions),
             )
         else
-            return get_for_constrained_variables(
+            return _maybe_shift_for_vectorize(
                 optimizer,
                 attr,
                 data.dual_constraint,
+                MOI.get(
+                    optimizer.dual_problem.dual_model,
+                    dual_attribute(attr),
+                    data.dual_constraint,
+                ),
             )
         end
     else
