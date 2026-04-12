@@ -46,24 +46,24 @@ function dual_attribute_value(
     return value
 end
 
-function dual_attribute(attr::MOI.ConstraintDual)
+function constrained_variable_dual_attribute(attr::MOI.ConstraintDual)
     return MOI.ConstraintPrimal(attr.result_index)
 end
 
-function dual_attribute(::MOI.ConstraintDualStart)
+function constrained_variable_dual_attribute(::MOI.ConstraintDualStart)
     return MOI.ConstraintPrimalStart()
 end
 
-function _variable_dual_attribute(attr::MOI.ConstraintDual)
+function dual_attribute(attr::MOI.ConstraintDual)
     return MOI.VariablePrimal(attr.result_index)
 end
 
-function _variable_dual_attribute(::MOI.ConstraintDualStart)
+function dual_attribute(::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
-function _variable_dual_attribute(
-    attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
+function constrained_variable_dual_attribute(
+    attr::MOI.AbstractConstraintAttribute,
 )
     return dual_attribute(attr)
 end
@@ -166,7 +166,7 @@ function MOI.supports(
 )
     return MOI.supports(
         optimizer.dual_problem.dual_model,
-        _variable_dual_attribute(attr),
+        dual_attribute(attr),
         MOI.VariableIndex,
     )
 end
@@ -201,7 +201,7 @@ function MOI.set(
         msg = "Setting $attr for variables constrained at creation is not supported yet"
         throw(MOI.SetAttributeNotAllowed(attr, msg))
     else
-        dual_attr = _variable_dual_attribute(attr)
+        dual_attr = dual_attribute(attr)
         if dual_attr isa MOI.AbstractVariableAttribute
             index = _scalarize(
                 ci,
@@ -217,7 +217,7 @@ function MOI.set(
 end
 
 """
-    get_for_fixed_constrained_variables(
+    fixed_constrained_variables_get(
         optimizer::DualOptimizer,
         attr::MOI.AbstractConstraintAttribute,
         primal_vi::MOI.VariableIndex,
@@ -232,9 +232,9 @@ The terms of `dual_function` are the product of the coefficient of `primal_vi`
 in each constraint multiplied by the corresponding dual variable.
 The constant is the coefficient of `primal_vi` in the objective function.
 """
-function get_for_fixed_constrained_variables end
+function fixed_constrained_variables_get end
 
-function get_for_fixed_constrained_variables(
+function fixed_constrained_variables_get(
     optimizer,
     attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
     ::MOI.VariableIndex,
@@ -243,7 +243,7 @@ function get_for_fixed_constrained_variables(
     function eval(inner_vi)
         return MOI.get(
             optimizer.dual_problem.dual_model,
-            _variable_dual_attribute(attr),
+            dual_attribute(attr),
             inner_vi,
         )
     end
@@ -255,7 +255,7 @@ function _variable_attr(attr::MOI.ConstraintPrimal)
 end
 _variable_attr(::MOI.ConstraintPrimalStart) = MOI.VariablePrimalStart()
 
-function get_for_fixed_constrained_variables(
+function fixed_constrained_variables_get(
     optimizer::DualOptimizer{T},
     attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
     primal_vi::MOI.VariableIndex,
@@ -311,7 +311,7 @@ function _shift_for_vectorize(
 end
 
 """
-    get_for_equality_constraint(
+    equality_constraint_get(
         optimizer::DualOptimizer,
         attr::MOI.AbstractConstraintAttribute,
         dual_variable::MOI.ScalarAffineFunction,
@@ -320,22 +320,21 @@ end
 Return the value of `attr` for an equality constraint whose dual variable
 is `dual_variable`.
 """
-function get_for_equality_constraint end
+function equality_constraint_get end
 
-function get_for_equality_constraint(
+function equality_constraint_get(
     optimizer,
     attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
     dual_variable::MOI.VariableIndex,
 )
-    # TODO do something else not relying on `_variable_dual_attribute`
     return MOI.get(
         optimizer.dual_problem.dual_model,
-        _variable_dual_attribute(attr),
+        dual_attribute(attr),
         dual_variable,
     )
 end
 
-function get_for_equality_constraint(
+function equality_constraint_get(
     ::DualOptimizer{T},
     ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
     ::MOI.VariableIndex,
@@ -372,7 +371,7 @@ function MOI.get(
                 primal_dual_map.primal_variable_data[vi].dual_function for
                 vi in vis
             ]
-            return get_for_fixed_constrained_variables.(
+            return fixed_constrained_variables_get.(
                 optimizer,
                 attr,
                 _scalarize(ci, vis),
@@ -385,7 +384,7 @@ function MOI.get(
                 data.dual_constraint,
                 MOI.get(
                     optimizer.dual_problem.dual_model,
-                    dual_attribute(attr),
+                    constrained_variable_dual_attribute(attr),
                     data.dual_constraint,
                 ),
             )
@@ -395,18 +394,31 @@ function MOI.get(
         dual_ci = data.dual_constrained_variable_constraint
         if isnothing(dual_ci)
             # Primal equality constraint, so no dual constraint
-            # TODO do something else not relying on `_variable_dual_attribute`
-            return get_for_equality_constraint.(
+            return equality_constraint_get.(
                 optimizer,
                 attr,
                 _scalarize(ci, data.dual_variables),
             )
         else
-            return MOI.get(
-                optimizer.dual_problem.dual_model,
-                dual_attribute(attr),
-                dual_ci,
-            )
+            dual_attr = dual_attribute(attr)
+            if dual_attr isa MOI.AbstractVariableAttribute
+                index = _scalarize(
+                    ci,
+                    primal_dual_map.primal_constraint_data[ci].dual_variables,
+                )
+                return _scalarize(ci, MOI.get.(
+                    optimizer.dual_problem.dual_model,
+                    dual_attr,
+                    data.dual_variables,
+                ))
+            else
+                @assert dual_attr isa MOI.AbstractConstraintAttribute
+                return MOI.get(
+                    optimizer.dual_problem.dual_model,
+                    dual_attr,
+                    dual_ci,
+                )
+            end
         end
     end
 end

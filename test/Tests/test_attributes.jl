@@ -173,14 +173,14 @@ function _test_fixed(T)
     @test MOI.supports(dual, MOI.ConstraintDualStart(), typeof(c))
     @test MOI.supports(dual, MOI.ConstraintPrimalStart(), typeof(c))
 
-    index_map = MOI.copy_to(dual, model)
+    MOI.copy_to(dual, model)
     @test dual_model === dual.dual_problem.dual_model
 
     @test MOI.get(dual, MOI.VariablePrimalStart(), x) == 4
     @test MOI.get(dual, MOI.ConstraintPrimalStart(), cx) == 1
     @test isnothing(MOI.get(dual, MOI.ConstraintDualStart(), cx))
     @test MOI.get(dual, MOI.ConstraintPrimalStart(), c) == 5
-    @test_broken MOI.get(dual, MOI.ConstraintDualStart(), c) == 6
+    @test MOI.get(dual, MOI.ConstraintDualStart(), c) == 6
     return
 end
 
