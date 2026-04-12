@@ -32,11 +32,8 @@ function dual_optimizer(
     coefficient_type::Type{T} = Float64,
     kwargs...,
 ) where {T<:Number}
-    function dual_optimizer_constructor()
-        inner = MOI.instantiate(optimizer_constructor)
-        return DualOptimizer{T}(inner; kwargs...)
-    end
-    return dual_optimizer_constructor
+    return () ->
+        DualOptimizer{T}(MOI.instantiate(optimizer_constructor); kwargs...)
 end
 
 """
@@ -58,7 +55,7 @@ its choice.
 ```julia
 julia> using Dualization, JuMP, HiGHS
 
-julia> model = Model(dual_optimizer(HiGHS.Optimizer))
+julia> model = Model(() -> Dualization.DualOptimizer(HiGHS.Optimizer()))
 A JuMP Model
 Feasibility problem with:
 Variables: 0
