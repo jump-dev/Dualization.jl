@@ -32,24 +32,15 @@ function dual_optimizer(
     coefficient_type::Type{T} = Float64,
     kwargs...,
 ) where {T<:Number}
-    return () ->
-        DualOptimizer{T}(MOI.instantiate(optimizer_constructor); kwargs...)
-end
-
-struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
-    dual_problem::DualProblem{T,OT}
-    assume_min_if_feasibility::Bool
-
-    function DualOptimizer{T,OT}(
-        dual_problem::DualProblem{T,OT};
-        assume_min_if_feasibility::Bool = false,
-    ) where {T,OT<:MOI.ModelLike}
-        return new{T,OT}(dual_problem, assume_min_if_feasibility)
+    function dual_optimizer_constructor()
+        inner = MOI.instantiate(optimizer_constructor)
+        return DualOptimizer{T}(inner; kwargs...)
     end
+    return dual_optimizer_constructor
 end
 
 """
-    DualOptimizer(dual_optimizer::OT) where {OT <: MOI.ModelLike}
+    DualOptimizer{T=Float64}(dual_optimizer::MOI.ModelLike)
 
 The DualOptimizer finds the solution for a problem by solving its dual
 representation. It builds the dual model internally and solve it using the
@@ -76,27 +67,37 @@ CachingOptimizer state: EMPTY_OPTIMIZER
 Solver name: Dual model with HiGHS attached
 ```
 """
-function DualOptimizer(dual_optimizer::OT; kwargs...) where {OT<:MOI.ModelLike}
+struct DualOptimizer{T,OT<:MOI.ModelLike} <: MOI.AbstractOptimizer
+    dual_problem::DualProblem{T,OT}
+    assume_min_if_feasibility::Bool
+
+    function DualOptimizer{T,OT}(
+        dual_problem::DualProblem{T,OT};
+        assume_min_if_feasibility::Bool = false,
+    ) where {T,OT<:MOI.ModelLike}
+        return new{T,OT}(dual_problem, assume_min_if_feasibility)
+    end
+end
+
+function DualOptimizer(dual_optimizer::MOI.ModelLike; kwargs...)
     return DualOptimizer{Float64}(dual_optimizer; kwargs...)
 end
 
 function DualOptimizer{T}(
-    dual_optimizer::OT;
+    dual_model::MOI.ModelLike;
+    with_bridge_type::Union{Nothing,Type{T}} = T,
+    with_cache_type::Union{Nothing,Type{T}} = T,
     kwargs...,
-) where {T,OT<:MOI.ModelLike}
-    dual_problem = DualProblem{T}(
-        MOI.Bridges.full_bridge_optimizer(
-            MOI.Utilities.CachingOptimizer(
-                MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
-                dual_optimizer,
-            ),
-            T,
-        ),
-    )
-    # discover the type of
-    # MOI.Utilities.CachingOptimizer(MOI.Utilities.Model{T}(), dual_optimizer)
-    OptimizerType = typeof(dual_problem.dual_model)
-    return DualOptimizer{T,OptimizerType}(dual_problem; kwargs...)
+) where {T}
+    if with_cache_type !== nothing
+        cache = MOI.default_cache(dual_model, with_cache_type)
+        dual_model = MOI.Utilities.CachingOptimizer(cache, dual_model)
+    end
+    if with_bridge_type !== nothing
+        dual_model = MOI.Bridges.full_bridge_optimizer(dual_model, T)
+    end
+    dual_problem = DualProblem{T}(dual_model)
+    return DualOptimizer{T,typeof(dual_model)}(dual_problem; kwargs...)
 end
 
 DualOptimizer() = error("DualOptimizer must have a solver attached")
