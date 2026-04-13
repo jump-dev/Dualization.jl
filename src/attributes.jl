@@ -17,10 +17,6 @@ function constraint_attribute(::MOI.VariablePrimalStart)
     return MOI.ConstraintPrimalStart()
 end
 
-struct DualModelAttributeNotDefined <: MOI.AbstractModelAttribute end
-struct DualVariableAttributeNotDefined <: MOI.AbstractVariableAttribute end
-struct DualConstraintAttributeNotDefined <: MOI.AbstractConstraintAttribute end
-
 """
     dual_attribute(attr::MOI.AbstractModelAttribute)
     dual_attribute(attr::MOI.AbstractVariableAttribute)
@@ -30,14 +26,6 @@ Corresponding attribute to get `MOI.set` or `MOI.get` `attr` from the primal
 model with the dual model.
 """
 function dual_attribute end
-
-dual_attribute(::MOI.AbstractModelAttribute) = DualModelAttributeNotDefined()
-function dual_attribute(::MOI.AbstractVariableAttribute)
-    return DualConstraintAttributeNotDefined()
-end
-function dual_attribute(::MOI.AbstractConstraintAttribute)
-    return DualVariableAttributeNotDefined()
-end
 
 dual_attribute(attr::MOI.ResultCount) = attr
 
@@ -152,7 +140,7 @@ function MOI.set(
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = primal_dual_map.primal_variable_data[vi]
     if !isnothing(data.primal_constrained_variable_constraint)
-        msg = "Setting starting value for variables constrained at creation is not supported yet"
+        msg = "Setting $attr for variables constrained at creation is not supported yet"
         throw(MOI.SetAttributeNotAllowed(attr, msg))
     end
     MOI.set(
@@ -168,7 +156,7 @@ function MOI.get(
     optimizer::DualOptimizer{T},
     attr::MOI.AbstractVariableAttribute,
     vi::MOI.VariableIndex,
-)::T where {T}
+) where {T}
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = primal_dual_map.primal_variable_data[vi]
     if isnothing(data.primal_constrained_variable_constraint)
@@ -191,11 +179,11 @@ function MOI.get(
         attr,
         MOI.get(
             optimizer.dual_problem.dual_model,
-            dual_attribute(con_attr),
+            dual_attribute(attr),
             data.dual_constraint,
         ),
     )
-    if data.dual_constraint isa
+    if !isnothing(value) && data.dual_constraint isa
        MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}
         # Added as part of a vector of constrained variable
         return value[data.primal_constrained_variable_index]
@@ -257,7 +245,10 @@ function MOI.set(
             @assert dual_attr isa MOI.AbstractConstraintAttribute
             index = data.dual_constrained_variable_constraint
         end
-        MOI.set(optimizer.dual_problem.dual_model, dual_attr, index, value)
+        # `index` is `nothing` for affine equality constraints
+        if !isnothing(index)
+            MOI.set(optimizer.dual_problem.dual_model, dual_attr, index, value)
+        end
     end
     return
 end
@@ -299,7 +290,9 @@ end
 function _variable_attr(attr::MOI.ConstraintPrimal)
     return MOI.VariablePrimal(attr.result_index)
 end
-_variable_attr(::MOI.ConstraintPrimalStart) = MOI.VariablePrimalStart()
+function _variable_attr(::MOI.ConstraintPrimalStart)
+    MOI.VariablePrimalStart()
+end
 
 function fixed_constrained_variables_get(
     optimizer::DualOptimizer{T},

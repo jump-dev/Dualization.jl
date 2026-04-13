@@ -10,6 +10,7 @@ using Test
 import MathOptInterface as MOI
 import MathOptInterface.Utilities as MOIU
 import Dualization
+import SCS
 
 function runtests()
     for name in names(@__MODULE__; all = true)
@@ -124,6 +125,9 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         value += set_constant
     end
     @test MOI.get(dual.optimizer, MOI.ConstraintPrimal(), ci) ≈ value
+
+    #@show MOI.get(dual, DummyModelAttribute())
+    #@test_throws Dualization.DualModelAttributeNotDefined MOI.get(dual, DummyModelAttribute())
     return
 end
 
@@ -155,7 +159,7 @@ function test_constraint_attribute_VectorAffineFunction()
     )
 end
 
-function _test_fixed(T)
+function _test_fixed(T, dual_model)
     model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
     x, cx = MOI.add_constrained_variable(model, MOI.EqualTo(T(1)))
     c = MOI.add_constraint(model, T(2) * x, MOI.LessThan(T(3)))
@@ -165,7 +169,6 @@ function _test_fixed(T)
     MOI.set(model, MOI.ConstraintPrimalStart(), c, T(5))
     MOI.set(model, MOI.ConstraintDualStart(), c, T(6))
 
-    dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
     dual_problem = Dualization.DualProblem{T}(dual_model)
     OptimizerType = typeof(dual_problem.dual_model)
     dual = Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
@@ -185,12 +188,16 @@ function _test_fixed(T)
 end
 
 function test_fixed()
-    _test_fixed(Float64)
-    _test_fixed(Int)
+    for T in [Int, Float64]
+        dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+        _test_fixed(T, dual_model)
+    end
+    dual_model = MOI.instantiate(SCS.Optimizer, with_bridge_type=nothing, with_cache_type=Float64)
+    _test_fixed(Float64, dual_model)
     return
 end
 
-function _test_simple(T)
+function _test_simple(T, dual_model)
     model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
     x = MOI.add_variable(model)
     c = MOI.add_constraint(model, T(2) * x, MOI.GreaterThan(T(0)))
@@ -199,7 +206,6 @@ function _test_simple(T)
     MOI.set(model, MOI.ConstraintPrimalStart(), c, T(3))
     MOI.set(model, MOI.ConstraintDualStart(), c, T(4))
 
-    dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
     dual_problem = Dualization.DualProblem{T}(dual_model)
     OptimizerType = typeof(dual_problem.dual_model)
     dual = Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
@@ -237,12 +243,92 @@ function _test_simple(T)
     @test isnothing(
         MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound),
     )
+
+    MOI.set(dual_model, MOI.VariablePrimalStart(), vars[], nothing)
+    @test isnothing(MOI.get(dual_model, MOI.VariablePrimalStart(), vars[]))
     return
 end
 
 function test_simple()
-    _test_simple(Float64)
-    _test_simple(Int)
+    for T in [Int, Float64]
+        dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+        _test_simple(T, dual_model)
+    end
+    dual_model = MOI.instantiate(SCS.Optimizer, with_bridge_type=nothing, with_cache_type=Float64)
+    _test_simple(Float64, dual_model)
+    return
+end
+
+function _test_conic(T, dual_model, cone1, cone2)
+    model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+    x, cx = MOI.add_constrained_variables(model, cone1)
+    c = MOI.add_constraint(model, MOI.Utilities.vectorize(x .+ T(1)), cone2)
+    MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    MOI.set.(model, MOI.VariablePrimalStart(), x, T.(1:2))
+    MOI.set(model, MOI.ConstraintPrimalStart(), cx, T.(3:4))
+    MOI.set(model, MOI.ConstraintDualStart(), cx, T.(4:5))
+    MOI.set(model, MOI.ConstraintPrimalStart(), c, T.(6:7))
+    MOI.set(model, MOI.ConstraintDualStart(), c, T.(8:9))
+
+    dual_problem = Dualization.DualProblem{T}(dual_model)
+    OptimizerType = typeof(dual_problem.dual_model)
+    dual = Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
+    @test MOI.supports(dual, MOI.VariablePrimalStart(), eltype(x))
+    @test MOI.supports(dual, MOI.ConstraintDualStart(), typeof(cx))
+    @test MOI.supports(dual, MOI.ConstraintPrimalStart(), typeof(cx))
+    @test MOI.supports(dual, MOI.ConstraintDualStart(), typeof(c))
+    @test MOI.supports(dual, MOI.ConstraintPrimalStart(), typeof(c))
+
+    attr = MOI.VariablePrimalStart()
+    msg = "Setting $attr for variables constrained at creation is not supported yet"
+    err = MOI.SetAttributeNotAllowed(attr, msg)
+    @test_throws err MOI.copy_to(dual, model)
+
+    MOI.set.(model, MOI.VariablePrimalStart(), x, [nothing, nothing])
+    attr = MOI.ConstraintPrimalStart()
+    msg = "Setting $attr for variables constrained at creation is not supported yet"
+    err = MOI.SetAttributeNotAllowed(attr, msg)
+    @test_throws err MOI.copy_to(dual, model)
+
+    MOI.set(model, MOI.ConstraintPrimalStart(), cx, nothing)
+    MOI.set(model, MOI.ConstraintDualStart(), cx, nothing)
+    MOI.copy_to(dual, model)
+
+    @test dual_model === dual.dual_problem.dual_model
+
+    vars = MOI.get(dual_model, MOI.ListOfVariableIndices())
+    @test MOI.get(dual_model, MOI.VariablePrimalStart(), vars) == T[8, 9]
+
+    if !(cone2 isa MOI.Zeros)
+        dual_c = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{
+                MOI.VectorOfVariables,
+                typeof(cone2),
+            }(),
+        )[]
+        @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_c))
+        @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_c) == T[6, 7]
+    end
+
+    @test MOI.get(model, MOI.ConstraintPrimalStart(), c) == T.(6:7)
+    @test MOI.get(model, MOI.ConstraintDualStart(), c) == T.(8:9)
+    return
+end
+
+
+function test_conic()
+    cones = [MOI.SecondOrderCone(2), MOI.Zeros(2)]
+    for cone1 in cones
+        for cone2 in cones
+            for T in [Float32, Float64]
+                dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+                _test_conic(T, dual_model, cone1, cone2)
+            end
+            dual_model = MOI.instantiate(SCS.Optimizer, with_bridge_type=nothing, with_cache_type=Float64)
+            _test_conic(Float64, dual_model, cone1, cone2)
+        end
+    end
     return
 end
 
