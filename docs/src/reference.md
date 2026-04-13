@@ -74,7 +74,6 @@ Dualization.PrimalDualMap
 ## Attributes
 
 ```@docs
-constraint_attribute
 dual_attribute
 dual_attribute_value
 constrained_variable_dual_attribute

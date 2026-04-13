@@ -216,7 +216,7 @@ When define MOI attributes to communicate information in MOI, layers like Dualiz
 these attributes to the right variables or constraints before or after their transformation.
 So the best practice is to define such variable or constraint attributes and attempt to `MOI.get`
 or `MOI.set` them. They is an API that you need to define for these attributes that contains the
-functions are `constraint_attribute`, `dual_attribute`, `dual_attribute_value`,
+functions are `dual_attribute`, `dual_attribute_value`,
 `constrained_variable_dual_attribute`, `fixed_variable_value`, `fixed_constrained_variables_get`,
 `equality_constraint_get`. That's a lot of functions, some of which may never be useful for
 your specific attributes (e.g., if it is never used on an equality constraint) so no need

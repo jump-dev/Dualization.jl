@@ -1,19 +1,19 @@
 _minus(::Nothing) = nothing
 _minus(x) = -x
 
-"""
-    constraint_attribute(attr::MOI.AbstractVariableAttribute)
+function _variable_attribute(attr::MOI.ConstraintPrimal)
+    return MOI.VariablePrimal(attr.result_index)
+end
 
-When a variable is added as a constrained variable, this function is used to
-get the value of the variable from the corresponding constraint.
-"""
-function constraint_attribute end
+function _variable_attribute(::MOI.ConstraintPrimalStart)
+    return MOI.VariablePrimalStart()
+end
 
-function constraint_attribute(attr::MOI.VariablePrimal)
+function _constraint_attribute(attr::MOI.VariablePrimal)
     return MOI.ConstraintPrimal(attr.result_index)
 end
 
-function constraint_attribute(::MOI.VariablePrimalStart)
+function _constraint_attribute(::MOI.VariablePrimalStart)
     return MOI.ConstraintPrimalStart()
 end
 
@@ -86,7 +86,7 @@ function constrained_variable_dual_attribute end
 function constrained_variable_dual_attribute(
     attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
 )
-    return constraint_attribute(dual_attribute(attr))
+    return _constraint_attribute(dual_attribute(attr))
 end
 
 function constrained_variable_dual_attribute(
@@ -288,20 +288,13 @@ function fixed_constrained_variables_get(
     return MOI.Utilities.eval_variables(eval, dual_function)
 end
 
-function _variable_attr(attr::MOI.ConstraintPrimal)
-    return MOI.VariablePrimal(attr.result_index)
-end
-function _variable_attr(::MOI.ConstraintPrimalStart)
-    return MOI.VariablePrimalStart()
-end
-
 function fixed_constrained_variables_get(
     optimizer::DualOptimizer{T},
     attr::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
     primal_vi::MOI.VariableIndex,
     ::MOI.ScalarAffineFunction,
 ) where {T}
-    return MOI.get(optimizer, _variable_attr(attr), primal_vi)
+    return MOI.get(optimizer, _variable_attribute(attr), primal_vi)
 end
 
 # Not sure how to rely on a bridge for this one.

@@ -248,8 +248,8 @@ function _test_simple(T, dual_model)
         MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_bound),
     )
 
-    MOI.set(dual_model, MOI.VariablePrimalStart(), vars[], nothing)
-    @test isnothing(MOI.get(dual_model, MOI.VariablePrimalStart(), vars[]))
+    MOI.set(dual, MOI.VariablePrimalStart(), vars[], nothing)
+    @test isnothing(MOI.get(dual, MOI.VariablePrimalStart(), vars[]))
     return
 end
 
