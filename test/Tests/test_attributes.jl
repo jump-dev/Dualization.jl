@@ -293,10 +293,13 @@ function _test_conic(T, dual_model, cone1, cone2)
     @test_throws err MOI.copy_to(dual, model)
 
     MOI.set.(model, MOI.VariablePrimalStart(), x, [nothing, nothing])
-    attr = MOI.ConstraintPrimalStart()
-    msg = "Setting $attr for variables constrained at creation is not supported yet"
-    err = MOI.SetAttributeNotAllowed(attr, msg)
-    @test_throws err MOI.copy_to(dual, model)
+    attr1 = MOI.ConstraintPrimalStart()
+    attr2 = MOI.ConstraintDualStart()
+    msg1 = "Setting $attr1 for variables constrained at creation is not supported yet"
+    msg2 = "Setting $attr2 for variables constrained at creation is not supported yet"
+    err1 = MOI.SetAttributeNotAllowed(attr1, msg1)
+    err2 = MOI.SetAttributeNotAllowed(attr2, msg2)
+    @test_throws Union{typeof(err1),typeof(err2)} MOI.copy_to(dual, model)
 
     MOI.set(model, MOI.ConstraintPrimalStart(), cx, nothing)
     MOI.set(model, MOI.ConstraintDualStart(), cx, nothing)
