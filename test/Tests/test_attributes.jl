@@ -192,7 +192,11 @@ function test_fixed()
         dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
         _test_fixed(T, dual_model)
     end
-    dual_model = MOI.instantiate(SCS.Optimizer, with_bridge_type=nothing, with_cache_type=Float64)
+    dual_model = MOI.instantiate(
+        SCS.Optimizer,
+        with_bridge_type = nothing,
+        with_cache_type = Float64,
+    )
     _test_fixed(Float64, dual_model)
     return
 end
@@ -254,7 +258,11 @@ function test_simple()
         dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
         _test_simple(T, dual_model)
     end
-    dual_model = MOI.instantiate(SCS.Optimizer, with_bridge_type=nothing, with_cache_type=Float64)
+    dual_model = MOI.instantiate(
+        SCS.Optimizer,
+        with_bridge_type = nothing,
+        with_cache_type = Float64,
+    )
     _test_simple(Float64, dual_model)
     return
 end
@@ -302,12 +310,11 @@ function _test_conic(T, dual_model, cone1, cone2)
     if !(cone2 isa MOI.Zeros)
         dual_c = MOI.get(
             dual_model,
-            MOI.ListOfConstraintIndices{
-                MOI.VectorOfVariables,
-                typeof(cone2),
-            }(),
+            MOI.ListOfConstraintIndices{MOI.VectorOfVariables,typeof(cone2)}(),
         )[]
-        @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_c))
+        @test isnothing(
+            MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_c),
+        )
         @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_c) == T[6, 7]
     end
 
@@ -316,16 +323,20 @@ function _test_conic(T, dual_model, cone1, cone2)
     return
 end
 
-
 function test_conic()
     cones = [MOI.SecondOrderCone(2), MOI.Zeros(2)]
     for cone1 in cones
         for cone2 in cones
             for T in [Float32, Float64]
-                dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+                dual_model =
+                    MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
                 _test_conic(T, dual_model, cone1, cone2)
             end
-            dual_model = MOI.instantiate(SCS.Optimizer, with_bridge_type=nothing, with_cache_type=Float64)
+            dual_model = MOI.instantiate(
+                SCS.Optimizer,
+                with_bridge_type = nothing,
+                with_cache_type = Float64,
+            )
             _test_conic(Float64, dual_model, cone1, cone2)
         end
     end

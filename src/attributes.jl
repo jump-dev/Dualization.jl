@@ -183,7 +183,8 @@ function MOI.get(
             data.dual_constraint,
         ),
     )
-    if !isnothing(value) && data.dual_constraint isa
+    if !isnothing(value) &&
+       data.dual_constraint isa
        MOI.ConstraintIndex{<:MOI.AbstractVectorFunction}
         # Added as part of a vector of constrained variable
         return value[data.primal_constrained_variable_index]
@@ -291,7 +292,7 @@ function _variable_attr(attr::MOI.ConstraintPrimal)
     return MOI.VariablePrimal(attr.result_index)
 end
 function _variable_attr(::MOI.ConstraintPrimalStart)
-    MOI.VariablePrimalStart()
+    return MOI.VariablePrimalStart()
 end
 
 function fixed_constrained_variables_get(
