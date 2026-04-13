@@ -406,11 +406,14 @@ function MOI.get(
                     ci,
                     primal_dual_map.primal_constraint_data[ci].dual_variables,
                 )
-                return _scalarize(ci, MOI.get.(
-                    optimizer.dual_problem.dual_model,
-                    dual_attr,
-                    data.dual_variables,
-                ))
+                return _scalarize(
+                    ci,
+                    MOI.get.(
+                        optimizer.dual_problem.dual_model,
+                        dual_attr,
+                        data.dual_variables,
+                    ),
+                )
             else
                 @assert dual_attr isa MOI.AbstractConstraintAttribute
                 return MOI.get(
