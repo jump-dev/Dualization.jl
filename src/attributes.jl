@@ -95,7 +95,9 @@ part of constrained variables.
 """
 function constrained_variable_dual_attribute end
 
-function constrained_variable_dual_attribute(attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart})
+function constrained_variable_dual_attribute(
+    attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart},
+)
     return constraint_attribute(dual_attribute(attr))
 end
 
