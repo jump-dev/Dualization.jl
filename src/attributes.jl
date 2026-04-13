@@ -1,16 +1,35 @@
 _minus(::Nothing) = nothing
 _minus(x) = -x
 
+"""
+    constraint_attribute(attr::MOI.AbstractVariableAttribute)
+
+When a variable is added as a constrained variable, this function is used to
+get the value of the variable from the corresponding constraint.
+"""
+function constraint_attribute end
+
 function constraint_attribute(attr::MOI.VariablePrimal)
     return MOI.ConstraintPrimal(attr.result_index)
 end
-function constraint_attribute(attr::MOI.VariablePrimalStart)
+
+function constraint_attribute(::MOI.VariablePrimalStart)
     return MOI.ConstraintPrimalStart()
 end
 
 struct DualModelAttributeNotDefined <: MOI.AbstractModelAttribute end
 struct DualVariableAttributeNotDefined <: MOI.AbstractVariableAttribute end
 struct DualConstraintAttributeNotDefined <: MOI.AbstractConstraintAttribute end
+
+"""
+    dual_attribute(attr::MOI.AbstractModelAttribute)
+    dual_attribute(attr::MOI.AbstractVariableAttribute)
+    dual_attribute(attr::MOI.AbstractConstraintAttribute)
+
+Corresponding attribute to get `MOI.set` or `MOI.get` `attr` from the primal
+model with the dual model.
+"""
+function dual_attribute end
 
 dual_attribute(::MOI.AbstractModelAttribute) = DualModelAttributeNotDefined()
 function dual_attribute(::MOI.AbstractVariableAttribute)
@@ -32,28 +51,6 @@ function dual_attribute(
     return MOI.ConstraintDualStart()
 end
 
-function dual_attribute_value(
-    ::Union{MOI.VariablePrimal,MOI.VariablePrimalStart},
-    value,
-)
-    return _minus(value)
-end
-
-function dual_attribute_value(
-    ::Union{MOI.ConstraintPrimal,MOI.ConstraintPrimalStart},
-    value,
-)
-    return value
-end
-
-function constrained_variable_dual_attribute(attr::MOI.ConstraintDual)
-    return MOI.ConstraintPrimal(attr.result_index)
-end
-
-function constrained_variable_dual_attribute(::MOI.ConstraintDualStart)
-    return MOI.ConstraintPrimalStart()
-end
-
 function dual_attribute(attr::MOI.ConstraintDual)
     return MOI.VariablePrimal(attr.result_index)
 end
@@ -62,11 +59,59 @@ function dual_attribute(::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
 end
 
+"""
+    dual_attribute_value_set(attr::MOI.AbstractVariableAttribute, value)
+
+Used as pre-processing for `MOI.set`ting `value` for a variable.
+"""
+function dual_attribute_value_set end
+
+"""
+    dual_attribute_value_get(attr::MOI.AbstractVariableAttribute, value)
+
+Used as pre-processing for `MOI.get`ting `value` for a variable.
+"""
+function dual_attribute_value_get end
+
+function dual_attribute_value_set(
+    ::Union{MOI.VariablePrimal,MOI.VariablePrimalStart},
+    value,
+)
+    return _minus(value)
+end
+
+function dual_attribute_value_get(
+    ::Union{MOI.VariablePrimal,MOI.VariablePrimalStart},
+    value,
+)
+    return _minus(value)
+end
+
+"""
+    constrained_variable_dual_attribute(attr::MOI.AbstractConstraintAttribute)
+
+Same as [`dual_attribute`](@ref) but used in case a constraint was added as
+part of constrained variables.
+"""
+function constrained_variable_dual_attribute end
+
+function constrained_variable_dual_attribute(attr::Union{MOI.ConstraintDual,MOI.ConstraintDualStart})
+    return constraint_attribute(dual_attribute(attr))
+end
+
 function constrained_variable_dual_attribute(
     attr::MOI.AbstractConstraintAttribute,
 )
     return dual_attribute(attr)
 end
+
+"""
+    fixed_variable_value(attr::MOI.AbstractVariableAttribute, ::Type{T}) where {T}
+
+Value of `attr` for a value constrained to be equal to zero. This should be the
+same as how `MOI.get` is implemented for the `MOI.Bridges.Variable.ZerosBridge`.
+"""
+function fixed_variable_value end
 
 fixed_variable_value(::MOI.VariablePrimal, ::Type{T}) where {T} = zero(T)
 
@@ -112,7 +157,7 @@ function MOI.set(
         optimizer.dual_problem.dual_model,
         dual_attribute(attr),
         data.dual_constraint,
-        dual_attribute_value(attr, value),
+        dual_attribute_value_set(attr, value),
     )
     return
 end
@@ -126,7 +171,7 @@ function MOI.get(
     data = primal_dual_map.primal_variable_data[vi]
     if isnothing(data.primal_constrained_variable_constraint)
         # Classical free variable
-        return dual_attribute_value(
+        return dual_attribute_value_get(
             attr,
             MOI.get(
                 optimizer.dual_problem.dual_model,
@@ -140,9 +185,8 @@ function MOI.get(
         return fixed_variable_value(attr, T)
     end
     # Added as constrained variable
-    con_attr = constraint_attribute(attr)
-    value = dual_attribute_value(
-        con_attr,
+    value = dual_attribute_value_get(
+        attr,
         MOI.get(
             optimizer.dual_problem.dual_model,
             dual_attribute(con_attr),
