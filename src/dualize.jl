@@ -216,5 +216,6 @@ function dualize(
         # Add dual objective to the model
         _set_dual_objective(dual_problem.dual_model, dual_objective)
     end
+
     return dual_problem
 end

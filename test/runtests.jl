@@ -57,6 +57,7 @@ include("Problems/Power/power_cone_problems.jl")
 include("Problems/Feasibility/feasibility_problems.jl")
 
 # Run tests to travis ci
+include("Tests/test_attributes.jl")
 include("Tests/test_structures.jl")
 include("Tests/test_supported.jl")
 include("Tests/test_objective_coefficients.jl")

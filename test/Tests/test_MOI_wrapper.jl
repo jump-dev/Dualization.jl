@@ -19,16 +19,16 @@
                 linear_config,
                 include = ["test_linear_"],
                 exclude = [
-                    "test_linear_FEASIBILITY_SENSE",
-                    "test_linear_INFEASIBLE_2",
-                    "test_linear_Interval_inactive",
-                    "test_linear_add_constraints",
-                    "test_linear_inactive_bounds",
-                    "test_linear_integration_2",
-                    "test_linear_integration_Interval",
-                    "test_linear_integration_delete_variables",
-                    "test_linear_complex_Zeros",
-                    "test_linear_complex_Zeros_duplicate",
+                    r"^test_linear_FEASIBILITY_SENSE$",
+                    r"^test_linear_INFEASIBLE_2$",
+                    r"^test_linear_Interval_inactive$",
+                    r"^test_linear_add_constraints$",
+                    r"^test_linear_inactive_bounds$",
+                    r"^test_linear_integration_2$",
+                    r"^test_linear_integration_Interval$",
+                    r"^test_linear_integration_delete_variables$",
+                    r"^test_linear_complex_Zeros$",
+                    r"^test_linear_complex_Zeros_duplicate$",
                 ],
             )
         end
@@ -38,6 +38,7 @@
         conic_config = MOI.Test.Config(atol = 1e-4, rtol = 1e-4)
         conic_cache =
             MOI.Utilities.UniversalFallback(MOI.Utilities.Model{Float64}())
+        MOI.empty!(opt)
         conic_cached = MOI.Utilities.CachingOptimizer(conic_cache, opt)
         conic_bridged = MOI.Bridges.full_bridge_optimizer(conic_cached, Float64)
 
@@ -48,18 +49,18 @@
                 include = ["test_conic_"],
                 exclude = [
                     # uses FEASIBILITY_SENSE
-                    "test_conic_NormInfinityCone_INFEASIBLE",
-                    "test_conic_NormOneCone_INFEASIBLE",
-                    "test_conic_PositiveSemidefiniteConeSquare_3",
-                    "test_conic_PositiveSemidefiniteConeTriangle_3",
-                    "test_conic_SecondOrderCone_INFEASIBLE",
-                    "test_conic_SecondOrderCone_negative_post_bound_2",
-                    "test_conic_SecondOrderCone_negative_post_bound_3",
-                    "test_conic_SecondOrderCone_no_initial_bound",
-                    "test_conic_RotatedSecondOrderCone_out_of_order",
-                    "test_conic_linear_INFEASIBLE",
-                    "test_conic_empty_matrix",
-                    "test_conic_HermitianPositiveSemidefiniteConeTriangle_2",
+                    r"test_conic_NormInfinityCone_INFEASIBLE$",
+                    r"test_conic_NormOneCone_INFEASIBLE$",
+                    r"test_conic_PositiveSemidefiniteConeSquare_3$",
+                    r"test_conic_PositiveSemidefiniteConeTriangle_3$",
+                    r"test_conic_SecondOrderCone_INFEASIBLE$",
+                    r"test_conic_SecondOrderCone_negative_post_bound_2$",
+                    r"test_conic_SecondOrderCone_negative_post_bound_3$",
+                    r"test_conic_SecondOrderCone_no_initial_bound$",
+                    r"test_conic_RotatedSecondOrderCone_out_of_order$",
+                    r"test_conic_linear_INFEASIBLE",
+                    r"test_conic_empty_matrix$",
+                    r"test_conic_HermitianPositiveSemidefiniteConeTriangle_2$",
                 ],
             )
         end
@@ -143,5 +144,24 @@
             assume_min_if_feasibility = true,
         )
         @test model.assume_min_if_feasibility
+    end
+
+    @testset "Copy twice" begin
+        T = Float64
+        model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+        x = MOI.add_variable(model)
+        c = MOI.add_constraint(model, T(2) * x, MOI.GreaterThan(T(0)))
+        MOI.set(model, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+        MOI.set(model, MOI.VariablePrimalStart(), x, T(1))
+        MOI.set(model, MOI.ConstraintPrimalStart(), c, T(3))
+        MOI.set(model, MOI.ConstraintDualStart(), c, T(4))
+        dual_model = MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}())
+        dual_problem = Dualization.DualProblem{T}(dual_model)
+        OptimizerType = typeof(dual_problem.dual_model)
+        dual = DualOptimizer{T,OptimizerType}(dual_problem)
+        MOI.copy_to(dual, model)
+        # Test that it is emptied
+        MOI.copy_to(dual, model)
+        @test MOI.get(dual_model, MOI.NumberOfVariables()) == 1
     end
 end

@@ -202,3 +202,22 @@ Dualize the model
 dual_model = dualize(model)
 print(dual_model)
 ```
+
+## Advanced: add support for new attributes
+
+You might feel that the Dualization layer is getting in your way to get information from an inner layer.
+If you ever see yourself typing `model.dual_problem.dual_model`, it is a sign that you need to define new attributes,
+especially if these information are related to specific variables and constraints.
+The mapping between variables and constraints before and after dualization is quite complex.
+It depends on whether constraints corresponded to variables constrained at creation or not and
+whether the corresponding set is an equality (i.e., `MOI.EqualTo` or `MOI.Zeros`).
+
+When define MOI attributes to communicate information in MOI, layers like Dualization can transfer
+these attributes to the right variables or constraints before or after their transformation.
+So the best practice is to define such variable or constraint attributes and attempt to `MOI.get`
+or `MOI.set` them. They is an API that you need to define for these attributes that contains the
+functions are `dual_attribute`, `dual_attribute_value`,
+`constrained_variable_dual_attribute`, `fixed_variable_value`, `fixed_constrained_variables_get`,
+`equality_constraint_get`. That's a lot of functions, some of which may never be useful for
+your specific attributes (e.g., if it is never used on an equality constraint) so no need
+to implement the whole API for all attributes.

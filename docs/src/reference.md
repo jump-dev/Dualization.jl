@@ -70,3 +70,15 @@ Dualization.PrimalConstraintData
 ```@docs
 Dualization.PrimalDualMap
 ```
+
+## Attributes
+
+```@docs
+Dualization.dual_attribute
+Dualization.dual_attribute_value_get
+Dualization.dual_attribute_value_set
+Dualization.constrained_variable_dual_attribute
+Dualization.fixed_variable_value
+Dualization.fixed_constrained_variables_get
+Dualization.equality_constraint_get
+```
