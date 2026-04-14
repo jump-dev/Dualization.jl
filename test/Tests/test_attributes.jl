@@ -50,11 +50,12 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}());
         eval_variable_constraint_dual = false,
     )
-    dual = MOI.Utilities.CachingOptimizer(
+    cached = MOI.Utilities.CachingOptimizer(
         MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
         MOI.Utilities.MANUAL, # easier to debug with less try-catch hidding stuff
     )
-    MOI.Utilities.reset_optimizer(dual, Dualization.DualOptimizer(mock))
+    dual = Dualization.DualOptimizer(mock)
+    MOI.Utilities.reset_optimizer(cached, dual)
     set_constant = T(-4)
     if vector
         set = MOI.Nonnegatives(1)
@@ -63,24 +64,24 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
     end
     if constrained_variable
         if vector
-            X, ci = MOI.add_constrained_variables(dual, set)
+            X, ci = MOI.add_constrained_variables(cached, set)
             x = X[]
         else
-            x, ci = MOI.add_constrained_variable(dual, set)
+            x, ci = MOI.add_constrained_variable(cached, set)
         end
     else
-        x = MOI.add_variable(dual)
+        x = MOI.add_variable(cached)
         func = T(1) * x
         if vector
             func = MOI.Utilities.operate(vcat, T, func - set_constant)
         end
-        ci = MOI.add_constraint(dual, func, set)
+        ci = MOI.add_constraint(cached, func, set)
     end
-    MOI.set(dual, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    MOI.set(cached, MOI.ObjectiveSense(), MOI.MIN_SENSE)
     obj = T(2) * x
-    MOI.set(dual, MOI.ObjectiveFunction{typeof(obj)}(), obj)
-    MOI.Utilities.attach_optimizer(dual)
-    MOI.optimize!(dual)
+    MOI.set(cached, MOI.ObjectiveFunction{typeof(obj)}(), obj)
+    MOI.Utilities.attach_optimizer(cached)
+    MOI.optimize!(cached)
     for attr in [MOI.ConstraintDualStart(), MOI.ConstraintPrimalStart()]
         attr = MOI.ConstraintDualStart()
         @test MOI.supports(dual, attr, typeof(ci))
@@ -93,6 +94,7 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
                 ci,
                 value,
             )
+            @test isnothing(MOI.get(dual, attr, ci))
         else
             MOI.set(dual, attr, ci, value)
             @test MOI.get(dual, attr, ci) == value
@@ -110,7 +112,7 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         end
     end
     #MOI.set(mock, MOI.ConstraintPrimal(), mock_ci, value)
-    @test MOI.get(dual.optimizer, MOI.ConstraintDual(), ci) ≈ value
+    @test MOI.get(dual, MOI.ConstraintDual(), ci) ≈ value
 
     value = rand_value()
     if vector && constrained_variable
@@ -124,7 +126,7 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
     if !vector
         value += set_constant
     end
-    @test MOI.get(dual.optimizer, MOI.ConstraintPrimal(), ci) ≈ value
+    @test MOI.get(dual, MOI.ConstraintPrimal(), ci) ≈ value
     return
 end
 
