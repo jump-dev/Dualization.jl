@@ -240,14 +240,7 @@ function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike)
         dest.dual_problem,
         assume_min_if_feasibility = dest.assume_min_if_feasibility,
     )
-    index_map = MOI.Utilities.identity_index_map(src)
-    vis = MOI.get(src, MOI.ListOfVariableIndices())
-    MOI.Utilities.pass_attributes(dest, src, index_map, vis)
-    for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
-        cis = MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
-        MOI.Utilities.pass_attributes(dest, src, index_map, cis)
-    end
-    return index_map
+    return MOI.Utilities.identity_index_map(src)
 end
 
 function MOI.optimize!(optimizer::DualOptimizer)

@@ -216,5 +216,18 @@ function dualize(
         # Add dual objective to the model
         _set_dual_objective(dual_problem.dual_model, dual_objective)
     end
+
+    # Copy attributes except names which have already been passed
+    primal_without_names = MOI.Utilities.ModelFilter(primal_model) do attr
+        return !(attr isa Union{MOI.VariableName,MOI.ConstraintName})
+    end
+    index_map = MOI.Utilities.identity_index_map(primal_model)
+    vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
+    MOI.Utilities.pass_attributes(dual_problem.dual_model, primal_without_names, index_map, vis)
+    for (F, S) in MOI.get(primal_model, MOI.ListOfConstraintTypesPresent())
+        cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
+        MOI.Utilities.pass_attributes(dual_problem.dual_model, primal_without_names, index_map, cis)
+    end
+
     return dual_problem
 end
