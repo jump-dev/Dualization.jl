@@ -223,10 +223,20 @@ function dualize(
     end
     index_map = MOI.Utilities.identity_index_map(primal_model)
     vis = MOI.get(primal_model, MOI.ListOfVariableIndices())
-    MOI.Utilities.pass_attributes(dual_problem.dual_model, primal_without_names, index_map, vis)
+    MOI.Utilities.pass_attributes(
+        dual_problem.dual_model,
+        primal_without_names,
+        index_map,
+        vis,
+    )
     for (F, S) in MOI.get(primal_model, MOI.ListOfConstraintTypesPresent())
         cis = MOI.get(primal_model, MOI.ListOfConstraintIndices{F,S}())
-        MOI.Utilities.pass_attributes(dual_problem.dual_model, primal_without_names, index_map, cis)
+        MOI.Utilities.pass_attributes(
+            dual_problem.dual_model,
+            primal_without_names,
+            index_map,
+            cis,
+        )
     end
 
     return dual_problem
