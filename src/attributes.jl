@@ -179,13 +179,10 @@ function MOI.get(
         return fixed_variable_value(attr, T)
     end
     # Added as constrained variable
-    value = dual_attribute_value_get(
-        attr,
-        MOI.get(
-            optimizer.dual_problem.dual_model,
-            dual_attribute(attr),
-            data.dual_constraint,
-        ),
+    value = MOI.get(
+        optimizer.dual_problem.dual_model,
+        dual_attribute(attr),
+        data.dual_constraint,
     )
     if !isnothing(value) &&
        data.dual_constraint isa
