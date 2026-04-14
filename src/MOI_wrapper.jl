@@ -246,12 +246,7 @@ function MOI.copy_to(dest::DualOptimizer, src::MOI.ModelLike)
     end
     index_map = MOI.Utilities.identity_index_map(src)
     vis = MOI.get(src, MOI.ListOfVariableIndices())
-    MOI.Utilities.pass_attributes(
-        dest,
-        primal_without_names,
-        index_map,
-        vis,
-    )
+    MOI.Utilities.pass_attributes(dest, primal_without_names, index_map, vis)
     for (F, S) in MOI.get(src, MOI.ListOfConstraintTypesPresent())
         cis = MOI.get(src, MOI.ListOfConstraintIndices{F,S}())
         MOI.Utilities.pass_attributes(
