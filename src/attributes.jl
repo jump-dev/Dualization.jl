@@ -29,6 +29,10 @@ function dual_attribute end
 
 dual_attribute(attr::MOI.ResultCount) = attr
 
+dual_attribute(::MOI.VariableName) = MOI.ConstraintName()
+
+dual_attribute(::MOI.ConstraintName) = MOI.VariableName()
+
 function dual_attribute(attr::Union{MOI.VariablePrimal,MOI.ConstraintPrimal})
     return MOI.ConstraintDual(attr.result_index)
 end

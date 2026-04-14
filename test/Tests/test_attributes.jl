@@ -125,9 +125,6 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
         value += set_constant
     end
     @test MOI.get(dual.optimizer, MOI.ConstraintPrimal(), ci) ≈ value
-
-    #@show MOI.get(dual, DummyModelAttribute())
-    #@test_throws Dualization.DualModelAttributeNotDefined MOI.get(dual, DummyModelAttribute())
     return
 end
 
@@ -213,9 +210,12 @@ function _test_simple(T, dual_model)
     dual_problem = Dualization.DualProblem{T}(dual_model)
     OptimizerType = typeof(dual_problem.dual_model)
     dual = Dualization.DualOptimizer{T,OptimizerType}(dual_problem)
+
     @test MOI.supports(dual, MOI.VariablePrimalStart(), typeof(x))
     @test MOI.supports(dual, MOI.ConstraintDualStart(), typeof(c))
     @test MOI.supports(dual, MOI.ConstraintPrimalStart(), typeof(c))
+    @test MOI.supports(dual, MOI.VariableName(), typeof(x))
+    @test MOI.supports(dual, MOI.ConstraintName(), typeof(c))
 
     index_map = MOI.copy_to(dual, model)
     @test dual_model === dual.dual_problem.dual_model
