@@ -74,10 +74,10 @@ Dualization.PrimalDualMap
 ## Attributes
 
 ```@docs
-dual_attribute
-dual_attribute_value
-constrained_variable_dual_attribute
-fixed_variable_value
-fixed_constrained_variables_get
-equality_constraint_get
+Dualization.dual_attribute
+Dualization.dual_attribute_value
+Dualization.constrained_variable_dual_attribute
+Dualization.fixed_variable_value
+Dualization.fixed_constrained_variables_get
+Dualization.equality_constraint_get
 ```
