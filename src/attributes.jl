@@ -28,6 +28,7 @@ model with the dual model.
 function dual_attribute end
 
 dual_attribute(attr::MOI.ResultCount) = attr
+dual_attribute(attr::MOI.RawStatusString) = attr
 
 dual_attribute(::MOI.VariableName) = MOI.ConstraintName()
 
