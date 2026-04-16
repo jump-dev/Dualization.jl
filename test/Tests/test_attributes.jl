@@ -348,6 +348,32 @@ function test_conic()
     return
 end
 
+function test_raw_status_string()
+    @test Dualization.dual_attribute(MOI.RawStatusString()) ==
+          MOI.RawStatusString()
+    T = Float64
+    mock = MOI.Utilities.MockOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}());
+        eval_variable_constraint_dual = false,
+    )
+    cached = MOI.Utilities.CachingOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
+        MOI.Utilities.MANUAL,
+    )
+    dual = Dualization.DualOptimizer(mock)
+    MOI.Utilities.reset_optimizer(cached, dual)
+    x = MOI.add_variable(cached)
+    c = MOI.add_constraint(cached, T(1) * x, MOI.GreaterThan(T(0)))
+    MOI.set(cached, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    MOI.set(cached, MOI.ObjectiveFunction{typeof(T(1) * x)}(), T(1) * x)
+    MOI.Utilities.attach_optimizer(cached)
+    MOI.optimize!(cached)
+    inner_mock = dual.dual_problem.dual_model.model.optimizer
+    MOI.set(inner_mock, MOI.RawStatusString(), "mock_status")
+    @test MOI.get(cached, MOI.RawStatusString()) == "mock_status"
+    return
+end
+
 end  # module
 
 TestAttributes.runtests()
