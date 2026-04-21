@@ -128,6 +128,23 @@ end
         con = Dualization._get_dual_constraint(dual_model, cv)
         @test con isa ConstraintRef
     end
+    @testset "GenericModel{$T}" for T in (Float32, BigFloat)
+        model = JuMP.GenericModel{T}()
+        JuMP.@variable(model, x >= zero(T))
+        JuMP.@constraint(model, c, x <= one(T) + one(T))
+        JuMP.@objective(model, Max, T(2) * x + one(T))
+        dual_model = Dualization.dualize(
+            model;
+            dual_names = DualNames("dual_", "dual_"),
+        )
+        @test dual_model isa JuMP.GenericModel{T}
+        @test num_variables(dual_model) == 2
+        con = Dualization._get_dual_constraint(dual_model, x)
+        @test con[1] isa ConstraintRef
+        var = Dualization._get_dual_variables(dual_model, c)
+        @test length(var) == 1
+        @test var[] isa JuMP.GenericVariableRef{T}
+    end
     @testset "JuMP parametric quadratic" begin
         model = Model()
         @variable(model, x)

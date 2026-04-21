@@ -10,16 +10,16 @@ import JuMP
 import MathOptInterface as MOI
 
 function Dualization.dualize(
-    model::JuMP.Model,
+    model::JuMP.GenericModel{T},
     optimizer_constructor = nothing;
     kwargs...,
-)
+) where {T}
     mode = JuMP.mode(model)
     if mode != JuMP.AUTOMATIC
         error("Dualization does not support solvers in $(mode) mode")
     end
-    dual_model = JuMP.Model()
-    dual_problem = Dualization.DualProblem(JuMP.backend(dual_model))
+    dual_model = JuMP.GenericModel{T}()
+    dual_problem = Dualization.DualProblem{T}(JuMP.backend(dual_model))
     Dualization.dualize(JuMP.backend(model), dual_problem; kwargs...)
     _fill_obj_dict_with_variables!(dual_model)
     _fill_obj_dict_with_constraints!(dual_model)
@@ -31,7 +31,7 @@ function Dualization.dualize(
     return dual_model
 end
 
-function _fill_obj_dict_with_variables!(model::JuMP.Model)
+function _fill_obj_dict_with_variables!(model::JuMP.GenericModel)
     list = MOI.get(model, MOI.ListOfVariableAttributesSet())
     if !(MOI.VariableName() in list)
         return
@@ -39,13 +39,13 @@ function _fill_obj_dict_with_variables!(model::JuMP.Model)
     for vi in MOI.get(model, MOI.ListOfVariableIndices())
         name = MOI.get(JuMP.backend(model), MOI.VariableName(), vi)
         if !isempty(name)
-            model[Symbol(name)] = JuMP.VariableRef(model, vi)
+            model[Symbol(name)] = JuMP.GenericVariableRef(model, vi)
         end
     end
     return
 end
 
-function _fill_obj_dict_with_constraints!(model::JuMP.Model)
+function _fill_obj_dict_with_constraints!(model::JuMP.GenericModel)
     con_types = MOI.get(model, MOI.ListOfConstraintTypesPresent())
     for (F, S) in con_types
         _fill_obj_dict_with_constraints!(model, F, S)
@@ -54,7 +54,7 @@ function _fill_obj_dict_with_constraints!(model::JuMP.Model)
 end
 
 function _fill_obj_dict_with_constraints!(
-    model::JuMP.Model,
+    model::JuMP.GenericModel,
     ::Type{F},
     ::Type{S},
 ) where {F,S}
@@ -71,13 +71,13 @@ function _fill_obj_dict_with_constraints!(
     return
 end
 
-function _get_primal_dual_map(model::JuMP.Model)
+function _get_primal_dual_map(model::JuMP.GenericModel)
     return model.ext[:_Dualization_jl_PrimalDualMap]
 end
 
 function Dualization._get_dual_constraint(
     dual_model,
-    primal_ref::JuMP.VariableRef,
+    primal_ref::JuMP.GenericVariableRef,
 )
     map = _get_primal_dual_map(dual_model)
     moi_primal_vi = JuMP.index(primal_ref)
@@ -91,8 +91,8 @@ function Dualization._get_dual_constraint(
 end
 
 function Dualization._get_primal_constraint(
-    dual_model::JuMP.Model,
-    primal_vi::JuMP.VariableRef,
+    dual_model::JuMP.GenericModel,
+    primal_vi::JuMP.GenericVariableRef,
 )
     primal_model = JuMP.owner_model(primal_vi)
     map = _get_primal_dual_map(dual_model)
@@ -105,9 +105,9 @@ function Dualization._get_primal_constraint(
 end
 
 function Dualization._get_dual_variables(
-    dual_model::JuMP.Model,
+    dual_model::JuMP.GenericModel{T},
     primal_ref::JuMP.ConstraintRef,
-)
+) where {T}
     map = _get_primal_dual_map(dual_model)
     moi_primal_ci = JuMP.index(primal_ref)
     moi_dual_vis = Dualization._get_dual_variables(map, moi_primal_ci)
@@ -115,12 +115,12 @@ function Dualization._get_dual_variables(
         # main constraint of a constrained variable
         return nothing
     end
-    return [JuMP.VariableRef(dual_model, vi) for vi in moi_dual_vis]
+    return [JuMP.GenericVariableRef{T}(dual_model, vi) for vi in moi_dual_vis]
 end
 
 # this is a constrained variable constraint
 function Dualization._get_dual_constraint(
-    dual_model::JuMP.Model,
+    dual_model::JuMP.GenericModel,
     primal_ref::JuMP.ConstraintRef,
 )
     map = _get_primal_dual_map(dual_model)
@@ -136,24 +136,24 @@ function Dualization._get_dual_constraint(
 end
 
 function Dualization._get_dual_parameter(
-    dual_model::JuMP.Model,
-    primal_ref::JuMP.VariableRef,
-)
+    dual_model::JuMP.GenericModel{T},
+    primal_ref::JuMP.GenericVariableRef,
+) where {T}
     map = _get_primal_dual_map(dual_model)
     moi_primal_vi = JuMP.index(primal_ref)
     moi_dual_vi = Dualization._get_dual_parameter(map, moi_primal_vi)
     # the above line might error
-    return JuMP.VariableRef(dual_model, moi_dual_vi)
+    return JuMP.GenericVariableRef{T}(dual_model, moi_dual_vi)
 end
 
 function Dualization._get_dual_slack_variable(
-    dual_model::JuMP.Model,
-    primal_ref::JuMP.VariableRef,
-)
+    dual_model::JuMP.GenericModel{T},
+    primal_ref::JuMP.GenericVariableRef,
+) where {T}
     map = _get_primal_dual_map(dual_model)
     moi_primal_vi = JuMP.index(primal_ref)
     moi_dual_vi = Dualization._get_dual_slack_variable(map, moi_primal_vi)
-    return JuMP.VariableRef(dual_model, moi_dual_vi)
+    return JuMP.GenericVariableRef{T}(dual_model, moi_dual_vi)
 end
 
 end # module DualizationJuMPExt
