@@ -136,6 +136,7 @@ end
         dual_model = Dualization.dualize(
             model;
             dual_names = DualNames("dual_", "dual_"),
+            consider_constrained_variables = false,
         )
         @test dual_model isa JuMP.GenericModel{T}
         @test num_variables(dual_model) == 2
