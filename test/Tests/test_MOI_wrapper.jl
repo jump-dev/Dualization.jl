@@ -164,4 +164,39 @@
         MOI.copy_to(dual, model)
         @test MOI.get(dual_model, MOI.NumberOfVariables()) == 1
     end
+
+    @testset "DualOptimizer_constructor" begin
+        model = Dualization.DualOptimizer(HiGHS.Optimizer())
+        @test model isa Dualization.DualOptimizer{Float64,HiGHS.Optimizer}
+        model = Dualization.DualOptimizer{Float64}(HiGHS.Optimizer())
+        @test model isa Dualization.DualOptimizer{Float64,HiGHS.Optimizer}
+        model = Dualization.DualOptimizer{Float32}(HiGHS.Optimizer())
+        @test model isa Dualization.DualOptimizer{Float32,HiGHS.Optimizer}
+    end
+
+    @testset "dual_optimizer_constructor" begin
+        model = MOI.instantiate(Dualization.dual_optimizer(HiGHS.Optimizer))
+        @test model isa Dualization.DualOptimizer{
+            Float64,
+            <:MOI.Bridges.LazyBridgeOptimizer,
+        }
+        model = MOI.instantiate(
+            Dualization.dual_optimizer(
+                HiGHS.Optimizer;
+                with_bridge_type = nothing,
+            ),
+        )
+        @test model isa Dualization.DualOptimizer{
+            Float64,
+            <:MOI.Utilities.CachingOptimizer,
+        }
+        model = MOI.instantiate(
+            Dualization.dual_optimizer(
+                HiGHS.Optimizer;
+                with_bridge_type = nothing,
+                with_cache_type = nothing,
+            ),
+        )
+        @test model isa Dualization.DualOptimizer{Float64,HiGHS.Optimizer}
+    end
 end
