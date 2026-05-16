@@ -18,6 +18,17 @@ function MOI.supports(
            MOI.supports(optimizer.dual_problem.dual_model, attr)
 end
 
+# Generic fallback for `VariableBridgingCost`/`ConstraintBridgingCost`
+# calls `dual_attribute` which won't work for sets that don't implement `dual_set_type`
+# so we define custom `get` methods instead.
+
+function MOI.get(
+    optimizer::DualOptimizer,
+    attr::Union{MOI.VariableBridgingCost,MOI.ConstraintBridgingCost},
+)
+    return MOI.get_fallback(optimizer, attr)
+end
+
 function MOI.get(
     optimizer::DualOptimizer{T},
     ::MOI.ConstraintBridgingCost{
