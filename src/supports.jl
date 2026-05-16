@@ -33,9 +33,9 @@ function MOI.get(
     optimizer::DualOptimizer{T},
     ::MOI.ConstraintBridgingCost{
         <:Union{MOI.VariableIndex,MOI.ScalarAffineFunction{T}},
-        S<:MOI.AbstractScalarSet,
+        S,
     },
-) where {T}
+) where {T,S<:MOI.AbstractScalarSet}
     D = _dual_set_type(S)
     if D === nothing
         return Inf
@@ -67,9 +67,9 @@ function MOI.get(
     optimizer::DualOptimizer{T},
     ::MOI.ConstraintBridgingCost{
         <:Union{MOI.VectorOfVariables,MOI.VectorAffineFunction{T}},
-        S<:MOI.AbstractVectorSet,
+        S,
     },
-) where {T}
+) where {T,S<:MOI.AbstractVectorSet}
     D = _dual_set_type(S)
     if D === nothing
         return Inf
@@ -118,8 +118,8 @@ end
 
 function MOI.get(
     optimizer::DualOptimizer{T},
-    ::MOI.VariableBridgingCost{MOI.AbstractVectorSet},
-) where {T}
+    ::MOI.VariableBridgingCost{S},
+) where {T,S<:MOI.AbstractVectorSet}
     D = _dual_set_type(S)
     if D === nothing
         return Inf
