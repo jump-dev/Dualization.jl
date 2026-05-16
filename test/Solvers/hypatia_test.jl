@@ -5,17 +5,35 @@
 
 import Hypatia
 
-@testset "VariableBridgingCost" begin
-    opt = MOI.instantiate(
-        dual_optimizer(Hypatia.Optimizer);
-        with_bridge_type = Float64,
-    )
+@testset "VariableBridgingCost / ConstraintBridgingCost" begin
+    opt = MOI.instantiate(dual_optimizer(Hypatia.Optimizer))
+    # Specialized `VariableBridgingCost{MOI.Reals}`
     @test MOI.supports_add_constrained_variables(opt, MOI.Reals)
-    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.Reals}()) == 0
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.Reals}()) == 1
+    # Specialized `VariableBridgingCost{S<:AbstractVectorSet}`, supported branch
     @test MOI.supports_add_constrained_variables(opt, MOI.Nonnegatives)
     @test MOI.get(opt, MOI.VariableBridgingCost{MOI.Nonnegatives}()) == 0
-    @test MOI.supports_add_constrained_variables(opt, MOI.GeometricMeanCone)
-    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.GeometricMeanCone}()) == 2
+    # Same dispatch, supported with nonzero cost
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.Zeros}()) == 1
+    # Same dispatch, `_dual_set_type` returns `nothing`
+    @test !MOI.supports_add_constrained_variables(opt, MOI.SOS1{Float64})
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.SOS1{Float64}}()) == Inf
+    # Specialized scalar `ConstraintBridgingCost`, supported branch
+    @test MOI.get(
+        opt,
+        MOI.ConstraintBridgingCost{
+            MOI.ScalarAffineFunction{Float64},
+            MOI.GreaterThan{Float64},
+        }(),
+    ) == 1
+    # Specialized vector `ConstraintBridgingCost`, `_dual_set_type` returns `nothing`
+    @test !MOI.supports_constraint(opt, MOI.VectorOfVariables, MOI.SOS1{Float64})
+    @test MOI.get(
+        opt,
+        MOI.ConstraintBridgingCost{MOI.VectorOfVariables,MOI.SOS1{Float64}}(),
+    ) == Inf
+    # Generic fallback (no specialized method matches)
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.GreaterThan{Float64}}()) == 0
 end
 
 @testset "Solve problems with different coefficient_type" begin
