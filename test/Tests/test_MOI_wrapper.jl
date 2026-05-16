@@ -96,6 +96,10 @@
     @testset "support" begin
         for opt in dual_linear_optimizer
             @test !MOI.supports_constraint(opt, MOI.VariableIndex, MOI.Integer)
+            @test MOI.get(
+                opt,
+                MOI.ConstraintBridgingCost{MOI.VariableIndex,MOI.Integer}(),
+            ) == Inf
             @test MOI.supports(opt, MOI.ObjectiveSense())
         end
         for opt in dual_conic_optimizer
@@ -104,6 +108,13 @@
                 MOI.VectorOfVariables,
                 MOI.PositiveSemidefiniteConeTriangle,
             )
+            @test MOI.get(
+                opt,
+                MOI.ConstraintBridgingCost{
+                    MOI.VectorOfVariables,
+                    MOI.PositiveSemidefiniteConeTriangle,
+                }(),
+            ) == 0
         end
     end
 

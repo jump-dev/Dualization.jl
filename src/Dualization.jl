@@ -22,6 +22,7 @@ include("dualize.jl")
 include("MOI_wrapper.jl")
 include("vectorize_emulator.jl")
 include("attributes.jl")
+include("supports.jl")
 
 export dualize
 export dual_optimizer
