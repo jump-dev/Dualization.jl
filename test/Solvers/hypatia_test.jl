@@ -27,13 +27,18 @@ import Hypatia
         }(),
     ) == 1
     # Specialized vector `ConstraintBridgingCost`, `_dual_set_type` returns `nothing`
-    @test !MOI.supports_constraint(opt, MOI.VectorOfVariables, MOI.SOS1{Float64})
+    @test !MOI.supports_constraint(
+        opt,
+        MOI.VectorOfVariables,
+        MOI.SOS1{Float64},
+    )
     @test MOI.get(
         opt,
         MOI.ConstraintBridgingCost{MOI.VectorOfVariables,MOI.SOS1{Float64}}(),
     ) == Inf
     # Generic fallback (no specialized method matches)
-    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.GreaterThan{Float64}}()) == 0
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.GreaterThan{Float64}}()) ==
+          0
 end
 
 @testset "Solve problems with different coefficient_type" begin
