@@ -114,7 +114,7 @@
                     MOI.VectorOfVariables,
                     MOI.PositiveSemidefiniteConeTriangle,
                 }(),
-            ) < Inf
+            ) == 0
         end
     end
 

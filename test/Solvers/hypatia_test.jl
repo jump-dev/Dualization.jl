@@ -5,6 +5,19 @@
 
 import Hypatia
 
+@testset "VariableBridgingCost" begin
+    opt = MOI.instantiate(
+        dual_optimizer(Hypatia.Optimizer);
+        with_bridge_type = Float64,
+    )
+    @test MOI.supports_add_constrained_variables(opt, MOI.Reals)
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.Reals}()) == 0
+    @test MOI.supports_add_constrained_variables(opt, MOI.Nonnegatives)
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.Nonnegatives}()) == 0
+    @test MOI.supports_add_constrained_variables(opt, MOI.GeometricMeanCone)
+    @test MOI.get(opt, MOI.VariableBridgingCost{MOI.GeometricMeanCone}()) == 2
+end
+
 @testset "Solve problems with different coefficient_type" begin
     function mineig(::Type{T}) where {T}
         model = GenericModel{T}(
