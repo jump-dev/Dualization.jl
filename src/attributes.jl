@@ -537,10 +537,7 @@ function MOI.get(
 ) where {T}
     return MOI.get(
         optimizer.dual_problem.dual_model,
-        MOI.ConstraintBridgingCost{
-            MOI.ScalarAffineFunction{T},
-            MOI.EqualTo{T},
-        }(),
+        MOI.ConstraintBridgingCost{MOI.ScalarAffineFunction{T},MOI.EqualTo{T}}(),
     )
 end
 
