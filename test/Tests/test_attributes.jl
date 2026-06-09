@@ -368,8 +368,7 @@ function test_raw_status_string()
     MOI.set(cached, MOI.ObjectiveFunction{typeof(T(1) * x)}(), T(1) * x)
     MOI.Utilities.attach_optimizer(cached)
     MOI.optimize!(cached)
-    inner_mock = dual.dual_problem.dual_model.model.optimizer
-    MOI.set(inner_mock, MOI.RawStatusString(), "mock_status")
+    MOI.set(mock, MOI.RawStatusString(), "mock_status")
     @test MOI.get(cached, MOI.RawStatusString()) == "mock_status"
     return
 end
