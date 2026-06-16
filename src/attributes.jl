@@ -30,6 +30,10 @@ function dual_attribute end
 dual_attribute(attr::MOI.ResultCount) = attr
 dual_attribute(attr::MOI.RawStatusString) = attr
 dual_attribute(attr::MOI.SolveTimeSec) = attr
+dual_attribute(attr::MOI.SimplexIterations) = attr
+dual_attribute(attr::MOI.BarrierIterations) = attr
+dual_attribute(attr::MOI.NodeCount) = attr
+dual_attribute(attr::MOI.RawSolver) = attr
 
 dual_attribute(::MOI.VariableName) = MOI.ConstraintName()
 

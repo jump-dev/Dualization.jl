@@ -386,6 +386,47 @@ function test_solve_time_sec()
     return
 end
 
+function test_simplex_iterations()
+    _test_passthrough_model_attribute(MOI.SimplexIterations(), Int64(7))
+    return
+end
+
+function test_barrier_iterations()
+    _test_passthrough_model_attribute(MOI.BarrierIterations(), Int64(11))
+    return
+end
+
+function test_node_count()
+    _test_passthrough_model_attribute(MOI.NodeCount(), Int64(13))
+    return
+end
+
+function test_raw_solver()
+    # `MockOptimizer.RawSolver` returns the mock itself, so check identity
+    # rather than going through the generic helper's `set`/`get` round-trip.
+    @test Dualization.dual_attribute(MOI.RawSolver()) == MOI.RawSolver()
+    T = Float64
+    mock = MOI.Utilities.MockOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}());
+        eval_variable_constraint_dual = false,
+    )
+    cached = MOI.Utilities.CachingOptimizer(
+        MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}()),
+        MOI.Utilities.MANUAL,
+    )
+    dual = Dualization.DualOptimizer(mock)
+    MOI.Utilities.reset_optimizer(cached, dual)
+    x = MOI.add_variable(cached)
+    c = MOI.add_constraint(cached, T(1) * x, MOI.GreaterThan(T(0)))
+    MOI.set(cached, MOI.ObjectiveSense(), MOI.MIN_SENSE)
+    MOI.set(cached, MOI.ObjectiveFunction{typeof(T(1) * x)}(), T(1) * x)
+    MOI.Utilities.attach_optimizer(cached)
+    MOI.optimize!(cached)
+    inner_mock = dual.dual_problem.dual_model.model.optimizer
+    @test MOI.get(cached, MOI.RawSolver()) === inner_mock
+    return
+end
+
 end  # module
 
 TestAttributes.runtests()
