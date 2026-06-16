@@ -348,9 +348,11 @@ function test_conic()
     return
 end
 
-function test_raw_status_string()
-    @test Dualization.dual_attribute(MOI.RawStatusString()) ==
-          MOI.RawStatusString()
+# An `AbstractModelAttribute` such as `MOI.RawStatusString` or `MOI.SolveTimeSec`
+# that is identical on the primal and the dual model: `MOI.get`ting it from the
+# `DualOptimizer` should forward to the inner solver of the dual model.
+function _test_passthrough_model_attribute(attr, value)
+    @test Dualization.dual_attribute(attr) == attr
     T = Float64
     mock = MOI.Utilities.MockOptimizer(
         MOI.Utilities.UniversalFallback(MOI.Utilities.Model{T}());
@@ -369,8 +371,18 @@ function test_raw_status_string()
     MOI.Utilities.attach_optimizer(cached)
     MOI.optimize!(cached)
     inner_mock = dual.dual_problem.dual_model.model.optimizer
-    MOI.set(inner_mock, MOI.RawStatusString(), "mock_status")
-    @test MOI.get(cached, MOI.RawStatusString()) == "mock_status"
+    MOI.set(inner_mock, attr, value)
+    @test MOI.get(cached, attr) == value
+    return
+end
+
+function test_raw_status_string()
+    _test_passthrough_model_attribute(MOI.RawStatusString(), "mock_status")
+    return
+end
+
+function test_solve_time_sec()
+    _test_passthrough_model_attribute(MOI.SolveTimeSec(), 1.23)
     return
 end
 
