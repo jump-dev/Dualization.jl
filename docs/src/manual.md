@@ -149,7 +149,7 @@ functions:
 * `MathOptInterface.dual_set_type`
 * `MathOptInterface.dual_set`
 
-If the custom set has some special scalar product (see the [link](https://jump.dev/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)),
+If the custom set has some special scalar product (see the [link](https://jump.dev/MathOptInterface.jl/stable/reference/standard_form/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)),
 the user also needs to provide the `MathOptInterface.Utilities.set_dot` function.
 
 For example, let us define a fake cone and its dual, the fake dual cone. We will
