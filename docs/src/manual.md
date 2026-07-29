@@ -146,7 +146,7 @@ Dualization.jl can automatically dualize models with custom sets.
 To do this, the user needs to define the set and its dual set and provide the
 functions:
 
-* [`Dualization.supported_constraint`](@ref)
+* `MathOptInterface.dual_set_type`
 * `MathOptInterface.dual_set`
 
 If the custom set has some special scalar product (see the [link](https://jump.dev/MathOptInterface.jl/stable/apireference/#MathOptInterface.AbstractSymmetricMatrixSetTriangle)),
@@ -173,19 +173,8 @@ print(model)
 Now in order to dualize we must overload the methods as described above.
 
 ```@repl repl_example_new_set
+MOI.dual_set_type(::Type{FakeCone}) = FakeDualCone
 MOI.dual_set(s::FakeCone) = FakeDualCone(MOI.dimension(s))
-function Dualization.supported_constraint(
-    ::Type{MOI.VectorOfVariables},
-    ::Type{FakeCone},
-)
-    return true
-end
-function Dualization.supported_constraint(
-    ::Type{<:MOI.VectorAffineFunction},
-    ::Type{FakeCone},
-)
-    return true
-end
 ```
 
 If your set has some specific scalar product you also need to define a new
