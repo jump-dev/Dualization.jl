@@ -1,6 +1,3 @@
-_minus(::Nothing) = nothing
-_minus(x) = -x
-
 function _variable_attribute(attr::MOI.ConstraintPrimal)
     return MOI.VariablePrimal(attr.result_index)
 end
@@ -55,34 +52,6 @@ end
 
 function dual_attribute(::MOI.ConstraintDualStart)
     return MOI.VariablePrimalStart()
-end
-
-"""
-    dual_attribute_value_set(attr::MOI.AbstractVariableAttribute, value)
-
-Used as pre-processing for `MOI.set`ting `value` for a variable.
-"""
-function dual_attribute_value_set end
-
-"""
-    dual_attribute_value_get(attr::MOI.AbstractVariableAttribute, value)
-
-Used as pre-processing for `MOI.get`ting `value` for a variable.
-"""
-function dual_attribute_value_get end
-
-function dual_attribute_value_set(
-    ::Union{MOI.VariablePrimal,MOI.VariablePrimalStart},
-    value,
-)
-    return _minus(value)
-end
-
-function dual_attribute_value_get(
-    ::Union{MOI.VariablePrimal,MOI.VariablePrimalStart},
-    value,
-)
-    return _minus(value)
 end
 
 """
@@ -157,7 +126,7 @@ function MOI.set(
         optimizer.dual_problem.dual_model,
         dual_attribute(attr),
         data.dual_constraint,
-        dual_attribute_value_set(attr, value),
+        value,
     )
     return
 end
@@ -170,14 +139,15 @@ function MOI.get(
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = primal_dual_map.primal_variable_data[vi]
     if isnothing(data.primal_constrained_variable_constraint)
-        # Classical free variable
-        return dual_attribute_value_get(
-            attr,
-            MOI.get(
-                optimizer.dual_problem.dual_model,
-                dual_attribute(attr),
-                data.dual_constraint,
-            ),
+        # Classical free variable.
+        # The value is used as is: dual constraints are built as
+        # `-A_{.j}^T y + a_j in V_j^*` for every primal variable, whether the
+        # resulting constraint is an equality or a membership in a nontrivial
+        # cone, so no sign correction is needed here.
+        return MOI.get(
+            optimizer.dual_problem.dual_model,
+            dual_attribute(attr),
+            data.dual_constraint,
         )
     end
     if isnothing(data.dual_constraint)

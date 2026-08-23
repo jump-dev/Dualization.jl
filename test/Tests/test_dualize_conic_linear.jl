@@ -106,7 +106,7 @@
         dual
             max -4w_4 - 3w_5 + 12w_6
         s.t
-            w_1 + w_3 == 3
+            -w_1 - w_3 == -3
             [-w_2 + 2] in Nonpositives
             [-w_3 - 4] in Nonnegatives
         =#
@@ -162,9 +162,9 @@
         )
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), ci_eq)
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), ci_eq)
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
+        @test MOI.coefficient.(eq_con1_fun.terms) == [-1.0; -1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
-        @test MOI.constant(eq_con1_set) == 3.0
+        @test MOI.constant(eq_con1_set) == -3.0
         ci_np = first(
             MOI.get(
                 dual_model,
