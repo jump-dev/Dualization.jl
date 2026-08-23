@@ -54,8 +54,14 @@ and the dual is:
 ```
 
 Note that the equality constraints have minus signs that could be flipped for
-simplicity. However, for generality, we keep the minus signs so that the models
-displayed here precisely match the outputs of the package.
+simplicity, because negating both sides of an equality does not change it.
+However, we keep the minus signs, so that the term ``- \sum_{i=1}^m A_i^T y_i``
+appears with the same sign in every dual constraint, whether that constraint
+ends up being an equality (as here) or a membership in a nontrivial cone (as in
+the compact form below). This makes the dual constraints directly readable as
+the stationarity rows of the KKT conditions, which matters when the dual is
+used to build a complementarity system. It also means the models displayed
+here precisely match the outputs of the package.
 
 A linear inequality constraint ``a^T x + b \ge c`` should be interpreted as
 ``a^T x + b - c \in \mathbb{R}_+``, and similarly ``a^T x + b \le c`` should be
@@ -179,7 +185,7 @@ and the dual is:
 \end{align}
 ```
 
-Note that signs changed in the constraints of the dual compared to the standard form. This is because the standard form would have negative signs in all terms in a equality constraint, which were inverted for simplicity. However, in the compact form, this operation is not allowed because it would change a nontrivial cone ``\mathcal{C}_i``.
+Note that the constraints of the dual carry the same signs as in the standard form. Negating both sides of an equality would be allowed in the standard form, but it is not allowed here, because it would change a nontrivial cone ``\mathcal{V}_j^*``. Keeping a single convention for both forms means that adding or removing an explicit constraint on a primal variable does not flip the signs of the corresponding dual constraint.
 
 ##### Linear Programming
 

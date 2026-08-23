@@ -73,7 +73,7 @@
                 1,
             ),
         )
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0; -2.0; -1.0]
+        @test MOI.coefficient.(eq_con1_fun.terms) == [-1.0; -1.0; 2.0; 1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 0.0
         eq_con2_fun = MOI.get(
@@ -96,8 +96,7 @@
                 2,
             ),
         )
-        @test MOI.coefficient.(eq_con2_fun.terms) ==
-              [2.0; 1.0; -1.0; -2.0; -1.0]
+        @test MOI.coefficient.(eq_con2_fun.terms) == [-2.0; -1.0; 1.0; 2.0; 1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
         eq_con3_fun = MOI.get(
@@ -120,7 +119,7 @@
                 3,
             ),
         )
-        @test MOI.coefficient.(eq_con3_fun.terms) == [3.0; -1.0; -2.0]
+        @test MOI.coefficient.(eq_con3_fun.terms) == [-3.0; 1.0; 2.0]
         @test MOI.constant.(eq_con3_fun) == 0.0
         @test MOI.constant(eq_con3_set) == 0.0
 
