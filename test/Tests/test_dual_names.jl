@@ -48,13 +48,9 @@
     @test MOI.get(dual_model, MOI.VariableName(), vi_2) == ""
     # Query constraint names
     ci_1 =
-        primal_dual_map.primal_variable_data[MOI.VariableIndex(
-            1,
-        )].dual_constraint
+        primal_dual_map.primal_variable_data[MOI.VariableIndex(1)].dual_constraint
     ci_2 =
-        primal_dual_map.primal_variable_data[MOI.VariableIndex(
-            2,
-        )].dual_constraint
+        primal_dual_map.primal_variable_data[MOI.VariableIndex(2)].dual_constraint
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_1) == ""
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_2) == ""
 
@@ -80,13 +76,9 @@
     @test MOI.get(dual_model, MOI.VariableName(), vi_2) == "dualvar_lessthan"
     # Query constraint names
     ci_1 =
-        primal_dual_map.primal_variable_data[MOI.VariableIndex(
-            1,
-        )].dual_constraint
+        primal_dual_map.primal_variable_data[MOI.VariableIndex(1)].dual_constraint
     ci_2 =
-        primal_dual_map.primal_variable_data[MOI.VariableIndex(
-            2,
-        )].dual_constraint
+        primal_dual_map.primal_variable_data[MOI.VariableIndex(2)].dual_constraint
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_1) == "dualcon_x1"
     @test MOI.get(dual_model, MOI.ConstraintName(), ci_2) == "dualcon_x2"
 end
