@@ -30,7 +30,7 @@ Subject to
 julia> print(dual_model)
 Max dual_var_c
 Subject to
- dual_con_x : -dual_var_c == -1
+ dual_con_x : -dual_var_c = -1
  dual_var_c ≥ 0
 ```
 """
