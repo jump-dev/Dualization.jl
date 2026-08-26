@@ -139,11 +139,6 @@ function MOI.get(
     primal_dual_map = optimizer.dual_problem.primal_dual_map
     data = primal_dual_map.primal_variable_data[vi]
     if isnothing(data.primal_constrained_variable_constraint)
-        # Classical free variable.
-        # The value is used as is: dual constraints are built as
-        # `-A_{.j}^T y + a_j in V_j^*` for every primal variable, whether the
-        # resulting constraint is an equality or a membership in a nontrivial
-        # cone, so no sign correction is needed here.
         return MOI.get(
             optimizer.dual_problem.dual_model,
             dual_attribute(attr),
