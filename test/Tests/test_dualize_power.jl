@@ -55,9 +55,9 @@
         dual
             min -w_2 - 2w_1
         s.t.
-            w_1 + w_3 == 0
-            w_2 + w_4 == 0
-            w_5 == -1
+            -w_1 - w_3 == 0
+            -w_2 - w_4 == 0
+            -w_5 == 1
             (w_3, w_4, w_5) ∈ DualPowerCone
         =#
         primal_model = pow2_test()
@@ -109,19 +109,19 @@
 
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con1)
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con1)
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
+        @test MOI.coefficient.(eq_con1_fun.terms) == [-1.0; -1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 0.0
         eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con2)
         eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con2)
-        @test MOI.coefficient.(eq_con2_fun.terms) == [1.0; 1.0]
+        @test MOI.coefficient.(eq_con2_fun.terms) == [-1.0; -1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
         eq_con3_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con3)
         eq_con3_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con3)
-        @test MOI.coefficient.(eq_con3_fun.terms) == [1.0]
+        @test MOI.coefficient.(eq_con3_fun.terms) == [-1.0]
         @test MOI.constant.(eq_con3_fun) == 0.0
-        @test MOI.constant(eq_con3_set) == -1.0
+        @test MOI.constant(eq_con3_set) == 1.0
 
         dual_pow_con = MOI.get(dual_model, MOI.ConstraintFunction(), pow_con)
 

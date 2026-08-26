@@ -16,8 +16,8 @@
         s.t.
             y_2 >= 0
             y_3 <= 0
-            y_2 + y_3 == 0    :x_1
-            2y_3 == -4        :x_2
+            -y_2 - y_3 == 0    :x_1
+            -2y_3 == 4         :x_2
         =#
         primal_model = lp1_test()
         dual_model, primal_dual_map = dual_model_and_map(primal_model)
@@ -68,8 +68,8 @@
         standard dual
             max 3y_4 + 3y_3 + y_1 - 1
         s.a.
-            y_1 + 2y_3 + y_4 = -4 :x_1
-            y_2 + y_3 + 2y_4 = -3 :x_2
+            -y_1 - 2y_3 - y_4 = 4 :x_1
+            -y_2 - y_3 - 2y_4 = 3 :x_2
             y_1 >= 0
             y_2 >= 0
             y_3 <= 0
@@ -77,7 +77,7 @@
         compact dual
             max 3y_4 + 3y_3 + y_1 - 1
         s.a.
-            y_1 + 2y_3 + y_4 = -4 :x_1
+            -y_1 - 2y_3 - y_4 = 4 :x_1
             - y_3 - 2y_4 >= 3 :x_2
             y_1 >= 0
             y_3 <= 0
@@ -135,9 +135,9 @@
             }(),
         )[]
         f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
-        @test Set(MOI.coefficient.(f.terms)) == Set([1.0; 2.0; 1.0])
+        @test Set(MOI.coefficient.(f.terms)) == Set([-1.0; -2.0; -1.0])
         @test MOI.constant(f) == 0.0
-        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(-4.0)
+        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(4.0)
         ci = MOI.get(
             dual_model,
             MOI.ListOfConstraintIndices{
@@ -235,7 +235,7 @@
             }(),
         )
         @test Set(MOI.get.(dual_model, MOI.ConstraintSet(), cis)) ==
-              Set([MOI.EqualTo(-4.0), MOI.EqualTo(-3.0)])
+              Set([MOI.EqualTo(4.0), MOI.EqualTo(3.0)])
     end
 
     @testset "lp14_test_min" begin
@@ -338,13 +338,17 @@
         @test MOI.constant(f) == 0.0
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.LessThan(3.0)
 
-        # TODO flip these
-        # ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{Float64},MOI.EqualTo{Float64}}())[]
-        # f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
-        # @test Set(MOI.coefficient.(f.terms)) == Set([-7.0; +11.0; -15.0])
-        # @test MOI.constant(f) == 0.0
-        # @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(-4.0)
-
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
+        )[]
+        f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
+        @test Set(MOI.coefficient.(f.terms)) == Set([-7.0; +11.0; -15.0])
+        @test MOI.constant(f) == 0.0
+        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(-4.0)
     end
     @testset "lp14_test_max compact" begin
         #=
@@ -456,13 +460,17 @@
         @test MOI.constant(f) == 0.0
         @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.LessThan(-3.0)
 
-        # TODO flip these
-        # ci = MOI.get(dual_model, MOI.ListOfConstraintIndices{MOI.ScalarAffineFunction{Float64},MOI.EqualTo{Float64}}())[]
-        # f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
-        # @test Set(MOI.coefficient.(f.terms)) == Set([-7.0; +11.0; -15.0])
-        # @test MOI.constant(f) == 0.0
-        # @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(4.0)
-
+        ci = MOI.get(
+            dual_model,
+            MOI.ListOfConstraintIndices{
+                MOI.ScalarAffineFunction{Float64},
+                MOI.EqualTo{Float64},
+            }(),
+        )[]
+        f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
+        @test Set(MOI.coefficient.(f.terms)) == Set([-7.0; +11.0; -15.0])
+        @test MOI.constant(f) == 0.0
+        @test MOI.get(dual_model, MOI.ConstraintSet(), ci) == MOI.EqualTo(4.0)
     end
     @testset "lp14_test_min standard" begin
         #=
@@ -563,23 +571,22 @@
                 MOI.EqualTo{Float64},
             }(),
         )
-        # TODO: review signs here
         @test Set(MOI.get.(dual_model, MOI.ConstraintSet(), cis)) ==
-              Set([MOI.EqualTo(2.0), MOI.EqualTo(-3.0), MOI.EqualTo(4.0)])
+              Set([MOI.EqualTo(-2.0), MOI.EqualTo(3.0), MOI.EqualTo(-4.0)])
         for ci in cis
             set = MOI.get(dual_model, MOI.ConstraintSet(), ci)
             f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
-            if set == MOI.EqualTo(2.0)
+            if set == MOI.EqualTo(-2.0)
                 @test Set(MOI.coefficient.(f.terms)) ==
-                      Set(-[-5.0; 9.0; -13.0; -1])
+                      Set([-5.0; 9.0; -13.0; -1])
                 @test MOI.constant(f) == 0.0
-            elseif set == MOI.EqualTo(-3.0)
+            elseif set == MOI.EqualTo(3.0)
                 @test Set(MOI.coefficient.(f.terms)) ==
-                      Set(-[6.0; -10.0; +14.0; -1])
+                      Set([6.0; -10.0; +14.0; -1])
                 @test MOI.constant(f) == 0.0
-            elseif set == MOI.EqualTo(4.0)
+            elseif set == MOI.EqualTo(-4.0)
                 @test Set(MOI.coefficient.(f.terms)) ==
-                      Set(-[-7.0; +11.0; -15.0])
+                      Set([-7.0; +11.0; -15.0])
                 @test MOI.constant(f) == 0.0
             else
                 error("wrong ci")
@@ -685,23 +692,22 @@
                 MOI.EqualTo{Float64},
             }(),
         )
-        # TODO: review signs here
         @test Set(MOI.get.(dual_model, MOI.ConstraintSet(), cis)) ==
-              Set([MOI.EqualTo(-2.0), MOI.EqualTo(3.0), MOI.EqualTo(-4.0)])
+              Set([MOI.EqualTo(2.0), MOI.EqualTo(-3.0), MOI.EqualTo(4.0)])
         for ci in cis
             set = MOI.get(dual_model, MOI.ConstraintSet(), ci)
             f = MOI.get(dual_model, MOI.ConstraintFunction(), ci)
-            if set == MOI.EqualTo(-2.0)
+            if set == MOI.EqualTo(2.0)
                 @test Set(MOI.coefficient.(f.terms)) ==
-                      Set(-[-5.0; 9.0; -13.0; -1])
+                      Set([-5.0; 9.0; -13.0; -1])
                 @test MOI.constant(f) == 0.0
-            elseif set == MOI.EqualTo(3.0)
+            elseif set == MOI.EqualTo(-3.0)
                 @test Set(MOI.coefficient.(f.terms)) ==
-                      Set(-[6.0; -10.0; +14.0; -1])
+                      Set([6.0; -10.0; +14.0; -1])
                 @test MOI.constant(f) == 0.0
-            elseif set == MOI.EqualTo(-4.0)
+            elseif set == MOI.EqualTo(4.0)
                 @test Set(MOI.coefficient.(f.terms)) ==
-                      Set(-[-7.0; +11.0; -15.0])
+                      Set([-7.0; +11.0; -15.0])
                 @test MOI.constant(f) == 0.0
             else
                 error("wrong ci")

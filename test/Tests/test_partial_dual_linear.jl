@@ -17,7 +17,7 @@
         s.t.
             y_2 >= 0
             y_3 <= 0
-            y_2 + y_3 == 0    :x_1
+            -y_2 - y_3 == 0    :x_1
         =#
         primal_model = lp1_test()
         dual = Dualization.dualize(
@@ -77,7 +77,7 @@
                 1,
             ),
         )
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0; 1.0]
+        @test MOI.coefficient.(eq_con1_fun.terms) == [-1.0; -1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
         @test MOI.constant(eq_con1_set) == 0.0
 
@@ -244,9 +244,9 @@
         dual
             obj ignored
         s.t.
-            #  y_1 + y_3 == 0  :x_1
-            y_2 + 2y_3 == 0 :x_2
-            #  y_3 == 4.0      :x_3
+            #  -y_1 - y_3 == 0  :x_1
+            -y_2 - 2y_3 == 0 :x_2
+            #  -y_3 == -4.0     :x_3
             # y_1 <= 0
             y_2 <= 0
             y_3 <= 0
@@ -303,7 +303,7 @@
                 1,
             ),
         )
-        @test MOI.coefficient.(eq_con2_fun.terms) == [2.0; 1.0]
+        @test MOI.coefficient.(eq_con2_fun.terms) == [-2.0; -1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
 
@@ -347,9 +347,9 @@
         dual
             obj ignored
         s.t.
-            #  y_1 + y_3 == 0  :x_1
-            y_2 + 2y_3 == 0 :x_2
-            #  y_3 == 4.0      :x_3
+            #  -y_1 - y_3 == 0  :x_1
+            -y_2 - 2y_3 == 0 :x_2
+            #  -y_3 == -4.0     :x_3
             # y_1 <= 0
             y_2 <= 0
             y_3 <= 0
@@ -410,7 +410,7 @@
                 1,
             ),
         )
-        @test MOI.coefficient.(eq_con2_fun.terms) == [2.0; 1.0]
+        @test MOI.coefficient.(eq_con2_fun.terms) == [-2.0; -1.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
 
