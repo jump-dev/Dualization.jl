@@ -108,7 +108,7 @@ function _add_dual_equality_constraints(
                 primal_model,
                 primal_vi,
                 dual_ci,
-                dual_names.dual_constraint_name_prefix,
+                dual_names,
             )
         end
         # Add primal variable to dual contraint to the link dictionary
@@ -233,7 +233,7 @@ function _add_constrained_variable_constraint(
             primal_model,
             vi,
             dual_ci,
-            dual_names.dual_constraint_name_prefix,
+            dual_names,
         )
     end
     return
@@ -308,13 +308,14 @@ function _set_dual_constraint_name(
     primal_model::MOI.ModelLike,
     primal_vi::MOI.VariableIndex,
     dual_ci::MOI.ConstraintIndex,
-    prefix::String,
+    dual_names::DualNames,
 )
+    primal_name = MOI.get(primal_model, MOI.VariableName(), primal_vi)
     MOI.set(
         dual_model,
         MOI.ConstraintName(),
         dual_ci,
-        prefix * MOI.get(primal_model, MOI.VariableName(), primal_vi),
+        _dual_constraint_name(dual_names, primal_name),
     )
     return
 end

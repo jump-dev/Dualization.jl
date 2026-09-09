@@ -101,9 +101,9 @@ function _add_dual_variable(
             end
         end
         if !is_empty(dual_names) && !isempty(ci_name)
-            pre = dual_names.dual_variable_name_prefix
             pos = is_unique_var ? "" : "_$i"
-            MOI.set(dual_model, MOI.VariableName(), vi, pre * ci_name * pos)
+            name = _dual_variable_name(dual_names, ci_name)
+            MOI.set(dual_model, MOI.VariableName(), vi, name * pos)
         end
     end
     return
@@ -147,10 +147,8 @@ function _add_primal_parameter_vars(
         primal_dual_map.primal_parameter_to_dual_parameter[pvi] = dvi
         if !is_empty(dual_names)
             pvi_name = MOI.get(primal_model, MOI.VariableName(), pvi)
-            prefix =
-                dual_names.parameter_name_prefix == "" ? "param_" :
-                dual_names.parameter_name_prefix
-            MOI.set(dual_model, MOI.VariableName(), dvi, prefix * pvi_name)
+            name = _dual_parameter_name(dual_names, pvi_name)
+            MOI.set(dual_model, MOI.VariableName(), dvi, name)
         end
     end
     return
@@ -175,11 +173,9 @@ function _add_quadratic_slack_vars(
             vi = MOI.add_variable(dual_model)
             primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var[ind] = vi
             if !is_empty(dual_names)
-                name = MOI.get(primal_model, MOI.VariableName(), ind)
-                prefix =
-                    dual_names.quadratic_slack_name_prefix == "" ?
-                    "quadslack_" : dual_names.quadratic_slack_name_prefix
-                MOI.set(dual_model, MOI.VariableName(), vi, prefix * name)
+                primal_name = MOI.get(primal_model, MOI.VariableName(), ind)
+                name = _dual_quadratic_slack_name(dual_names, primal_name)
+                MOI.set(dual_model, MOI.VariableName(), vi, name)
             end
         end
     end
