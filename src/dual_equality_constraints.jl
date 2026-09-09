@@ -175,9 +175,12 @@ function _add_constrained_variable_constraint(
             PrimalVariableData{T}(ci, i, dual_ci, nothing)
     end
     if !is_empty(dual_names)
-        @warn(
-            "dual names for constrained vector of variables not supported yet."
-        )
+        primal_names =
+            String[MOI.get(primal_model, MOI.VariableName(), vi) for vi in vis]
+        name = _dual_constraint_name(dual_names, primal_names)
+        if !isempty(name)
+            MOI.set(dual_model, MOI.ConstraintName(), dual_ci, name)
+        end
     end
     return
 end
