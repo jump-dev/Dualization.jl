@@ -29,7 +29,32 @@ Provide prefixes for the names of the variables and constraints using
 [`DualNames`](@ref).
 
 ```@repl dualize_model
-dual_model = dualize(model; dual_names = DualNames("dual_var_", "dual_con_"))
+dual_model = dualize(
+    model;
+    dual_names = DualNames(;
+        variable_prefix = "dual_var_",
+        constraint_prefix = "dual_con_",
+    ),
+)
+print(dual_model)
+```
+
+Alternatively, use the `mapping` field of [`DualNames`](@ref) to rename, instead
+of prepending a single prefix to every name. This is handy to give a dual
+variable the name it has on paper, and it preserves the index part of
+container names, so a constraint `affine_cons[1]` gives a dual variable
+`α[1]`. The prefixes still apply to the names that the mapping does not
+cover.
+
+```@repl dualize_model
+dual_model = dualize(
+    model;
+    dual_names = DualNames(;
+        variable_prefix = "dual_var_",
+        constraint_prefix = "dual_con_",
+        mapping = ["con_le" => "α", "eqcon" => "β"],
+    ),
+)
 print(dual_model)
 ```
 
