@@ -74,6 +74,7 @@ include("Tests/test_dualize_power.jl")
 include("Tests/test_dualize_quadratic.jl")
 include("Tests/test_dual_names.jl")
 include("Tests/test_dual_name_mapping.jl")
+include("Tests/test_dual_names_constrained_variables.jl")
 
 include("Tests/test_partial_dual_linear.jl")
 include("Tests/test_partial_dual_quadratic.jl")
