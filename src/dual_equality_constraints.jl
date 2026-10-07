@@ -22,9 +22,14 @@ function _add_dual_equality_constraints(
     non_parameter_variables = setdiff(all_variables, variable_parameters)
 
     # Loop at every constraint to collect the scalar affine terms in the
-    # `scalar_affine_terms` list (a dics mapping variable index to 
+    # `scalar_affine_terms` list (a dics mapping variable index to
     # a scalar affine function).
-    # TODO: flip these signs a priorie instead of require post processing later
+    # `scalar_affine_terms[x_j]` holds the column `A_{.j}` of the primal
+    # constraint matrix, with the sign it has in the primal model, while every
+    # dual constraint uses `-A_{.j}^T y`.
+    # These terms cannot be negated here: they are also returned for
+    # `_get_dual_objective`, whose entries for variables that are parameters
+    # must keep the primal sign.
     scalar_affine_terms = _get_scalar_affine_terms(
         primal_model,
         primal_dual_map.primal_constraint_data,
@@ -39,8 +44,9 @@ function _add_dual_equality_constraints(
     # Collect affine terms of dual constraints that come from the quadratic
     # part of the primal objective function, and add them into
     # `scalar_affine_terms`.
-    # These terms are added with flipped signs (because the sign will be flipped again).
-    # TODO: unflip these signs
+    # These terms are added with the same sign convention as the terms coming
+    # from the primal constraints, so that all of them can be negated at once
+    # when the dual constraint function is built.
     _add_scalar_affine_terms_from_quad_obj(
         scalar_affine_terms,
         primal_dual_map.primal_var_in_quad_obj_to_dual_slack_var,
@@ -49,8 +55,9 @@ function _add_dual_equality_constraints(
     )
 
     # terms from mixing variables and parameters
-    # These terms are added with flipped signs (because the sign will be flipped again).
-    # TODO: unflip these signs
+    # As above, these are added with the primal sign convention. Note that they
+    # are keyed by the *variable* of each product `parameter * variable`, hence
+    # they never touch the parameter entries read by `_get_dual_objective`.
     _add_scalar_affine_terms_from_quad_params(
         scalar_affine_terms,
         primal_dual_map.primal_parameter_to_dual_parameter,
@@ -66,7 +73,6 @@ function _add_dual_equality_constraints(
         # primal constrained variable.
         # If the dual set is Reals, the constraint is not added, butthe function
         # is cached inthe primal dual map.
-        # TODO: flip these signs a priori instead of requiring post-processing later
         _add_constrained_variable_constraint(
             dual_model,
             primal_model,
@@ -90,14 +96,18 @@ function _add_dual_equality_constraints(
         # these are constraints associated to primal variables that are not
         # treated as constrained variables, that is "free variables" (x \in R)
         # therefore their associated dual constraints are equalities.
+        # The function is `-A_{.j}^T y + a_j` for minimization and
+        # `-A_{.j}^T y - a_j` for maximization, the same convention used by
+        # `_add_constrained_variable_constraint`. Negating both sides here
+        # would be valid for an equality, but it would make the sign of a dual
+        # constraint depend on whether the primal variable is free or
+        # constrained, see
+        # https://github.com/jump-dev/Dualization.jl/issues/70.
         dual_ci = MOI.Utilities.normalize_and_add_constraint(
             dual_model,
             MOI.ScalarAffineFunction(
-                # TODO: flip these two signs bellow to match _add_constrained_variable_constraint
-                # MOI.Utilities.operate_terms(-, scalar_affine_terms[primal_vi]),
-                # sense_change * get(scalar_terms, primal_vi, zero(T))),
-                MOI.Utilities.operate_terms(+, scalar_affine_terms[primal_vi]),
-                -sense_change * get(scalar_terms, primal_vi, zero(T)),
+                MOI.Utilities.operate_terms(-, scalar_affine_terms[primal_vi]),
+                sense_change * get(scalar_terms, primal_vi, zero(T)),
             ),
             MOI.EqualTo(zero(T)),
         )

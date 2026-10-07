@@ -233,7 +233,10 @@ function _test_simple(T, dual_model)
         }(),
     )[]
     @test MOI.get(dual, MOI.VariablePrimalStart(), x) == 1
-    @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_eq) == -1
+    # The dual constraint of the free variable `x` is `-2y + 0 == 0`, so the
+    # primal start of `x` is stored as the dual start of that constraint with
+    # no sign change, see https://github.com/jump-dev/Dualization.jl/issues/70.
+    @test MOI.get(dual_model, MOI.ConstraintDualStart(), dual_eq) == 1
     # We could set it to zero, but `nothing` should be fine for the solver,
     # let's only revisit if we have a convincing use case
     @test isnothing(MOI.get(dual_model, MOI.ConstraintPrimalStart(), dual_eq))
@@ -252,6 +255,12 @@ function _test_simple(T, dual_model)
 
     MOI.set(dual, MOI.VariablePrimalStart(), vars[], nothing)
     @test isnothing(MOI.get(dual, MOI.VariablePrimalStart(), vars[]))
+
+    # `MOI.VariableName` maps to the `MOI.ConstraintName` of the associated
+    # dual constraint and is passed through unchanged.
+    MOI.set(dual, MOI.VariableName(), x, "x")
+    @test MOI.get(dual, MOI.VariableName(), x) == "x"
+    @test MOI.get(dual_model, MOI.ConstraintName(), dual_eq) == "x"
     return
 end
 
