@@ -209,6 +209,55 @@ function _mapped_or_prefixed(
     return prefix * primal_name
 end
 
+# Name of the dual constraint associated with a vector of constrained
+# variables. The dual object is a single constraint, while the primal side is a
+# vector of variables, so a single name has to be derived from several.
+#
+# JuMP names the variables of `@variable(model, x[1:3] in SecondOrderCone())`
+# `x[1]`, `x[2]` and `x[3]`, and leaves the name of the constraint empty. So
+# when every variable is an entry of the same container, the name of that
+# container is used. Otherwise there is no better option than the name of the
+# first variable.
+function _dual_constraint_name(
+    dual_names::DualNames,
+    primal_names::Vector{String},
+)
+    container = _container_name(primal_names)
+    name = if container !== nothing
+        container
+    elseif isempty(primal_names)
+        ""
+    else
+        first(primal_names)
+    end
+    # An unnamed primal stays unnamed in the dual, instead of getting a name
+    # made of the sole prefix.
+    return isempty(name) ? "" : _dual_constraint_name(dual_names, name)
+end
+
+# Return the common `x` of `["x[1]", "x[2]"]`, or `nothing` if the names are not
+# all entries of the same container.
+function _container_name(primal_names::Vector{String})
+    if isempty(primal_names)
+        return nothing
+    end
+    first_name = first(primal_names)
+    bracket = findfirst('[', first_name)
+    if bracket === nothing
+        return nothing
+    end
+    container = first_name[1:prevind(first_name, bracket)]
+    if isempty(container)
+        return nothing
+    end
+    for name in primal_names
+        if !startswith(name, container * "[") || !endswith(name, ']')
+            return nothing
+        end
+    end
+    return container
+end
+
 function _apply_mapping(
     mapping::Vector{Pair{String,String}},
     primal_name::String,
