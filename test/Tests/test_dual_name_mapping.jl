@@ -80,13 +80,11 @@ primal model itself is never modified.
         @test isempty(DualNames().mapping)
         @test DualNames(; variable_prefix = "v").dual_variable_name_prefix ==
               "v"
-        @test DualNames(;
-            constraint_prefix = "c",
-        ).dual_constraint_name_prefix == "c"
+        @test DualNames(; constraint_prefix = "c").dual_constraint_name_prefix ==
+              "c"
         @test DualNames(; parameter_prefix = "p").parameter_name_prefix == "p"
-        @test DualNames(;
-            quadratic_slack_prefix = "s",
-        ).quadratic_slack_name_prefix == "s"
+        @test DualNames(; quadratic_slack_prefix = "s").quadratic_slack_name_prefix ==
+              "s"
         # `mapping` alone is enough, no prefix required.
         only_mapping = DualNames(; mapping = ["a" => "b"])
         @test only_mapping.mapping == ["a" => "b"]
