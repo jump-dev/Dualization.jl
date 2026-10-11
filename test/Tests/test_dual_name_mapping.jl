@@ -101,15 +101,44 @@ primal model itself is never modified.
         legacy = DualNames("v", "c", "p", "s")
         @test legacy.parameter_name_prefix == "p"
         @test legacy.quadratic_slack_name_prefix == "s"
-        # `is_empty` checks the fields, so anything that does not ask for a
-        # prefix nor a renaming names nothing.
+        # `is_empty` is an identity check against the sentinel used as the
+        # default of the `dual_names` keyword, so the sentinel is the only
+        # `DualNames` that names nothing. In particular a `DualNames()` built
+        # by the user is *not* empty: it asks for the dual model to be named
+        # with the fallback prefixes.
         @test Dualization.is_empty(Dualization.EMPTY_DUAL_NAMES)
-        @test Dualization.is_empty(DualNames())
-        @test Dualization.is_empty(DualNames("", ""))
+        @test !Dualization.is_empty(DualNames())
+        @test !Dualization.is_empty(DualNames("", ""))
         @test !Dualization.is_empty(DualNames(; mapping = ["a" => "b"]))
         @test !Dualization.is_empty(DualNames("v", "c"))
         @test !Dualization.is_empty(DualNames(; parameter_prefix = "p"))
         @test !Dualization.is_empty(DualNames(; quadratic_slack_prefix = "s"))
+    end
+
+    @testset "DualNames() names the dual model" begin
+        #=
+        Regression test: `DualNames()` must keep naming the dual model, while
+        omitting `dual_names` entirely must leave it unnamed. Making `is_empty`
+        compare the fields instead of the identity silently collapses the two
+        and drops every name, including the `param_`/`quadslack_` defaults.
+        =#
+        model = Model()
+        @variable(model, x)
+        @variable(model, p in Parameter(2.0))
+        @constraint(model, c, x <= p)
+        @objective(model, Max, 3x + x^2)
+        named = dualize(model; dual_names = DualNames())
+        param = Dualization._get_dual_parameter(named, p)
+        @test MOI.get(named, MOI.VariableName(), param) == "param_p"
+        slack = Dualization._get_dual_slack_variable(named, x)
+        @test MOI.get(named, MOI.VariableName(), slack) == "quadslack_x"
+        dual_var = Dualization._get_dual_variables(named, c)[]
+        @test MOI.get(named, MOI.VariableName(), dual_var) == "c"
+        # Omitting `dual_names` leaves everything unnamed.
+        unnamed = dualize(model)
+        for v in all_variables(unnamed)
+            @test MOI.get(unnamed, MOI.VariableName(), v) == ""
+        end
     end
 
     @testset "dualize" begin
@@ -193,16 +222,14 @@ primal model itself is never modified.
         @test _dual_names(dual.dual_model) == Set(["α[1]", "α[2]", "α[3]"])
         @test _get_dual_constraint_name(dual.dual_model) == "dual_con_λ"
 
-        # Neither the default `dual_names` nor an empty `DualNames` names
-        # anything.
-        for names in [nothing, DualNames()]
-            dual = if names === nothing
-                dualize(model)
-            else
-                dualize(model; dual_names = names)
-            end
-            @test all(isempty, _dual_names(dual.dual_model))
-        end
+        # The default `dual_names` names nothing.
+        @test all(isempty, _dual_names(dualize(model).dual_model))
+        # But an explicit `DualNames()` does name: with no prefix and no
+        # mapping, the dual variables simply take the name of the primal
+        # constraint they come from.
+        dual = dualize(model; dual_names = DualNames())
+        @test _dual_names(dual.dual_model) ==
+              Set(["affine_cons[1]", "affine_cons[2]", "affine_cons[3]"])
     end
 
     @testset "parameters and quadratic slacks" begin

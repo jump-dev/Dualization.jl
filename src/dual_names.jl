@@ -32,9 +32,12 @@ is prefixed as usual.
 
 The parameters and the quadratic slack variables cannot take the name of the
 primal variable they come from, because that name is already given to a dual
-constraint. So when their prefix is empty, but some other prefix or a mapping
-asks for the dual model to be named, they fall back to `param_` and
-`quadslack_`. A `DualNames` with no prefix and no mapping names nothing.
+constraint. So when their prefix is empty they fall back to `param_` and
+`quadslack_`.
+
+Passing no `dual_names` at all to [`dualize`](@ref) leaves the dual model
+unnamed. Note that this is *not* the same as passing `DualNames()`, which does
+name the dual model as it contains fallback prefixes above.
 
     DualNames(variable_prefix, constraint_prefix)
     DualNames(
@@ -138,18 +141,17 @@ function _to_mapping(mapping)
     return Pair{String,String}[String(k) => String(v) for (k, v) in mapping]
 end
 
+# The sentinel used as the default of the `dual_names` keyword of `dualize`:
+# it is the only `DualNames` that names nothing.
 const EMPTY_DUAL_NAMES = DualNames()
 
-# `DualNames` names nothing when every prefix is empty and no renaming is asked
-# for. Note that `DualNames` is mutable, so `==` would fall back to `===` and
-# only the `EMPTY_DUAL_NAMES` sentinel would be considered empty.
-function is_empty(dual_names::DualNames)
-    return isempty(dual_names.dual_variable_name_prefix) &&
-           isempty(dual_names.dual_constraint_name_prefix) &&
-           isempty(dual_names.parameter_name_prefix) &&
-           isempty(dual_names.quadratic_slack_name_prefix) &&
-           isempty(dual_names.mapping)
-end
+# `DualNames` is mutable, so `==` falls back to `===` and only the
+# `EMPTY_DUAL_NAMES` sentinel is empty. This is deliberate and must not be
+# turned into a comparison of the fields: a user who writes `DualNames()`
+# explicitly is asking for the dual model to be named, and gets the default
+# `param_` and `quadslack_` prefixes, while a user who passes no `dual_names`
+# at all gets no name. See the `DualNames` docstring.
+is_empty(dual_names::DualNames) = dual_names === EMPTY_DUAL_NAMES
 
 # The four functions below return the name to give to a dual object, derived
 # from the name of the primal object it comes from. Each family of dual object
