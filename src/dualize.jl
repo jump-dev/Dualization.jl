@@ -31,7 +31,9 @@ The `dualize` function works in three different ways. The user can provide:
 On each of these methods, the user can provide the following keyword arguments:
 
   * `dual_names`: of type `DualNames` struct. It allows users to set more
-    intuitive names for the dual variables and dual constraints created.
+    intuitive names for the dual variables and dual constraints created,
+    either by prefixing the primal names or, with the `mapping` field, by
+    rewriting them, e.g. `mapping = ["affine_cons" => "α"]`.
 
   * `variable_parameters`: A vector of MOI.VariableIndex containing the
     variables that should not be considered model variables during dualization.

@@ -152,7 +152,15 @@ end
         @variable(model, p ∈ Parameter(2.0))
         @constraint(model, c, x <= p)
         @objective(model, Max, 3x + x^2)
-        dual_model = dualize(model, dual_names = DualNames())
+        # Ask explicitly for the default prefixes of the parameters and of the
+        # quadratic slacks: a `DualNames` with no prefix at all names nothing.
+        dual_model = dualize(
+            model,
+            dual_names = DualNames(;
+                parameter_prefix = "param_",
+                quadratic_slack_prefix = "quadslack_",
+            ),
+        )
         param = Dualization._get_dual_parameter(dual_model, p)
         @test param isa VariableRef
         @test owner_model(param) === dual_model
