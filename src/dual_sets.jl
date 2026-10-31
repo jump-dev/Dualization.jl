@@ -9,9 +9,15 @@ _dual_set(set::MOI.AbstractSet) = MOI.dual_set(set)
 
 function _dual_set_type(::Type{S}) where {S}
     return try
+        # The fallback formats S before throwing. Avoid this expensive error
+        # construction for unsupported sets queried during bridge selection.
+        if which(MOI.dual_set_type, Tuple{Type{S}}) ===
+           which(MOI.dual_set_type, Tuple{Type{MOI.AbstractSet}})
+            return nothing
+        end
         MOI.dual_set_type(S)
     catch
-        return nothing # The fallback of `dual_set_type` throws an error.
+        return nothing # Explicit `dual_set_type` methods may also throw.
     end
 end
 

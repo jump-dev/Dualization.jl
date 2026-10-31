@@ -3,7 +3,33 @@
 # Use of this source code is governed by an MIT-style license that can be found
 # in the LICENSE.md file or at https://opensource.org/licenses/MIT.
 
+using Test
+import Dualization
+import MathOptInterface as MOI
+
+struct SetWithoutDual <: MOI.AbstractVectorSet end
+const set_without_dual_show_calls = Ref(0)
+
+function Base.show(io::IO, ::Type{SetWithoutDual})
+    set_without_dual_show_calls[] += 1
+    return print(io, "SetWithoutDual")
+end
+
+struct SetWithDual <: MOI.AbstractVectorSet end
+MOI.dual_set_type(::Type{SetWithDual}) = MOI.Nonnegatives
+
+struct SetWithThrowingDual <: MOI.AbstractVectorSet end
+MOI.dual_set_type(::Type{SetWithThrowingDual}) = error("No dual available")
+
 @testset "dual_sets.jl" begin
+    @testset "unsupported dual lookup does not format the set" begin
+        @test sprint(show, SetWithoutDual) == "SetWithoutDual"
+        set_without_dual_show_calls[] = 0
+        @test Dualization._dual_set_type(SetWithoutDual) === nothing
+        @test set_without_dual_show_calls[] == 0
+        @test Dualization._dual_set_type(SetWithDual) === MOI.Nonnegatives
+        @test Dualization._dual_set_type(SetWithThrowingDual) === nothing
+    end
     @test Dualization._dual_set_type(MOI.Integer) === nothing
     @test Dualization._dual_set_type(MOI.ZeroOne) === nothing
 
