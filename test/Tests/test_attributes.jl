@@ -82,6 +82,7 @@ function _test_constraint_attribute(; constrained_variable::Bool, vector::Bool)
     MOI.set(cached, MOI.ObjectiveFunction{typeof(obj)}(), obj)
     MOI.Utilities.attach_optimizer(cached)
     MOI.optimize!(cached)
+    MOI.set(mock, MOI.ResultCount(), 1)
     for attr in [MOI.ConstraintDualStart(), MOI.ConstraintPrimalStart()]
         attr = MOI.ConstraintDualStart()
         @test MOI.supports(dual, attr, typeof(ci))
