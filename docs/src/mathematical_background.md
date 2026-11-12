@@ -53,9 +53,9 @@ and the dual is:
 \end{align}
 ```
 
-Note that the equality constraints have minus signs that could be flipped for
-simplicity. However, for generality, we keep the minus signs so that the models
-displayed here precisely match the outputs of the package.
+We retain ``- \sum_{i=1}^m A_i^T y_i`` in the equality constraints to use the
+same sign convention as the compact form below. Negating an equality preserves
+its feasible set but reverses the sign of its dual multiplier.
 
 A linear inequality constraint ``a^T x + b \ge c`` should be interpreted as
 ``a^T x + b - c \in \mathbb{R}_+``, and similarly ``a^T x + b \le c`` should be
@@ -179,7 +179,7 @@ and the dual is:
 \end{align}
 ```
 
-Note that signs changed in the constraints of the dual compared to the standard form. This is because the standard form would have negative signs in all terms in a equality constraint, which were inverted for simplicity. However, in the compact form, this operation is not allowed because it would change a nontrivial cone ``\mathcal{C}_i``.
+Note that the constraints of the dual carry the same signs as in the standard form. Negating both sides of an equality would be allowed in the standard form, but it is not allowed here, because it would change a nontrivial cone ``\mathcal{V}_j^*``. Keeping a single convention for both forms means that adding or removing an explicit constraint on a primal variable does not flip the signs of the corresponding dual constraint.
 
 ##### Linear Programming
 

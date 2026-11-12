@@ -54,9 +54,9 @@
         dual
             max y_1
         s.t.
-            y_2 == 1
-            y_1 + 2y_3 == 0
-            y_4 == 1
+            -y_2 == -1
+            -y_1 - 2y_3 == 0
+            -y_4 == -1
             [y_2   y_3
              y_3   y_4] in PSD
         =#
@@ -109,19 +109,19 @@
 
         eq_con1_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con1)
         eq_con1_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con1)
-        @test MOI.coefficient.(eq_con1_fun.terms) == [1.0]
+        @test MOI.coefficient.(eq_con1_fun.terms) == [-1.0]
         @test MOI.constant.(eq_con1_fun) == 0.0
-        @test MOI.constant(eq_con1_set) == 1.0
+        @test MOI.constant(eq_con1_set) == -1.0
         eq_con2_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con2)
         eq_con2_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con2)
-        @test MOI.coefficient.(eq_con2_fun.terms) == [1.0; 2.0]
+        @test MOI.coefficient.(eq_con2_fun.terms) == [-1.0; -2.0]
         @test MOI.constant.(eq_con2_fun) == 0.0
         @test MOI.constant(eq_con2_set) == 0.0
         eq_con3_fun = MOI.get(dual_model, MOI.ConstraintFunction(), eq_con3)
         eq_con3_set = MOI.get(dual_model, MOI.ConstraintSet(), eq_con3)
-        @test MOI.coefficient.(eq_con3_fun.terms) == [1.0]
+        @test MOI.coefficient.(eq_con3_fun.terms) == [-1.0]
         @test MOI.constant.(eq_con3_fun) == 0.0
-        @test MOI.constant(eq_con3_set) == 1.0
+        @test MOI.constant(eq_con3_set) == -1.0
 
         sdp_con = MOI.get(dual_model, MOI.ConstraintFunction(), spd_con)
 
