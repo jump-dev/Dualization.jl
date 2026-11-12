@@ -93,7 +93,7 @@ julia> begin
 julia> print(dual_model)
 Max α
 Subject to
- β : α = 1
+ β : -α = -1
  α ≥ 0
 ```
 """
