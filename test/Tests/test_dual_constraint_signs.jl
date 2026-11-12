@@ -12,7 +12,7 @@ Every dual constraint associated with a primal variable `x_j` is built as
 where `A_{.j}` is the column of `x_j` in the primal constraints and `a_j` is
 its objective coefficient.
 
-For an equality (`V_j^*` being `Reals`, i.e. `x_j` is a free variable) both
+For an equality (`V_j^*` being `Zeros`, i.e. `x_j` is a free variable) both
 sides could be negated without changing the model. That is
 undesirable for downstream users that read the dual constraints as the
 stationarity rows of a KKT system.
@@ -76,8 +76,8 @@ end
         x, ci = MOI.add_constrained_variables(model, MOI.Reals(1))
         return only(x), ci
     end
-    # `x` is free, but stated explicitly as a constrained variable in `Zeros`,
-    # whose dual set is `Reals`.
+    # `x` is fixed to zero. Its dual set is `Reals`, so the stationarity
+    # residual is unrestricted, but it uses the same coefficient signs.
     function _zeros_dual(model)
         x, ci = MOI.add_constrained_variables(model, MOI.Zeros(1))
         return only(x), ci
@@ -106,9 +106,10 @@ end
         @test constant == -11.0
     end
 
-    @testset "free variable matches Reals and Zeros" begin
-        # This is the invariant the issue is about: the way a free variable is
-        # spelled in the primal must not change the dual constraint.
+    @testset "stationarity residual signs match for Reals and Zeros" begin
+        # Explicit `Reals` and an implicit free variable are equivalent.
+        # `Zeros` fixes the variable instead; only the residual coefficients
+        # agree, while the dual sets differ.
         for sense in [MOI.MIN_SENSE, MOI.MAX_SENSE]
             reference = _dual_constraint_terms(
                 _single_variable_model(Float64, sense, _free),
