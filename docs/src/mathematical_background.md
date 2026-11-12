@@ -53,15 +53,9 @@ and the dual is:
 \end{align}
 ```
 
-Note that the equality constraints have minus signs that could be flipped for
-simplicity, because negating both sides of an equality does not change it.
-However, we keep the minus signs, so that the term ``- \sum_{i=1}^m A_i^T y_i``
-appears with the same sign in every dual constraint, whether that constraint
-ends up being an equality (as here) or a membership in a nontrivial cone (as in
-the compact form below). This makes the dual constraints directly readable as
-the stationarity rows of the KKT conditions, which matters when the dual is
-used to build a complementarity system. It also means the models displayed
-here precisely match the outputs of the package.
+We retain ``- \sum_{i=1}^m A_i^T y_i`` in the equality constraints to use the
+same sign convention as the compact form below. Negating an equality preserves
+its feasible set but reverses the sign of its dual multiplier.
 
 A linear inequality constraint ``a^T x + b \ge c`` should be interpreted as
 ``a^T x + b - c \in \mathbb{R}_+``, and similarly ``a^T x + b \le c`` should be
