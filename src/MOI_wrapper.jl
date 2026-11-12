@@ -134,7 +134,7 @@ function MOI.modify(
     # function and change its coefficient on the constraint.
     constant = obj_change.new_coefficient
     if MOI.get(optimizer.dual_problem.dual_model, MOI.ObjectiveSense()) ==
-       MOI.MIN_SENSE
+       MOI.MAX_SENSE
         constant = -constant
     end
     vi = obj_change.variable
@@ -143,8 +143,6 @@ function MOI.modify(
         # error
     elseif data.dual_constraint === nothing
         return
-    elseif data.primal_constrained_variable_constraint !== nothing
-        constant = -constant
     end
     _change_constant(
         optimizer.dual_problem.dual_model,
